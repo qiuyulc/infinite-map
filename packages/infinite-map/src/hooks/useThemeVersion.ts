@@ -1,4 +1,11 @@
-import { useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+
+/**
+ * 主题版本号上下文（用于 Canvas 组件在主题切换时触发重绘）
+ * - 由 InfiniteMapThemeProvider 提供（推荐）
+ * - 若未提供，则 useThemeVersion 会退回到旧的 documentElement 监听策略
+ */
+export const ThemeVersionContext = createContext<number | null>(null);
 
 /**
  * 主题变化版本号（用于触发 Canvas 重绘）
@@ -6,6 +13,9 @@ import { useEffect, useState } from 'react';
  * - prefers-color-scheme 变化
  */
 export function useThemeVersion() {
+  const ctxVersion = useContext(ThemeVersionContext);
+  if (typeof ctxVersion === 'number') return ctxVersion;
+
   const [themeVersion, setThemeVersion] = useState(0);
 
   useEffect(() => {
@@ -27,4 +37,3 @@ export function useThemeVersion() {
 
   return themeVersion;
 }
-
