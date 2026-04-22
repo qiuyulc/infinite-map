@@ -9,6 +9,8 @@ type Params = {
   camera: Camera;
   viewport: { w: number; h: number };
   overscanPx: number;
+  enabled?: boolean;
+  keepAlive?: (node: NodeData) => boolean;
 };
 
 /**
@@ -17,8 +19,14 @@ type Params = {
  * - 使用 rAF 合并计算，拖动/缩放时更稳
  * - 对结果排序保证 DOM 顺序稳定
  */
-export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx }: Params) {
-  const index = useMemo(() => buildSpatialIndex(nodes, cellSize), [nodes, cellSize]);
+export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx, enabled = true, keepAlive }: Params) {
+  const index = useMemo(() => (enabled ? buildSpatialIndex(nodes, cellSize) : null), [enabled, nodes, cellSize]);
+
+  const keepAliveNodes = useMemo(() => {
+    if (!enabled) return [];
+    if (!keepAlive) return [];
+    return nodes.filter(keepAlive);
+  }, [enabled, keepAlive, nodes]);
 
   const viewWorldRect: Rect = useMemo(() => {
     const z = camera.zoom;
@@ -41,13 +49,31 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx 
 
   const rafRef = useRef<number | null>(null);
   useEffect(() => {
+    if (!enabled) {
+      // 关闭虚拟化：渲染全部节点（仍保持稳定排序）
+      const all = [...nodes];
+      all.sort((a, b) => {
+        const za = a.z ?? 0;
+        const zb = b.z ?? 0;
+        if (za !== zb) return za - zb;
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      });
+      setVisibleNodes(all);
+      return;
+    }
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
-      const candidates = querySpatialIndex(index, viewWorldRect);
-      const filtered = candidates.filter((n) =>
-        rectIntersects(viewWorldRect, { x: n.x, y: n.y, w: n.width, h: n.height })
-      );
+      const candidates = querySpatialIndex(index!, viewWorldRect);
+      const filtered = candidates.filter((n) => rectIntersects(viewWorldRect, { x: n.x, y: n.y, w: n.width, h: n.height }));
+
+      // keepAlive：额外合并“不被卸载”的节点（例如图表/视频/富文本节点）
+      if (keepAliveNodes.length) {
+        const byId = new Map<string, NodeData>();
+        for (const n of filtered) byId.set(n.id, n);
+        for (const n of keepAliveNodes) if (!byId.has(n.id)) filtered.push(n);
+      }
+
       // 保证 DOM 顺序稳定：
       // 1) 先按 z 排序（层级）
       // 2) 再按 id 兜底
@@ -62,7 +88,7 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx 
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [index, viewWorldRect]);
+  }, [enabled, index, keepAliveNodes, nodes, viewWorldRect]);
 
   return { visibleNodes, visibleNodesRef, viewWorldRect };
 }

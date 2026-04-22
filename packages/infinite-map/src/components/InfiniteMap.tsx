@@ -134,8 +134,20 @@ export type InfiniteMapProps = {
   pinchZoomFactor?: number;
 
   /**
-   * 节点虚拟化：视口四周额外渲染的“屏幕像素”（会自动换算成世界单位）
-   * 这样缩放时边缘不会因为 overscan 变小而频繁进出导致闪烁。
+   * 虚拟化配置（推荐）
+   * - enabled=false：关闭虚拟化，渲染全部节点
+   * - overscanPx：视口四周额外渲染的“屏幕像素”（会自动换算成世界单位）
+   * - keepAlive：对“重组件节点”（图表/视频/富文本）返回 true，避免进出视口时被卸载重建
+   */
+  virtualization?: {
+    enabled?: boolean;
+    overscanPx?: number;
+    keepAlive?: (node: NodeData) => boolean;
+  };
+
+  /**
+   * 节点虚拟化 overscan（兼容旧字段）
+   * - 建议改用 virtualization.overscanPx
    */
   overscanPx?: number;
   /** 虚拟化用的空间索引格子大小（世界单位） */
@@ -229,6 +241,7 @@ export function InfiniteMap({
   maxZoom = 2.5,
   zoomSpeed = 0.0012,
   pinchZoomFactor = 0.6,
+  virtualization,
   overscanPx = 900,
   cellSize = 900,
   minimapWidth = 260,
@@ -592,12 +605,18 @@ export function InfiniteMap({
     wheelPulseStrength,
   });
 
+  const virtualizationEnabled = virtualization?.enabled ?? true;
+  const virtualizationOverscanPx = virtualization?.overscanPx ?? overscanPx;
+  const keepAlive = virtualization?.keepAlive;
+
   const { visibleNodes } = useVisibleNodes({
     nodes,
     cellSize,
     camera,
     viewport,
-    overscanPx,
+    overscanPx: virtualizationOverscanPx,
+    enabled: virtualizationEnabled,
+    keepAlive,
   });
 
   useEffect(() => {
