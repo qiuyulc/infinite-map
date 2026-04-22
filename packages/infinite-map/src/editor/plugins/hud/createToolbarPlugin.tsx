@@ -281,73 +281,59 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     margin: '0 2px',
   };
 
-  const sliderWrap: CSSProperties = {
+  const zoomDock: CSSProperties = {
+    position: 'absolute',
+    left: 16,
+    top: '50%',
+    transform: 'translateY(-50%)',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
-    padding: '0 2px',
-  };
-  const slider: CSSProperties = {
-    width: 120,
-    accentColor: 'var(--im-selection-stroke, rgba(110, 200, 255, 0.95))',
+    padding: '10px 10px',
+    borderRadius: 14,
+    background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
+    border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+    backdropFilter: 'blur(6px)',
+    pointerEvents: 'auto',
+    userSelect: 'none',
   };
   const zoomLabel: CSSProperties = {
-    minWidth: 46,
-    textAlign: 'right',
     fontSize: 12,
     color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
     opacity: 0.9,
     userSelect: 'none',
+    lineHeight: 1,
+  };
+  // 竖向 slider：用旋转实现，兼容性最好
+  const zoomSlider: CSSProperties = {
+    width: 140, // 旋转前长度
+    transform: 'rotate(-90deg)',
+    accentColor: 'var(--im-selection-stroke, rgba(110, 200, 255, 0.95))',
   };
 
   return (
-    <div style={base} data-im-ui>
-      {items.map((it, i) => {
+    <>
+      {zoomSliderEnabled ? (
+        <div style={zoomDock} data-im-ui>
+          <div style={zoomLabel}>{Math.round((cam.zoom || 1) * 100)}%</div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={zoomToSlider(cam.zoom || 1)}
+            style={zoomSlider}
+            aria-label="缩放"
+            onChange={(e) => setZoom(sliderToZoom(Number(e.target.value)))}
+          />
+        </div>
+      ) : null}
+
+      <div style={base} data-im-ui>
+        {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
-
-        // 插入 zoom slider：紧跟在 resetZoom 后面
-        if (it.type === 'command' && zoomSliderEnabled && it.id === 'view.resetZoom') {
-          const enabled = it.enabled ? it.enabled(ctx) : true;
-          const iconOnly = it.icon != null && (it.iconOnly ?? true);
-          const current = cam.zoom || 1;
-          const sliderVal = zoomToSlider(current);
-          return (
-            <div key="zoom-slider" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <button
-                type="button"
-                style={{ ...btn, ...(iconOnly ? btnIcon : null), ...(enabled ? null : btnDisabled) }}
-                disabled={!enabled}
-                className="im-toolbar-btn"
-                data-tip={it.title ?? it.label}
-                onClick={() => (enabled ? run(ctx, it.id) : null)}
-              >
-                {it.icon ? (
-                  <>
-                    {it.icon}
-                    {iconOnly ? null : <span style={{ marginLeft: 6 }}>{it.label}</span>}
-                  </>
-                ) : (
-                  it.label
-                )}
-              </button>
-
-              <div style={sliderWrap}>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={sliderVal}
-                  style={slider}
-                  aria-label="缩放"
-                  onChange={(e) => setZoom(sliderToZoom(Number(e.target.value)))}
-                />
-                <div style={zoomLabel}>{Math.round(current * 100)}%</div>
-              </div>
-            </div>
-          );
-        }
-
         const enabled = it.enabled ? it.enabled(ctx) : true;
         const iconOnly = it.icon != null && (it.iconOnly ?? true);
         return (
@@ -370,8 +356,9 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
             )}
           </button>
         );
-      })}
-    </div>
+        })}
+      </div>
+    </>
   );
 }
 
