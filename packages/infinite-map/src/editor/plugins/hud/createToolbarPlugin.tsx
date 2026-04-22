@@ -306,7 +306,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     borderRadius: 12,
     background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
     border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+    // 与 minimap 的层级观感保持一致（minimap 默认更“浮”）
+    boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
     backdropFilter: 'blur(6px)',
     pointerEvents: 'auto',
     userSelect: 'none',
