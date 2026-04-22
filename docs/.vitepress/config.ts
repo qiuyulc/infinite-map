@@ -23,6 +23,7 @@ export default defineConfig({
             { text: '06. 功能路线图（按模块实现）', link: '/rewrite/06-feature-roadmap' },
             { text: '10. Milestone 0：只渲染 nodes', link: '/rewrite/10-m0-render-nodes' },
             { text: '11. Milestone 1：Camera（缩放 + 平移）', link: '/rewrite/11-m1-camera-zoom-pan' },
+            { text: '12. Milestone 2：选中 + 拖拽节点（引入最小插件系统）', link: '/rewrite/12-m2-selection-and-drag' },
             { text: '07. 如何把它讲成面试亮点', link: '/rewrite/07-interview-story' }
           ]
         }
