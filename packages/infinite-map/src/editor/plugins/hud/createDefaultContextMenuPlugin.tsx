@@ -170,10 +170,13 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     };
   }, [ctx, payload]);
 
-  if (!payload) return null;
-
   // 将全局 clientX/Y 转成容器内坐标，并限制不超出父容器（InfiniteMap root 的 overflow: hidden 会裁切）
   useLayoutEffect(() => {
+    // 重要：hooks 必须始终按同样顺序调用。这里不要在 payload 为空时提前 return 组件。
+    if (!payload) {
+      setPos(null);
+      return;
+    }
     const el = ref.current;
     if (!el) return;
     const root = el.offsetParent as HTMLElement | null; // 插件 hud 层是 absolute inset:0，正好是边界容器
@@ -187,8 +190,9 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     const left = Math.min(Math.max(0, rawLeft), maxLeft);
     const top = Math.min(Math.max(0, rawTop), maxTop);
     setPos({ left, top });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payload.screen.x, payload.screen.y, items.length]);
+  }, [payload?.screen.x, payload?.screen.y, items.length]);
+
+  if (!payload) return null;
 
   const panel: CSSProperties = {
     position: 'absolute',
