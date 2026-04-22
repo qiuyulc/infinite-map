@@ -77,8 +77,8 @@ export function useHighlightLayer({
 
       // 轻微氛围
       {
-        const baseA0 = cssVarNum('--highlight-base-a', 0.06);
-        const baseAp = cssVarNum('--highlight-pulse-a', 0.09);
+        const baseA0 = cssVarNum('--highlight-base-a', 0.06, canvas);
+        const baseAp = cssVarNum('--highlight-pulse-a', 0.09, canvas);
         const baseA = clamp(baseA0 + pulseBoost * baseAp, 0, 0.2);
         const g = ctx.createRadialGradient(mx, my, 0, mx, my, highlightRadiusPx * 0.85);
         g.addColorStop(0, `rgba(110, 200, 255, ${baseA})`);
@@ -100,13 +100,13 @@ export function useHighlightLayer({
       const endY = wy0 + radiusWorld;
 
       const r = dotRadiusPx * Math.max(0.9, Math.min(1.6, Math.sqrt(z)));
-      const hiRgb = cssVarRgb('--highlight-rgb', '80 170 255');
-      const dotA0 = cssVarNum('--highlight-dot-a', 0.52);
-      const dotAp = cssVarNum('--highlight-dot-pulse-a', 0.34);
-      const dotCap = cssVarNum('--highlight-dot-cap', 0.78);
-      const shadowBase = cssVarNum('--highlight-shadow-base', 3);
-      const shadowBoost = cssVarNum('--highlight-shadow-boost', 7);
-      const shadowPulse = cssVarNum('--highlight-shadow-pulse', 5.5);
+      const hiRgb = cssVarRgb('--highlight-rgb', '80 170 255', canvas);
+      const dotA0 = cssVarNum('--highlight-dot-a', 0.52, canvas);
+      const dotAp = cssVarNum('--highlight-dot-pulse-a', 0.34, canvas);
+      const dotCap = cssVarNum('--highlight-dot-cap', 0.78, canvas);
+      const shadowBase = cssVarNum('--highlight-shadow-base', 3, canvas);
+      const shadowBoost = cssVarNum('--highlight-shadow-boost', 7, canvas);
+      const shadowPulse = cssVarNum('--highlight-shadow-pulse', 5.5, canvas);
 
       for (let wx = startX; wx <= endX; wx += dotSpacing) {
         for (let wy = startY; wy <= endY; wy += dotSpacing) {
