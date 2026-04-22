@@ -84,12 +84,37 @@ function defaultItems(): MenuItem[] {
         <path d="M8 7 3 12l5 5" />
       </Icon>
     ),
+    upOne: (
+      <Icon>
+        <path d="M12 5l-4 4" />
+        <path d="M12 5l4 4" />
+        <path d="M12 5v10" />
+        <rect x="5" y="17" width="14" height="4" rx="1" />
+      </Icon>
+    ),
+    downOne: (
+      <Icon>
+        <path d="M12 19l-4-4" />
+        <path d="M12 19l4-4" />
+        <path d="M12 9v10" />
+        <rect x="5" y="3" width="14" height="4" rx="1" />
+      </Icon>
+    ),
     fit: (
       <Icon>
         <path d="M4 9V6a2 2 0 0 1 2-2h3" />
         <path d="M20 9V6a2 2 0 0 0-2-2h-3" />
         <path d="M4 15v3a2 2 0 0 0 2 2h3" />
         <path d="M20 15v3a2 2 0 0 1-2 2h-3" />
+      </Icon>
+    ),
+    fitSelection: (
+      <Icon>
+        <path d="M4 9V6a2 2 0 0 1 2-2h3" />
+        <path d="M20 9V6a2 2 0 0 0-2-2h-3" />
+        <path d="M4 15v3a2 2 0 0 0 2 2h3" />
+        <path d="M20 15v3a2 2 0 0 1-2 2h-3" />
+        <rect x="9" y="9" width="6" height="6" rx="1" />
       </Icon>
     ),
     center: (
@@ -99,6 +124,16 @@ function defaultItems(): MenuItem[] {
         <path d="M12 18v4" />
         <path d="M2 12h4" />
         <path d="M18 12h4" />
+      </Icon>
+    ),
+    centerSelection: (
+      <Icon>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4" />
+        <path d="M12 18v4" />
+        <path d="M2 12h4" />
+        <path d="M18 12h4" />
+        <rect x="9" y="9" width="6" height="6" rx="1" />
       </Icon>
     ),
     trash: (
@@ -115,13 +150,15 @@ function defaultItems(): MenuItem[] {
     { type: 'command', id: 'edit.paste', label: '粘贴', icon: Icons.paste },
     { type: 'command', id: 'edit.duplicate', label: '创建副本', icon: Icons.duplicate },
     { type: 'divider' },
-    { type: 'command', id: 'z.bringToFront', label: '置于顶层', icon: Icons.front },
-    { type: 'command', id: 'z.sendToBack', label: '置于底层', icon: Icons.back },
+    { type: 'command', id: 'z.bringToFront', label: '置于顶层', icon: Icons.front, enabled: (_c, s) => s.selectionIds.length > 0 },
+    { type: 'command', id: 'z.bringForward', label: '上移一层', icon: Icons.upOne, enabled: (_c, s) => s.selectionIds.length > 0 },
+    { type: 'command', id: 'z.sendBackward', label: '下移一层', icon: Icons.downOne, enabled: (_c, s) => s.selectionIds.length > 0 },
+    { type: 'command', id: 'z.sendToBack', label: '置于底层', icon: Icons.back, enabled: (_c, s) => s.selectionIds.length > 0 },
     { type: 'divider' },
     { type: 'command', id: 'view.fitView', label: '适配视图', icon: Icons.fit },
     { type: 'command', id: 'view.centerView', label: '居中到原点', icon: Icons.center },
-    { type: 'command', id: 'view.fitSelection', label: '适配选中' },
-    { type: 'command', id: 'view.centerSelection', label: '选中居中' },
+    { type: 'command', id: 'view.fitSelection', label: '适配选中', icon: Icons.fitSelection, enabled: (_c, s) => s.selectionIds.length > 0 },
+    { type: 'command', id: 'view.centerSelection', label: '选中居中', icon: Icons.centerSelection, enabled: (_c, s) => s.selectionIds.length > 0 },
     { type: 'divider' },
     {
       type: 'command',
