@@ -202,7 +202,19 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
     extra[0]?.type !== 'divider';
   if (needDivider) out.push({ type: 'divider' });
   extra.forEach(push);
-  return out;
+  // 规范化 divider：去掉首尾 divider + 合并连续 divider
+  const normalized: ToolbarItem[] = [];
+  for (const it of out) {
+    if (it.type === 'divider') {
+      if (normalized.length === 0) continue;
+      if (normalized[normalized.length - 1]?.type === 'divider') continue;
+      normalized.push(it);
+      continue;
+    }
+    normalized.push(it);
+  }
+  if (normalized[normalized.length - 1]?.type === 'divider') normalized.pop();
+  return normalized;
 }
 
 function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
