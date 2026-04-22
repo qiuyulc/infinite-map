@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS } from '../../keys';
 import type { InfiniteMapPlugin, MapContext } from '../../types';
@@ -7,7 +7,13 @@ import type { ContextMenuPayload } from './createContextMenuPlugin';
 import { createContextMenuPlugin } from './createContextMenuPlugin';
 
 type MenuItem =
-  | { type: 'command'; id: string; label: string; enabled?: (ctx: MapContext, s: ContextMenuPayload) => boolean }
+  | {
+      type: 'command';
+      id: string;
+      label: string;
+      icon?: ReactNode;
+      enabled?: (ctx: MapContext, s: ContextMenuPayload) => boolean;
+    }
   | { type: 'divider' };
 
 export type DefaultContextMenuOptions = {
@@ -28,17 +34,92 @@ function run(ctx: MapContext, id: string) {
 }
 
 function defaultItems(): MenuItem[] {
+  const Icon = ({ children }: { children: ReactNode }) => (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      {children}
+    </svg>
+  );
+  const Icons = {
+    copy: (
+      <Icon>
+        <rect x="9" y="9" width="13" height="13" rx="2" />
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </Icon>
+    ),
+    cut: (
+      <Icon>
+        <circle cx="6" cy="6" r="3" />
+        <circle cx="6" cy="18" r="3" />
+        <path d="M20 4L8.12 15.88" />
+        <path d="M14.47 14.48L20 20" />
+        <path d="M8.12 8.12L12 12" />
+      </Icon>
+    ),
+    paste: (
+      <Icon>
+        <path d="M19 21H10a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2Z" />
+        <path d="M16 3H8" />
+        <path d="M12 3v4" />
+      </Icon>
+    ),
+    duplicate: (
+      <Icon>
+        <rect x="8" y="8" width="12" height="12" rx="2" />
+        <path d="M4 16V4a2 2 0 0 1 2-2h12" />
+      </Icon>
+    ),
+    front: (
+      <Icon>
+        <path d="M3 7h11" />
+        <path d="M3 12h7" />
+        <path d="M3 17h11" />
+        <path d="M16 7l5 5-5 5" />
+      </Icon>
+    ),
+    back: (
+      <Icon>
+        <path d="M21 7H10" />
+        <path d="M21 12h-7" />
+        <path d="M21 17H10" />
+        <path d="M8 7 3 12l5 5" />
+      </Icon>
+    ),
+    fit: (
+      <Icon>
+        <path d="M4 9V6a2 2 0 0 1 2-2h3" />
+        <path d="M20 9V6a2 2 0 0 0-2-2h-3" />
+        <path d="M4 15v3a2 2 0 0 0 2 2h3" />
+        <path d="M20 15v3a2 2 0 0 1-2 2h-3" />
+      </Icon>
+    ),
+    center: (
+      <Icon>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v4" />
+        <path d="M12 18v4" />
+        <path d="M2 12h4" />
+        <path d="M18 12h4" />
+      </Icon>
+    ),
+    trash: (
+      <Icon>
+        <path d="M4 7h16" />
+        <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        <path d="M7 7l1 14h8l1-14" />
+      </Icon>
+    ),
+  } as const;
   return [
-    { type: 'command', id: 'edit.copy', label: 'Copy' },
-    { type: 'command', id: 'edit.cut', label: 'Cut' },
-    { type: 'command', id: 'edit.paste', label: 'Paste' },
-    { type: 'command', id: 'edit.duplicate', label: 'Duplicate' },
+    { type: 'command', id: 'edit.copy', label: 'Copy', icon: Icons.copy },
+    { type: 'command', id: 'edit.cut', label: 'Cut', icon: Icons.cut },
+    { type: 'command', id: 'edit.paste', label: 'Paste', icon: Icons.paste },
+    { type: 'command', id: 'edit.duplicate', label: 'Duplicate', icon: Icons.duplicate },
     { type: 'divider' },
-    { type: 'command', id: 'z.bringToFront', label: 'Bring to front' },
-    { type: 'command', id: 'z.sendToBack', label: 'Send to back' },
+    { type: 'command', id: 'z.bringToFront', label: 'Bring to front', icon: Icons.front },
+    { type: 'command', id: 'z.sendToBack', label: 'Send to back', icon: Icons.back },
     { type: 'divider' },
-    { type: 'command', id: 'view.fitView', label: 'Fit view' },
-    { type: 'command', id: 'view.centerView', label: 'Center view' },
+    { type: 'command', id: 'view.fitView', label: 'Fit view', icon: Icons.fit },
+    { type: 'command', id: 'view.centerView', label: 'Center view', icon: Icons.center },
     { type: 'command', id: 'view.fitSelection', label: 'Fit selection' },
     { type: 'command', id: 'view.centerSelection', label: 'Center selection' },
     { type: 'divider' },
@@ -46,6 +127,7 @@ function defaultItems(): MenuItem[] {
       type: 'command',
       id: 'edit.delete',
       label: 'Delete',
+      icon: Icons.trash,
       enabled: (_ctx, s) => s.selectionIds.length > 0,
     },
   ];
@@ -57,6 +139,7 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   const ref = useRef<HTMLDivElement | null>(null);
   const [, bump] = useState(0);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   // 当 menu 打开/selection 变化时刷新 enabled 状态
   useEffect(() => {
@@ -89,13 +172,31 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
 
   if (!payload) return null;
 
+  // 将全局 clientX/Y 转成容器内坐标，并限制不超出父容器（InfiniteMap root 的 overflow: hidden 会裁切）
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const root = el.offsetParent as HTMLElement | null; // 插件 hud 层是 absolute inset:0，正好是边界容器
+    if (!root) return;
+    const rootRect = root.getBoundingClientRect();
+    const menuRect = el.getBoundingClientRect();
+    const rawLeft = payload.screen.x - rootRect.left;
+    const rawTop = payload.screen.y - rootRect.top;
+    const maxLeft = Math.max(0, rootRect.width - menuRect.width);
+    const maxTop = Math.max(0, rootRect.height - menuRect.height);
+    const left = Math.min(Math.max(0, rawLeft), maxLeft);
+    const top = Math.min(Math.max(0, rawTop), maxTop);
+    setPos({ left, top });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payload.screen.x, payload.screen.y, items.length]);
+
   const panel: CSSProperties = {
-    position: 'fixed',
-    left: payload.screen.x,
-    top: payload.screen.y,
-    minWidth: 200,
-    padding: 6,
-    borderRadius: 12,
+    position: 'absolute',
+    left: pos?.left ?? 0,
+    top: pos?.top ?? 0,
+    minWidth: 170,
+    padding: 4,
+    borderRadius: 10,
     // 与 toolbar tooltip/panel 保持一致：优先使用 im-panel-*，兼容旧的 im-menu-* 变量
     background: 'var(--im-panel-bg, var(--im-menu-bg, rgba(255,255,255,0.88)))',
     border: '1px solid var(--im-panel-border, var(--im-menu-border, rgba(15,23,42,0.12)))',
@@ -109,13 +210,17 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   const item: CSSProperties = {
     width: '100%',
     textAlign: 'left',
-    padding: '8px 10px',
-    borderRadius: 10,
+    padding: '6px 8px',
+    borderRadius: 8,
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
     fontSize: 12,
+    lineHeight: 1.2,
     color: 'inherit',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
   };
 
   const itemDisabled: CSSProperties = { opacity: 0.45, cursor: 'not-allowed' };
@@ -123,7 +228,7 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   const divider: CSSProperties = {
     height: 1,
     background: 'var(--im-panel-border, rgba(15,23,42,0.10))',
-    margin: '6px 6px',
+    margin: '4px 6px',
   };
 
   return (
@@ -156,7 +261,10 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
               ctx.store.set(STORE_KEYS.contextMenuState, null);
             }}
           >
-            {it.label}
+            <span style={{ width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              {it.icon ?? null}
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>{it.label}</span>
           </button>
         );
       })}
