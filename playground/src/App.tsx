@@ -13,6 +13,7 @@ export default function App() {
   const [backgroundMode, setBackgroundMode] = useState<'dots' | 'grid'>('grid');
   const [rulersEnabled, setRulersEnabled] = useState(true);
   const [minimapEnabled, setMinimapEnabled] = useState(true);
+  const [zoomDockEnabled, setZoomDockEnabled] = useState(true);
   const [toolbarEnabled, setToolbarEnabled] = useState(true);
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
 
@@ -25,12 +26,13 @@ export default function App() {
     return createDefaultEditorPlugins({
       rulersEnabled,
       minimapEnabled,
+      zoomDockEnabled,
       toolbarEnabled,
       contextMenuEnabled,
       marqueeEnabled: true,
       marqueeRequireShift: false,
     });
-  }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled]);
+  }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled, zoomDockEnabled]);
 
   return (
     <InfiniteMapThemeProvider base={themeBase}>
@@ -71,6 +73,10 @@ export default function App() {
             <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
               <span>Minimap</span>
               <input type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} />
+            </label>
+            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+              <span>缩放条</span>
+              <input type="checkbox" checked={zoomDockEnabled} onChange={(e) => setZoomDockEnabled(e.target.checked)} />
             </label>
             <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
               <span>工具栏</span>
