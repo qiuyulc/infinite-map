@@ -1,20 +1,25 @@
-export { createKeyboardStatePlugin } from './createKeyboardStatePlugin';
-export { createHistoryPlugin } from './createHistoryPlugin';
-export { createCoreServicesPlugin } from './createCoreServicesPlugin';
-export { createCommandRunnerPlugin } from './createCommandRunnerPlugin';
-export { createShortcutsPlugin } from './createShortcutsPlugin';
-export { createRulersPlugin } from './createRulersPlugin';
-export { createMinimapPlugin } from './createMinimapPlugin';
-export { createClipboardPlugin } from './createClipboardPlugin';
-export { createViewCommandsPlugin } from './createViewCommandsPlugin';
-export { createZIndexPlugin } from './createZIndexPlugin';
-export { createToolbarPlugin } from './createToolbarPlugin';
-export { createContextMenuPlugin } from './createContextMenuPlugin';
-export { createDefaultContextMenuPlugin } from './createDefaultContextMenuPlugin';
-export { createMarqueeSelectPlugin } from './createMarqueeSelectPlugin';
-export { createSnapGuidesPlugin } from './createSnapGuidesPlugin';
-export { createSelectionPlugin } from './createSelectionPlugin';
-export { createRotatePlugin } from './createRotatePlugin';
-export { createRotate3DPlugin } from './createRotate3DPlugin';
-export { createDragPlugin } from './createDragPlugin';
-export { createResizePlugin } from './createResizePlugin';
+export { createKeyboardStatePlugin } from './core/createKeyboardStatePlugin';
+export { createHistoryPlugin } from './core/createHistoryPlugin';
+export { createCoreServicesPlugin } from './core/createCoreServicesPlugin';
+export { createCommandRunnerPlugin } from './core/createCommandRunnerPlugin';
+export { createShortcutsPlugin } from './core/createShortcutsPlugin';
+export { createViewCommandsPlugin } from './core/createViewCommandsPlugin';
+export { createZIndexPlugin } from './core/createZIndexPlugin';
+
+export { createSelectionPlugin } from './selection/createSelectionPlugin';
+export { createMarqueeSelectPlugin } from './selection/createMarqueeSelectPlugin';
+
+export { createDragPlugin } from './transform/createDragPlugin';
+export { createResizePlugin } from './transform/createResizePlugin';
+export { createRotatePlugin } from './transform/createRotatePlugin';
+export { createRotate3DPlugin } from './transform/createRotate3DPlugin';
+
+export { createSnapGuidesPlugin } from './snapping/createSnapGuidesPlugin';
+
+export { createClipboardPlugin } from './clipboard/createClipboardPlugin';
+
+export { createRulersPlugin } from './hud/createRulersPlugin';
+export { createMinimapPlugin } from './hud/createMinimapPlugin';
+export { createToolbarPlugin } from './hud/createToolbarPlugin';
+export { createContextMenuPlugin } from './hud/createContextMenuPlugin';
+export { createDefaultContextMenuPlugin } from './hud/createDefaultContextMenuPlugin';
