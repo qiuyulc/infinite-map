@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   composePlugins,
-  EditorPlugins,
   InfiniteMap,
   InfiniteMapThemeProvider,
   computeLayout,
@@ -9,6 +8,7 @@ import {
   makeDemoNodes,
   type NodeData,
 } from '@qiuyulc/infinite-map';
+import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
 
 export default function App() {
   const [themeBase, setThemeBase] = useState<'light' | 'dark'>('light');
@@ -36,7 +36,7 @@ export default function App() {
         marqueeRequireShift: false,
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
-      EditorPlugins.createHudContributionExamplePlugin(),
+      createHudContributionExamplePlugin(),
     ]);
   }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled, zoomDockEnabled]);
 
