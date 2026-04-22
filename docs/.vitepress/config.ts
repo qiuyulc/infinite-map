@@ -22,6 +22,7 @@ export default defineConfig({
             { text: '05. 插件协议与扩展点', link: '/rewrite/05-plugin-contract' },
             { text: '06. 功能路线图（按模块实现）', link: '/rewrite/06-feature-roadmap' },
             { text: '10. Milestone 0：只渲染 nodes', link: '/rewrite/10-m0-render-nodes' },
+            { text: '11. Milestone 1：Camera（缩放 + 平移）', link: '/rewrite/11-m1-camera-zoom-pan' },
             { text: '07. 如何把它讲成面试亮点', link: '/rewrite/07-interview-story' }
           ]
         }
