@@ -102,9 +102,11 @@ const Icons = {
   ),
   resetZoom: (
     <Icon>
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M8 12h8" />
-      <path d="M12 8v8" />
+      {/* 重置缩放（100%）：放大镜 + 回环箭头，避免与“新增/加号”混淆 */}
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.3-4.3" />
+      <path d="M9 11a2.5 2.5 0 1 1 1.1 2" />
+      <path d="M10.2 13H8v-2.2" />
     </Icon>
   ),
   fit: (
@@ -282,4 +284,3 @@ export function createToolbarPlugin(opts: ToolbarPluginOptions = {}): InfiniteMa
     overlay: ({ ctx }) => <ToolbarOverlay ctx={ctx} opts={opts} />,
   };
 }
-
