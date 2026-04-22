@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS } from '../../keys';
 import type { InfiniteMapPlugin, MapContext } from '../../types';
-import { Slider } from '../../../components/Slider';
 import './toolbar.css';
 
 export type ToolbarItem =
@@ -37,10 +36,6 @@ export type ToolbarPluginOptions = {
    */
   items?: ToolbarItem[];
   position?: 'top-left' | 'top-right';
-  /**
-   * 是否展示缩放滑杆（默认 true）
-   */
-  zoomSliderEnabled?: boolean;
 };
 
 function run(ctx: MapContext, id: string) {
@@ -185,7 +180,6 @@ function defaultItems(): ToolbarItem[] {
 function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
   const items = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
-  const zoomSliderEnabled = opts.zoomSliderEnabled ?? true;
 
   // 订阅 enable 状态变化（history + selection）
   const [, bump] = useState(0);
@@ -194,45 +188,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyUndoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyRedoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.bus.on('selection:change', () => bump((v) => v + 1)));
-    // zoom 变化时刷新 slider 值
-    unsubs.push(ctx.bus.on('camera:changed', () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
-
-  const cam = ctx.getCamera();
-  const viewCfg =
-    ctx.store.get<{
-      minZoom?: number;
-      maxZoom?: number;
-    }>(STORE_KEYS.viewConfig) ?? {};
-  const minZoom = viewCfg.minZoom ?? 0.25;
-  const maxZoom = viewCfg.maxZoom ?? 2.5;
-  const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
-
-  // slider 用对数映射（更符合缩放直觉）
-  const logMin = Math.log(minZoom);
-  const logMax = Math.log(maxZoom);
-  const zoomToSlider = (z: number) => {
-    const t = (Math.log(clamp(z, minZoom, maxZoom)) - logMin) / (logMax - logMin);
-    return Math.round(clamp(t, 0, 1) * 100);
-  };
-  const sliderToZoom = (v: number) => {
-    const t = clamp(v / 100, 0, 1);
-    return Math.exp(logMin + (logMax - logMin) * t);
-  };
-
-  const setZoom = (nextZoom: number) => {
-    const z = clamp(nextZoom, minZoom, maxZoom);
-    const vp = ctx.getViewport();
-    const curZoom = cam.zoom || 1;
-    // 保持视口中心在同一个 world point，避免缩放时“飘走”
-    const cx = cam.x + vp.w / 2 / curZoom;
-    const cy = cam.y + vp.h / 2 / curZoom;
-    const next = { x: cx - vp.w / 2 / z, y: cy - vp.h / 2 / z, zoom: z };
-    const svc = ctx.getService<{ set: (c: typeof next, immediate?: boolean) => void }>('camera');
-    if (svc?.set) svc.set(next, true);
-    else ctx.bus.emit('camera:change', { camera: next, immediate: true });
-  };
 
   const base: CSSProperties = {
     position: 'absolute',
@@ -282,70 +239,9 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     margin: '0 2px',
   };
 
-  const minimapCfg = (ctx.store.get<{ width?: number; height?: number }>(STORE_KEYS.minimapConfig) ?? {}) as {
-    width?: number;
-    height?: number;
-  };
-  const minimapEnabled = (ctx.store.get<boolean>(STORE_KEYS.minimapEnabled) ?? false) === true;
-  const minimapW = minimapCfg.width ?? 260;
-  const minimapH = minimapCfg.height ?? 160;
-  const zoomDockH = 36;
-  const zoomDockGap = 10;
-
-  const zoomDock: CSSProperties = {
-    position: 'absolute',
-    // minimap 显示：放在 minimap 左侧；minimap 关闭：占用 minimap 的位置（避免右下角空一块）
-    right: 12 + (minimapEnabled ? minimapW + zoomDockGap : 0),
-    // 与 minimap 底边对齐
-    bottom: 12,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    height: zoomDockH,
-    padding: '0 10px',
-    borderRadius: 12,
-    background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
-    border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
-    // 与 minimap 的层级观感保持一致（minimap 默认更“浮”）
-    boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-    backdropFilter: 'blur(6px)',
-    pointerEvents: 'auto',
-    userSelect: 'none',
-  };
-  const zoomLabel: CSSProperties = {
-    width: 48,
-    flexShrink: 0,
-    textAlign: 'right',
-    fontSize: 12,
-    color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
-    opacity: 0.9,
-    userSelect: 'none',
-    lineHeight: 1,
-  };
-  const zoomSliderWrap: CSSProperties = { width: 140, flexShrink: 0 };
-
   return (
-    <>
-      {zoomSliderEnabled ? (
-        <div style={zoomDock} data-im-ui>
-          <div style={zoomSliderWrap}>
-            <Slider
-              value={zoomToSlider(cam.zoom || 1)}
-              min={0}
-              max={100}
-              step={1}
-              label="缩放"
-              formatValue={(v) => `${Math.round(sliderToZoom(v) * 100)}%`}
-              onChange={(v) => setZoom(sliderToZoom(v))}
-            />
-          </div>
-          <div style={zoomLabel}>{Math.round((cam.zoom || 1) * 100)}%</div>
-        </div>
-      ) : null}
-
-      <div style={base} data-im-ui>
-        {items.map((it, i) => {
+    <div style={base} data-im-ui>
+      {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
         const enabled = it.enabled ? it.enabled(ctx) : true;
         const iconOnly = it.icon != null && (it.iconOnly ?? true);
@@ -369,9 +265,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
             )}
           </button>
         );
-        })}
-      </div>
-    </>
+      })}
+    </div>
   );
 }
 

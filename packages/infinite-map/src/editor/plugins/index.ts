@@ -23,3 +23,4 @@ export { createMinimapPlugin } from './hud/createMinimapPlugin';
 export { createToolbarPlugin } from './hud/createToolbarPlugin';
 export { createContextMenuPlugin } from './hud/createContextMenuPlugin';
 export { createDefaultContextMenuPlugin } from './hud/createDefaultContextMenuPlugin';
+export { createZoomDockPlugin } from './hud/createZoomDockPlugin';

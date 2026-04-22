@@ -13,6 +13,7 @@ import {
   createShortcutsPlugin,
   createSnapGuidesPlugin,
   createViewCommandsPlugin,
+  createZoomDockPlugin,
   createZIndexPlugin,
   createToolbarPlugin,
   createDefaultContextMenuPlugin,
@@ -56,6 +57,12 @@ export type DefaultEditorOptions = {
   toolbarEnabled?: boolean;
 
   /**
+   * 缩放滑杆（hud）
+   * - 默认 true：这是编辑器常用能力；且不会像 toolbar 那样“占视线”
+   */
+  zoomDockEnabled?: boolean;
+
+  /**
    * 默认右键菜单（hud）
    * - 默认 false：避免 UI 污染；需要时由用户显式开启
    */
@@ -84,6 +91,7 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
   const minimapEnabled = opts.minimapEnabled ?? true;
   const clipboardEnabled = opts.clipboardEnabled ?? true;
   const toolbarEnabled = opts.toolbarEnabled ?? false;
+  const zoomDockEnabled = opts.zoomDockEnabled ?? true;
   const contextMenuEnabled = opts.contextMenuEnabled ?? false;
   const shortcutOverrides = opts.shortcutOverrides;
 
@@ -108,6 +116,10 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
 
   if (toolbarEnabled) {
     plugins.push(createToolbarPlugin());
+  }
+
+  if (zoomDockEnabled) {
+    plugins.push(createZoomDockPlugin());
   }
 
   if (contextMenuEnabled) {
