@@ -312,13 +312,16 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     userSelect: 'none',
   };
   const zoomLabel: CSSProperties = {
+    width: 48,
+    flexShrink: 0,
+    textAlign: 'right',
     fontSize: 12,
     color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
     opacity: 0.9,
     userSelect: 'none',
     lineHeight: 1,
   };
-  const zoomSliderWrap: CSSProperties = { width: 140 };
+  const zoomSliderWrap: CSSProperties = { width: 140, flexShrink: 0 };
 
   return (
     <>
