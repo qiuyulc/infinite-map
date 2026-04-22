@@ -281,17 +281,27 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     margin: '0 2px',
   };
 
+  const minimapCfg = (ctx.store.get<{ width?: number; height?: number }>(STORE_KEYS.minimapConfig) ?? {}) as {
+    width?: number;
+    height?: number;
+  };
+  const minimapW = minimapCfg.width ?? 260;
+  const minimapH = minimapCfg.height ?? 160;
+  const zoomDockH = 36;
+  const zoomDockGap = 10;
+
   const zoomDock: CSSProperties = {
     position: 'absolute',
-    left: 16,
-    top: '50%',
-    transform: 'translateY(-50%)',
+    // 放在 minimap 左侧，水平挨着
+    right: 12 + minimapW + zoomDockGap,
+    bottom: 12 + Math.max(0, (minimapH - zoomDockH) / 2),
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    padding: '10px 10px',
-    borderRadius: 14,
+    height: zoomDockH,
+    padding: '0 10px',
+    borderRadius: 12,
     background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
     border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
     boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
@@ -306,10 +316,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     userSelect: 'none',
     lineHeight: 1,
   };
-  // 竖向 slider：用旋转实现，兼容性最好
   const zoomSlider: CSSProperties = {
-    width: 140, // 旋转前长度
-    transform: 'rotate(-90deg)',
+    width: 140,
     accentColor: 'var(--im-selection-stroke, rgba(110, 200, 255, 0.95))',
   };
 
@@ -317,7 +325,6 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     <>
       {zoomSliderEnabled ? (
         <div style={zoomDock} data-im-ui>
-          <div style={zoomLabel}>{Math.round((cam.zoom || 1) * 100)}%</div>
           <input
             type="range"
             min={0}
@@ -328,6 +335,7 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
             aria-label="缩放"
             onChange={(e) => setZoom(sliderToZoom(Number(e.target.value)))}
           />
+          <div style={zoomLabel}>{Math.round((cam.zoom || 1) * 100)}%</div>
         </div>
       ) : null}
 
