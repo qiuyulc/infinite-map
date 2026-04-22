@@ -36,6 +36,10 @@ export type ToolbarPluginOptions = {
    */
   items?: ToolbarItem[];
   position?: 'top-left' | 'top-right';
+  /**
+   * 是否展示缩放滑杆（默认 true）
+   */
+  zoomSliderEnabled?: boolean;
 };
 
 function run(ctx: MapContext, id: string) {
@@ -180,6 +184,7 @@ function defaultItems(): ToolbarItem[] {
 function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
   const items = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const zoomSliderEnabled = opts.zoomSliderEnabled ?? true;
 
   // 订阅 enable 状态变化（history + selection）
   const [, bump] = useState(0);
@@ -188,8 +193,45 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyUndoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyRedoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.bus.on('selection:change', () => bump((v) => v + 1)));
+    // zoom 变化时刷新 slider 值
+    unsubs.push(ctx.bus.on('camera:changed', () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
+
+  const cam = ctx.getCamera();
+  const viewCfg =
+    ctx.store.get<{
+      minZoom?: number;
+      maxZoom?: number;
+    }>(STORE_KEYS.viewConfig) ?? {};
+  const minZoom = viewCfg.minZoom ?? 0.25;
+  const maxZoom = viewCfg.maxZoom ?? 2.5;
+  const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
+
+  // slider 用对数映射（更符合缩放直觉）
+  const logMin = Math.log(minZoom);
+  const logMax = Math.log(maxZoom);
+  const zoomToSlider = (z: number) => {
+    const t = (Math.log(clamp(z, minZoom, maxZoom)) - logMin) / (logMax - logMin);
+    return Math.round(clamp(t, 0, 1) * 100);
+  };
+  const sliderToZoom = (v: number) => {
+    const t = clamp(v / 100, 0, 1);
+    return Math.exp(logMin + (logMax - logMin) * t);
+  };
+
+  const setZoom = (nextZoom: number) => {
+    const z = clamp(nextZoom, minZoom, maxZoom);
+    const vp = ctx.getViewport();
+    const curZoom = cam.zoom || 1;
+    // 保持视口中心在同一个 world point，避免缩放时“飘走”
+    const cx = cam.x + vp.w / 2 / curZoom;
+    const cy = cam.y + vp.h / 2 / curZoom;
+    const next = { x: cx - vp.w / 2 / z, y: cy - vp.h / 2 / z, zoom: z };
+    const svc = ctx.getService<{ set: (c: typeof next, immediate?: boolean) => void }>('camera');
+    if (svc?.set) svc.set(next, true);
+    else ctx.bus.emit('camera:change', { camera: next, immediate: true });
+  };
 
   const base: CSSProperties = {
     position: 'absolute',
@@ -239,10 +281,73 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     margin: '0 2px',
   };
 
+  const sliderWrap: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '0 2px',
+  };
+  const slider: CSSProperties = {
+    width: 120,
+    accentColor: 'var(--im-selection-stroke, rgba(110, 200, 255, 0.95))',
+  };
+  const zoomLabel: CSSProperties = {
+    minWidth: 46,
+    textAlign: 'right',
+    fontSize: 12,
+    color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
+    opacity: 0.9,
+    userSelect: 'none',
+  };
+
   return (
     <div style={base} data-im-ui>
       {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
+
+        // 插入 zoom slider：紧跟在 resetZoom 后面
+        if (it.type === 'command' && zoomSliderEnabled && it.id === 'view.resetZoom') {
+          const enabled = it.enabled ? it.enabled(ctx) : true;
+          const iconOnly = it.icon != null && (it.iconOnly ?? true);
+          const current = cam.zoom || 1;
+          const sliderVal = zoomToSlider(current);
+          return (
+            <div key="zoom-slider" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                type="button"
+                style={{ ...btn, ...(iconOnly ? btnIcon : null), ...(enabled ? null : btnDisabled) }}
+                disabled={!enabled}
+                className="im-toolbar-btn"
+                data-tip={it.title ?? it.label}
+                onClick={() => (enabled ? run(ctx, it.id) : null)}
+              >
+                {it.icon ? (
+                  <>
+                    {it.icon}
+                    {iconOnly ? null : <span style={{ marginLeft: 6 }}>{it.label}</span>}
+                  </>
+                ) : (
+                  it.label
+                )}
+              </button>
+
+              <div style={sliderWrap}>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={sliderVal}
+                  style={slider}
+                  aria-label="缩放"
+                  onChange={(e) => setZoom(sliderToZoom(Number(e.target.value)))}
+                />
+                <div style={zoomLabel}>{Math.round(current * 100)}%</div>
+              </div>
+            </div>
+          );
+        }
+
         const enabled = it.enabled ? it.enabled(ctx) : true;
         const iconOnly = it.icon != null && (it.iconOnly ?? true);
         return (
