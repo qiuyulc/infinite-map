@@ -177,9 +177,39 @@ function defaultItems(): ToolbarItem[] {
   ];
 }
 
+function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
+  if (!extra.length) return base;
+  const out: ToolbarItem[] = [];
+  const indexById = new Map<string, number>();
+  const push = (it: ToolbarItem) => {
+    if (it.type === 'command') {
+      const idx = indexById.get(it.id);
+      if (idx != null) out[idx] = it; // 允许覆盖默认项（同 id 覆盖）
+      else {
+        indexById.set(it.id, out.length);
+        out.push(it);
+      }
+      return;
+    }
+    out.push(it);
+  };
+  base.forEach(push);
+  // base 与 extra 之间自动补一个 divider（避免挤在一起）
+  const needDivider =
+    base.length > 0 &&
+    extra.length > 0 &&
+    base[base.length - 1]?.type !== 'divider' &&
+    extra[0]?.type !== 'divider';
+  if (needDivider) out.push({ type: 'divider' });
+  extra.forEach(push);
+  return out;
+}
+
 function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
-  const items = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const extraItems = ctx.store.get<ToolbarItem[]>(STORE_KEYS.toolbarItems) ?? [];
+  const items = useMemo(() => mergeToolbarItems(baseItems, extraItems), [baseItems, extraItems]);
 
   // 订阅 enable 状态变化（history + selection）
   const [, bump] = useState(0);
@@ -187,6 +217,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     const unsubs: Array<() => void> = [];
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyUndoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyRedoStack, () => bump((v) => v + 1)));
+    // items registry 变化时刷新（便于插件在运行时动态注入/热更新）
+    unsubs.push(ctx.store.subscribe(STORE_KEYS.toolbarItems, () => bump((v) => v + 1)));
     unsubs.push(ctx.bus.on('selection:change', () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);

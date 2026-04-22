@@ -29,6 +29,16 @@ export const STORE_KEYS = {
 
   // context menu
   contextMenuState: 'contextmenu:state',
+  /**
+   * toolbar items registry（用于插件贡献按钮）
+   * - Toolbar 插件会在默认 items 基础上合并这个列表
+   */
+  toolbarItems: 'toolbar:items',
+  /**
+   * context menu items registry（用于插件贡献菜单项）
+   * - 默认右键菜单插件会在默认 items 基础上合并这个列表
+   */
+  contextMenuItems: 'contextmenu:items',
 
   // history
   historyUndoStack: 'history:undoStack',

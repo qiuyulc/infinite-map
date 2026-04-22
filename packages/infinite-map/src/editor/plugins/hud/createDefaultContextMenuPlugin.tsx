@@ -6,7 +6,7 @@ import type { InfiniteMapPlugin, MapContext } from '../../types';
 import type { ContextMenuPayload } from './createContextMenuPlugin';
 import { createContextMenuPlugin } from './createContextMenuPlugin';
 
-type MenuItem =
+export type ContextMenuItem =
   | {
     type: 'command';
     id: string;
@@ -17,7 +17,11 @@ type MenuItem =
   | { type: 'divider' };
 
 export type DefaultContextMenuOptions = {
-  items?: MenuItem[];
+  /**
+   * 自定义菜单项（作为 base items）
+   * - 插件贡献的 items（STORE_KEYS.contextMenuItems）会在 base 后合并
+   */
+  items?: ContextMenuItem[];
 };
 
 function run(ctx: MapContext, id: string) {
@@ -33,7 +37,7 @@ function run(ctx: MapContext, id: string) {
   else ctx.bus.emit('command:run', { id, source: 'menu' });
 }
 
-function defaultItems(): MenuItem[] {
+function defaultItems(): ContextMenuItem[] {
   const Icon = ({ children }: { children: ReactNode }) => (
     <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
       {children}
@@ -170,9 +174,39 @@ function defaultItems(): MenuItem[] {
   ];
 }
 
+function mergeMenuItems(base: ContextMenuItem[], extra: ContextMenuItem[]) {
+  if (!extra.length) return base;
+  const out: ContextMenuItem[] = [];
+  const indexById = new Map<string, number>();
+  const push = (it: ContextMenuItem) => {
+    if (it.type === 'command') {
+      const idx = indexById.get(it.id);
+      if (idx != null) out[idx] = it; // 允许覆盖默认项（同 id 覆盖）
+      else {
+        indexById.set(it.id, out.length);
+        out.push(it);
+      }
+      return;
+    }
+    out.push(it);
+  };
+  base.forEach(push);
+  // base 与 extra 之间自动补一个 divider（避免挤在一起）
+  const needDivider =
+    base.length > 0 &&
+    extra.length > 0 &&
+    base[base.length - 1]?.type !== 'divider' &&
+    extra[0]?.type !== 'divider';
+  if (needDivider) out.push({ type: 'divider' });
+  extra.forEach(push);
+  return out;
+}
+
 function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuOptions }) {
   const payload = ctx.store.get<ContextMenuPayload>(STORE_KEYS.contextMenuState) ?? null;
-  const items = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const extraItems = ctx.store.get<ContextMenuItem[]>(STORE_KEYS.contextMenuItems) ?? [];
+  const items = useMemo(() => mergeMenuItems(baseItems, extraItems), [baseItems, extraItems]);
   const ref = useRef<HTMLDivElement | null>(null);
   const [, bump] = useState(0);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
@@ -182,6 +216,8 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   useEffect(() => {
     const unsubs: Array<() => void> = [];
     unsubs.push(ctx.store.subscribe(STORE_KEYS.contextMenuState, () => bump((v) => v + 1)));
+    // items registry 变化时刷新（便于插件在运行时动态注入/热更新）
+    unsubs.push(ctx.store.subscribe(STORE_KEYS.contextMenuItems, () => bump((v) => v + 1)));
     unsubs.push(ctx.bus.on('selection:change', () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
