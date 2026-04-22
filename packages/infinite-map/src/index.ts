@@ -22,5 +22,5 @@ export { makeDemoNodes } from './demo/demoNodes';
 export { createDefaultEditorPlugins } from './editor/createDefaultEditorPlugins';
 export type { DefaultEditorOptions } from './editor/createDefaultEditorPlugins';
 export { composePlugins } from './editor/composePlugins';
-export type { InfiniteMapPlugin, NodePatch, ChangeMeta } from './editor/types';
+export type { InfiniteMapPlugin, MapContext, NodePatch, ChangeMeta } from './editor/types';
 export * as EditorPlugins from './editor/plugins';

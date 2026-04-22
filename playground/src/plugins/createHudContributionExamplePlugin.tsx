@@ -1,5 +1,10 @@
 import type { InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 
+type HudService = {
+  addToolbarItems: (items: any[]) => void;
+  addContextMenuItems: (items: any[]) => void;
+};
+
 function icon() {
   return (
     <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -36,10 +41,10 @@ export function createHudContributionExamplePlugin(): InfiniteMapPlugin {
     },
     setup: (ctx) => {
       // hud service 是库提供的扩展点（本 demo 只需要用到 addToolbarItems/addContextMenuItems）
-      const hud = ctx.getService<{
-        addToolbarItems: (items: any[]) => void;
-        addContextMenuItems: (items: any[]) => void;
-      }>('hud');
+      // 注意：如果你的 ctx 是 any（例如在 JS 文件里写插件），直接写 ctx.getService<...>() 会报：
+      // “非类型化函数调用不能接受类型参数”
+      // 用类型断言更稳妥。
+      const hud = ctx.getService('hud') as HudService | undefined;
 
       hud?.addToolbarItems([
         { type: 'divider' },
