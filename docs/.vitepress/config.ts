@@ -1,76 +1,26 @@
 import { defineConfig } from 'vitepress';
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'Infinite Map',
-  description: '一个可扩展的无限画布/节点编辑器内核（React + 插件化）',
+  title: 'Infinite Map 文档（重写）',
+  description: '面向零基础：从能跑起来到能改功能',
 
   themeConfig: {
-    nav: [
-      { text: '指南', link: '/guide/getting-started' },
-      { text: '从0到1', link: '/zero-to-one/00-reading-map' },
-      { text: '架构', link: '/architecture/overview' },
-      { text: '进阶理解', link: '/deep-dive/view-and-zoom' },
-      { text: 'API', link: '/api/public-api' }
-    ],
-
+    nav: [{ text: '从0到1', link: '/start/00-what-you-see' }],
     sidebar: {
-      '/guide/': [
+      '/start/': [
         {
-          text: '指南',
+          text: '从 0 到 1（零基础）',
           items: [
-            { text: '快速开始', link: '/guide/getting-started' },
-            { text: '功能清单', link: '/guide/features' },
-            { text: '代码结构导航', link: '/guide/code-structure' }
-          ]
-        }
-      ],
-      '/zero-to-one/': [
-        {
-          text: '从 0 到 1（面向零基础）',
-          items: [
-            { text: '00. 阅读地图（先看哪里）', link: '/zero-to-one/00-reading-map' },
-            { text: '01. 跑起来：playground 做了什么', link: '/zero-to-one/01-run-and-playground' },
-            { text: '02. InfiniteMap：画布是怎么画出来的', link: '/zero-to-one/02-infinite-map' },
-            { text: '03. Editor：编辑能力从哪里来（plugins）', link: '/zero-to-one/03-editor-plugins' },
-            { text: '04. 自己加一个功能（新增 HUD 插件示例）', link: '/zero-to-one/04-add-your-first-plugin' }
-          ]
-        }
-      ],
-      '/architecture/': [
-        {
-          text: '架构',
-          items: [
-            { text: '总览', link: '/architecture/overview' },
-            { text: '核心渲染与数据流', link: '/architecture/rendering-and-dataflow' },
-            { text: 'Editor 运行时', link: '/architecture/editor-runtime' },
-            { text: '插件系统', link: '/architecture/plugin-system' },
-            { text: '命令与快捷键', link: '/architecture/commands-and-shortcuts' }
-          ]
-        }
-      ],
-      '/deep-dive/': [
-        {
-          text: '进阶：按功能讲实现',
-          items: [
-            { text: '视图/相机/缩放', link: '/deep-dive/view-and-zoom' },
-            { text: '插件与命令系统', link: '/deep-dive/plugins-and-commands' }
-          ]
-        }
-      ],
-      '/api/': [
-        {
-          text: 'API',
-          items: [
-            { text: '公开导出总览', link: '/api/public-api' },
-            { text: 'Theme / CSS Variables', link: '/api/theme' },
-            { text: 'Editor 插件（默认集合）', link: '/api/editor-plugins' }
+            { text: '00. 你在页面上看到了什么？', link: '/start/00-what-you-see' },
+            { text: '01. nodes 是什么？怎么渲染出来？', link: '/start/01-nodes-and-render' },
+            { text: '02. 插件是什么？为什么功能不写在一个文件里？', link: '/start/02-plugins' },
+            { text: '03. 我如何修改一个功能？（示例：右键菜单）', link: '/start/03-edit-a-feature' }
           ]
         }
       ]
     },
-
     search: { provider: 'local' }
   }
 });
+
