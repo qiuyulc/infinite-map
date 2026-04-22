@@ -36,6 +36,12 @@ export function createRotatePlugin(): InfiniteMapPlugin {
     const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
     if (groupSvc?.expandIds) ids = groupSvc.expandIds(ids);
 
+    // 重要：group 节点是“结构外框”，不参与旋转（只旋转其成员）
+    // 否则会与 group-sync（自动 bbox）产生“拉扯”，导致看起来像旋转失效/抖动。
+    const byId = new Map(ctx.getNodes().map((n) => [n.id, n] as const));
+    ids = ids.filter((id) => byId.get(id)?.kind !== 'group');
+    if (ids.length === 0) return null;
+
     const nodes = ctx.getNodes().filter((n) => ids.includes(n.id));
     if (nodes.length === 0) return null;
 
