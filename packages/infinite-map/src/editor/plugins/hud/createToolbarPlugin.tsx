@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS } from '../../keys';
 import type { InfiniteMapPlugin, MapContext } from '../../types';
+import { Slider } from '../../../components/Slider';
 import './toolbar.css';
 
 export type ToolbarItem =
@@ -294,7 +295,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     position: 'absolute',
     // 放在 minimap 左侧，水平挨着
     right: 12 + minimapW + zoomDockGap,
-    bottom: 12 + Math.max(0, (minimapH - zoomDockH) / 2),
+    // 与 minimap 底边对齐
+    bottom: 12,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -316,25 +318,23 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     userSelect: 'none',
     lineHeight: 1,
   };
-  const zoomSlider: CSSProperties = {
-    width: 140,
-    accentColor: 'var(--im-selection-stroke, rgba(110, 200, 255, 0.95))',
-  };
+  const zoomSliderWrap: CSSProperties = { width: 140 };
 
   return (
     <>
       {zoomSliderEnabled ? (
         <div style={zoomDock} data-im-ui>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={zoomToSlider(cam.zoom || 1)}
-            style={zoomSlider}
-            aria-label="缩放"
-            onChange={(e) => setZoom(sliderToZoom(Number(e.target.value)))}
-          />
+          <div style={zoomSliderWrap}>
+            <Slider
+              value={zoomToSlider(cam.zoom || 1)}
+              min={0}
+              max={100}
+              step={1}
+              label="缩放"
+              formatValue={(v) => `${Math.round(sliderToZoom(v) * 100)}%`}
+              onChange={(v) => setZoom(sliderToZoom(v))}
+            />
+          </div>
           <div style={zoomLabel}>{Math.round((cam.zoom || 1) * 100)}%</div>
         </div>
       ) : null}

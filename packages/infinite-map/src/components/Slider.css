@@ -1,0 +1,86 @@
+.im-slider {
+    width: 100%;
+  }
+  .im-slider-track {
+    position: relative;
+    height: 26px;
+    border-radius: 999px;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .im-slider-track:focus-visible {
+    box-shadow: 0 0 0 4px var(--im-selection-shadow, rgba(110, 200, 255, 0.12));
+  }
+  .im-slider-rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.18);
+  }
+  .im-slider-fill {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: var(--im-selection-stroke, rgba(110, 200, 255, 0.95));
+  }
+  .im-slider-thumb {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 2px solid var(--im-selection-stroke, rgba(110, 200, 255, 0.95));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+  }
+  .im-slider-track:hover .im-slider-thumb {
+    box-shadow:
+      0 0 0 5px rgba(110, 200, 255, 0.22),
+      0 2px 10px rgba(0, 0, 0, 0.18);
+  }
+  .im-slider-track:hover .im-slider-rail {
+    background: rgba(127, 127, 127, 0.22);
+  }
+  
+  .im-slider-tip {
+    position: absolute;
+    top: -6px;
+    transform: translate(-50%, -100%);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--im-text-strong, rgba(15, 23, 42, 0.9));
+    background: var(--im-panel-bg, rgba(255, 255, 255, 0.92));
+    border: 1px solid var(--im-panel-border, rgba(15, 23, 42, 0.12));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+  .im-slider-tip.is-visible {
+    opacity: 1;
+  }
+  .im-slider-tip::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 8px;
+    height: 8px;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--im-panel-bg, rgba(255, 255, 255, 0.92));
+    border-right: 1px solid var(--im-panel-border, rgba(15, 23, 42, 0.12));
+    border-bottom: 1px solid var(--im-panel-border, rgba(15, 23, 42, 0.12));
+  }
