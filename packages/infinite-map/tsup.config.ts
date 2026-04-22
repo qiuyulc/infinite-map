@@ -2,7 +2,7 @@ import { defineConfig, type Options } from 'tsup';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-async function copyFilesByExt(fromDir: string, toDir: string, exts: Set<string>, ignoreRel?: (rel: string) => boolean) {
+async function copyFilesByExt(fromDir: string, toDir: string, exts: Set<string>) {
   const walk = async (dir: string) => {
     const items = await fs.readdir(dir, { withFileTypes: true });
     for (const it of items) {
@@ -14,7 +14,6 @@ async function copyFilesByExt(fromDir: string, toDir: string, exts: Set<string>,
       const ext = path.extname(it.name);
       if (!exts.has(ext)) continue;
       const rel = path.relative(fromDir, abs);
-      if (ignoreRel?.(rel)) continue;
       const out = path.join(toDir, rel);
       await fs.mkdir(path.dirname(out), { recursive: true });
       await fs.copyFile(abs, out);
@@ -30,10 +29,6 @@ const baseConfig: Options = {
     'src/**/*.tsx',
     '!src/**/*.test.*',
     '!src/**/*.spec.*',
-    // plugins 目录已按子目录整理；根目录的旧文件暂时保留（不参与构建，避免产物堆在一起）
-    '!src/editor/plugins/create*.ts',
-    '!src/editor/plugins/create*.tsx',
-    '!src/editor/plugins/*Overlay.tsx',
   ],
   sourcemap: true,
   clean: true,
@@ -57,7 +52,7 @@ export default defineConfig([
     },
     async onSuccess() {
       // 1) 复制 css（保持路径）
-      await copyFilesByExt('src', 'es', new Set(['.css']), (rel) => rel === 'editor/plugins/toolbar.css');
+      await copyFilesByExt('src', 'es', new Set(['.css']));
     },
   },
   // CJS（lib/）
@@ -71,7 +66,7 @@ export default defineConfig([
     },
     async onSuccess() {
       // 1) 复制 css
-      await copyFilesByExt('src', 'lib', new Set(['.css']), (rel) => rel === 'editor/plugins/toolbar.css');
+      await copyFilesByExt('src', 'lib', new Set(['.css']));
       // 2) 复制 d.ts（让 require 子路径也能获得类型提示）
       //    - d.ts 只由 es 构建产出一次，避免重复生成
       await copyFilesByExt('es', 'lib', new Set(['.d.ts', '.d.mts']));
