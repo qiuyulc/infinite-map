@@ -5,6 +5,14 @@ export type InfiniteMapTheme = {
   mapDot: string;
   mapGrid: string;
 
+  // default node (when user uses DefaultNode renderer)
+  nodeBg: string;
+  nodeText: string;
+  nodeTextMuted: string;
+  nodeShadow1: string;
+  nodeShadow2: string;
+  nodeRadius: string;
+
   // toolbar
   toolbarBg: string;
   toolbarBorder: string;
@@ -46,6 +54,13 @@ export const lightTheme: InfiniteMapTheme = {
   mapDot: 'rgba(0, 0, 0, 0.12)',
   mapGrid: 'rgba(0, 0, 0, 0.08)',
 
+  nodeBg: 'rgba(255, 255, 255, 0.92)',
+  nodeText: 'rgba(15, 23, 42, 0.92)',
+  nodeTextMuted: 'rgba(15, 23, 42, 0.60)',
+  nodeShadow1: 'rgba(15, 23, 42, 0.16)',
+  nodeShadow2: 'rgba(15, 23, 42, 0.10)',
+  nodeRadius: '12px',
+
   toolbarBg: 'rgba(255, 255, 255, 0.72)',
   toolbarBorder: 'rgba(15, 23, 42, 0.12)',
   toolbarBtnBg: 'rgba(255, 255, 255, 0.75)',
@@ -80,6 +95,13 @@ export const darkTheme: InfiniteMapTheme = {
   mapBorder: 'rgba(255, 255, 255, 0.06)',
   mapDot: 'rgba(255, 255, 255, 0.10)',
   mapGrid: 'rgba(255, 255, 255, 0.07)',
+
+  nodeBg: 'rgba(10, 14, 22, 0.92)',
+  nodeText: 'rgba(255, 255, 255, 0.92)',
+  nodeTextMuted: 'rgba(255, 255, 255, 0.62)',
+  nodeShadow1: 'rgba(0, 0, 0, 0.55)',
+  nodeShadow2: 'rgba(0, 0, 0, 0.35)',
+  nodeRadius: '12px',
 
   toolbarBg: 'rgba(10, 14, 22, 0.72)',
   toolbarBorder: 'rgba(255, 255, 255, 0.10)',
@@ -122,6 +144,13 @@ export function themeToCSSVars(theme: InfiniteMapTheme): InfiniteMapCssVars {
     '--im-map-border': theme.mapBorder,
     '--im-map-dot': theme.mapDot,
     '--im-map-grid': theme.mapGrid,
+
+    '--im-node-bg': theme.nodeBg,
+    '--im-node-text': theme.nodeText,
+    '--im-node-text-muted': theme.nodeTextMuted,
+    '--im-node-shadow-1': theme.nodeShadow1,
+    '--im-node-shadow-2': theme.nodeShadow2,
+    '--im-node-radius': theme.nodeRadius,
 
     '--im-toolbar-bg': theme.toolbarBg,
     '--im-toolbar-border': theme.toolbarBorder,
