@@ -9,8 +9,9 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '指南', link: '/guide/getting-started' },
+      { text: '从0到1', link: '/zero-to-one/00-reading-map' },
       { text: '架构', link: '/architecture/overview' },
-      { text: '深入理解', link: '/deep-dive/view-and-zoom' },
+      { text: '进阶理解', link: '/deep-dive/view-and-zoom' },
       { text: 'API', link: '/api/public-api' }
     ],
 
@@ -22,6 +23,18 @@ export default defineConfig({
             { text: '快速开始', link: '/guide/getting-started' },
             { text: '功能清单', link: '/guide/features' },
             { text: '代码结构导航', link: '/guide/code-structure' }
+          ]
+        }
+      ],
+      '/zero-to-one/': [
+        {
+          text: '从 0 到 1（面向零基础）',
+          items: [
+            { text: '00. 阅读地图（先看哪里）', link: '/zero-to-one/00-reading-map' },
+            { text: '01. 跑起来：playground 做了什么', link: '/zero-to-one/01-run-and-playground' },
+            { text: '02. InfiniteMap：画布是怎么画出来的', link: '/zero-to-one/02-infinite-map' },
+            { text: '03. Editor：编辑能力从哪里来（plugins）', link: '/zero-to-one/03-editor-plugins' },
+            { text: '04. 自己加一个功能（新增 HUD 插件示例）', link: '/zero-to-one/04-add-your-first-plugin' }
           ]
         }
       ],
@@ -39,7 +52,7 @@ export default defineConfig({
       ],
       '/deep-dive/': [
         {
-          text: '按功能讲实现',
+          text: '进阶：按功能讲实现',
           items: [
             { text: '视图/相机/缩放', link: '/deep-dive/view-and-zoom' },
             { text: '插件与命令系统', link: '/deep-dive/plugins-and-commands' }
