@@ -8,12 +8,12 @@ import { createContextMenuPlugin } from './createContextMenuPlugin';
 
 type MenuItem =
   | {
-      type: 'command';
-      id: string;
-      label: string;
-      icon?: ReactNode;
-      enabled?: (ctx: MapContext, s: ContextMenuPayload) => boolean;
-    }
+    type: 'command';
+    id: string;
+    label: string;
+    icon?: ReactNode;
+    enabled?: (ctx: MapContext, s: ContextMenuPayload) => boolean;
+  }
   | { type: 'divider' };
 
 export type DefaultContextMenuOptions = {
@@ -110,23 +110,23 @@ function defaultItems(): MenuItem[] {
     ),
   } as const;
   return [
-    { type: 'command', id: 'edit.copy', label: 'Copy', icon: Icons.copy },
-    { type: 'command', id: 'edit.cut', label: 'Cut', icon: Icons.cut },
-    { type: 'command', id: 'edit.paste', label: 'Paste', icon: Icons.paste },
-    { type: 'command', id: 'edit.duplicate', label: 'Duplicate', icon: Icons.duplicate },
+    { type: 'command', id: 'edit.copy', label: '复制', icon: Icons.copy },
+    { type: 'command', id: 'edit.cut', label: '剪切', icon: Icons.cut },
+    { type: 'command', id: 'edit.paste', label: '粘贴', icon: Icons.paste },
+    { type: 'command', id: 'edit.duplicate', label: '创建副本', icon: Icons.duplicate },
     { type: 'divider' },
-    { type: 'command', id: 'z.bringToFront', label: 'Bring to front', icon: Icons.front },
-    { type: 'command', id: 'z.sendToBack', label: 'Send to back', icon: Icons.back },
+    { type: 'command', id: 'z.bringToFront', label: '置于顶层', icon: Icons.front },
+    { type: 'command', id: 'z.sendToBack', label: '置于底层', icon: Icons.back },
     { type: 'divider' },
-    { type: 'command', id: 'view.fitView', label: 'Fit view', icon: Icons.fit },
-    { type: 'command', id: 'view.centerView', label: 'Center view', icon: Icons.center },
-    { type: 'command', id: 'view.fitSelection', label: 'Fit selection' },
-    { type: 'command', id: 'view.centerSelection', label: 'Center selection' },
+    { type: 'command', id: 'view.fitView', label: '适配视图', icon: Icons.fit },
+    { type: 'command', id: 'view.centerView', label: '居中到原点', icon: Icons.center },
+    { type: 'command', id: 'view.fitSelection', label: '适配选中' },
+    { type: 'command', id: 'view.centerSelection', label: '选中居中' },
     { type: 'divider' },
     {
       type: 'command',
       id: 'edit.delete',
-      label: 'Delete',
+      label: '删除',
       icon: Icons.trash,
       enabled: (_ctx, s) => s.selectionIds.length > 0,
     },
@@ -250,9 +250,9 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
               ...item,
               ...(hovered && enabled
                 ? {
-                    background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
-                    outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
-                  }
+                  background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
+                  outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
+                }
                 : null),
               ...(enabled ? null : itemDisabled),
             }}
