@@ -1,0 +1,49 @@
+.im-node {
+  box-sizing: border-box;
+  position: relative;
+
+  border-radius: var(--node-radius, 12px);
+  border: none;
+  background: var(--node-bg);
+  color: var(--node-text);
+
+  padding: 12px 12px 11px;
+  font-size: 13px;
+  line-height: 1.25;
+  user-select: none;
+  cursor: pointer;
+
+  /* 浮空：中等强度，靠“高光 + 内阴影 + 多层外阴影”，不位移、不 hover */
+  box-shadow:
+    /* 外阴影（不往里收：去掉负 spread / inset） */
+    0 22px 60px var(--node-shadow-1),
+    0 10px 24px var(--node-shadow-2);
+
+  transform: translate3d(0, 0, 0);
+  will-change: box-shadow;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.im-node-title {
+  font-weight: 650;
+  letter-spacing: 0.1px;
+  font-size: 14px;
+}
+
+.im-node-meta {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--node-text-muted);
+}
+
+.im-node-content {
+  margin-top: 10px;
+  user-select: text;
+}

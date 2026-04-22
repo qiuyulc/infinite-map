@@ -1,0 +1,117 @@
+import { useEffect, type MutableRefObject, type RefObject } from 'react';
+import type { Camera } from '../core/types';
+import { clamp } from '../core/utils';
+
+type Params = {
+  containerRef: RefObject<HTMLElement | null>;
+  mouseRef: MutableRefObject<{ x: number; y: number } | null>;
+  pulseRef: MutableRefObject<{ value: number; lastTs: number }>;
+  cameraRef: MutableRefObject<Camera>;
+  commitCamera: (next: Camera, immediate?: boolean) => void;
+  minZoom: number;
+  maxZoom: number;
+  zoomSpeed: number;
+  pinchZoomFactor: number;
+  /**
+   * 可选：wheel 事件拦截（用于插件系统）
+   * - 返回 'stop'：不执行默认 wheel 行为
+   * - 返回 'continue' / undefined：继续执行默认 wheel 行为
+   */
+  onWheelIntercept?: (e: WheelEvent, info: { sx: number; sy: number }) => 'stop' | 'continue' | undefined;
+};
+
+/**
+ * wheel / trackpad 控制：
+ * - pinch(ctrlKey=true) => zoom
+ * - mouse wheel(deltaMode!=0) => zoom
+ * - trackpad two-finger pan(deltaMode=0) => pan
+ */
+export function useWheelControls({
+  containerRef,
+  mouseRef,
+  pulseRef,
+  cameraRef,
+  commitCamera,
+  minZoom,
+  maxZoom,
+  zoomSpeed,
+  pinchZoomFactor,
+  onWheelIntercept,
+}: Params) {
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      const sx = e.clientX - r.left;
+      const sy = e.clientY - r.top;
+
+      const intercept = onWheelIntercept?.(e, { sx, sy });
+      if (intercept === 'stop') return;
+
+      const dx = e.deltaX;
+      const dy = e.deltaY;
+      const isPinch = e.ctrlKey === true;
+      pulseRef.current.value = 1;
+      mouseRef.current = { x: sx, y: sy };
+
+      const looksLikeMouseWheel = e.deltaMode === 1 || e.deltaMode === 2;
+      const shouldZoom = isPinch || looksLikeMouseWheel;
+
+      const cam = cameraRef.current;
+      if (shouldZoom) {
+        const pinchFactor = isPinch ? pinchZoomFactor : 1;
+        const limitedDy = clamp(dy, -240, 240);
+
+        const wx = cam.x + sx / cam.zoom;
+        const wy = cam.y + sy / cam.zoom;
+
+        const zoomFactor = Math.exp(-limitedDy * zoomSpeed * pinchFactor);
+        const nextZoom = clamp(cam.zoom * zoomFactor, minZoom, maxZoom);
+        const nextX = wx - sx / nextZoom;
+        const nextY = wy - sy / nextZoom;
+        commitCamera({ x: nextX, y: nextY, zoom: nextZoom }, true);
+      } else {
+        const nextX = cam.x + dx / cam.zoom;
+        const nextY = cam.y + dy / cam.zoom;
+        // 关键：触摸板两指平移的 wheel 频率可能远高于屏幕刷新率。
+        // 节点多时如果每个 wheel 都立即 setState，会造成“抖动/卡顿”。
+        // 这里改为 rAF 合并（每帧最多更新一次），但 cameraRef 仍会同步更新，交互不会丢手感。
+        commitCamera({ x: nextX, y: nextY, zoom: cam.zoom }, false);
+      }
+    };
+
+    const preventGesture = (e: Event) => e.preventDefault();
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+
+    el.addEventListener('gesturestart', preventGesture, { passive: false });
+
+    el.addEventListener('gesturechange', preventGesture, { passive: false });
+
+    el.addEventListener('gestureend', preventGesture, { passive: false });
+
+    return () => {
+      el.removeEventListener('wheel', onWheel);
+
+      el.removeEventListener('gesturestart', preventGesture);
+
+      el.removeEventListener('gesturechange', preventGesture);
+
+      el.removeEventListener('gestureend', preventGesture);
+    };
+  }, [
+    containerRef,
+    cameraRef,
+    commitCamera,
+    maxZoom,
+    minZoom,
+    mouseRef,
+    onWheelIntercept,
+    pinchZoomFactor,
+    pulseRef,
+    zoomSpeed,
+  ]);
+}

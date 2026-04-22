@@ -1,0 +1,47 @@
+{
+  "name": "@qiuyulc/infinite-map",
+  "version": "0.1.0",
+  "description": "Infinite canvas editor (React) with plugins: minimap, rulers, snapping, etc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiuyulc/infinite-map.git"
+  },
+  "homepage": "https://github.com/qiuyulc/infinite-map",
+  "bugs": {
+    "url": "https://github.com/qiuyulc/infinite-map/issues"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
+    "tsup": "^8.0.0"
+  }
+}
