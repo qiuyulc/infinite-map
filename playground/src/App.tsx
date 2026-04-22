@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
+  composePlugins,
+  EditorPlugins,
   InfiniteMap,
   InfiniteMapThemeProvider,
   computeLayout,
@@ -23,15 +25,19 @@ export default function App() {
   });
 
   const plugins = useMemo(() => {
-    return createDefaultEditorPlugins({
-      rulersEnabled,
-      minimapEnabled,
-      zoomDockEnabled,
-      toolbarEnabled,
-      contextMenuEnabled,
-      marqueeEnabled: true,
-      marqueeRequireShift: false,
-    });
+    return composePlugins([
+      ...createDefaultEditorPlugins({
+        rulersEnabled,
+        minimapEnabled,
+        zoomDockEnabled,
+        toolbarEnabled,
+        contextMenuEnabled,
+        marqueeEnabled: true,
+        marqueeRequireShift: false,
+      }),
+      // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
+      EditorPlugins.createHudContributionExamplePlugin(),
+    ]);
   }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled, zoomDockEnabled]);
 
   return (

@@ -5,6 +5,7 @@ export { createCommandRunnerPlugin } from './core/createCommandRunnerPlugin';
 export { createShortcutsPlugin } from './core/createShortcutsPlugin';
 export { createViewCommandsPlugin } from './core/createViewCommandsPlugin';
 export { createZIndexPlugin } from './core/createZIndexPlugin';
+export { createHudContributionExamplePlugin } from './core/createHudContributionExamplePlugin';
 
 export { createSelectionPlugin } from './selection/createSelectionPlugin';
 export { createMarqueeSelectPlugin } from './selection/createMarqueeSelectPlugin';
