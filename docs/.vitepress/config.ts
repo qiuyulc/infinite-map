@@ -10,6 +10,7 @@ export default defineConfig({
     nav: [
       { text: '指南', link: '/guide/getting-started' },
       { text: '架构', link: '/architecture/overview' },
+      { text: '深入理解', link: '/deep-dive/view-and-zoom' },
       { text: 'API', link: '/api/public-api' }
     ],
 
@@ -36,6 +37,15 @@ export default defineConfig({
           ]
         }
       ],
+      '/deep-dive/': [
+        {
+          text: '按功能讲实现',
+          items: [
+            { text: '视图/相机/缩放', link: '/deep-dive/view-and-zoom' },
+            { text: '插件与命令系统', link: '/deep-dive/plugins-and-commands' }
+          ]
+        }
+      ],
       '/api/': [
         {
           text: 'API',
@@ -51,4 +61,3 @@ export default defineConfig({
     search: { provider: 'local' }
   }
 });
-
