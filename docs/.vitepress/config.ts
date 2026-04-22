@@ -24,6 +24,9 @@ export default defineConfig({
             { text: '10. Milestone 0：只渲染 nodes', link: '/rewrite/10-m0-render-nodes' },
             { text: '11. Milestone 1：Camera（缩放 + 平移）', link: '/rewrite/11-m1-camera-zoom-pan' },
             { text: '12. Milestone 2：选中 + 拖拽节点（引入最小插件系统）', link: '/rewrite/12-m2-selection-and-drag' },
+            { text: '13. Milestone 3：Runtime（store/bus/commands/services）', link: '/rewrite/13-m3-runtime-v1' },
+            { text: '14. Milestone 4（1/2）：History/Clipboard/ZIndex', link: '/rewrite/14-m4-history-clipboard-zindex' },
+            { text: '15. Milestone 4（2/2）：HUD（toolbar/menu/minimap）', link: '/rewrite/15-m4-hud-toolbar-menu-minimap' },
             { text: '07. 如何把它讲成面试亮点', link: '/rewrite/07-interview-story' }
           ]
         }
