@@ -3,19 +3,25 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Infinite Map 文档（重写）',
-  description: '面向零基础：从能跑起来到能改功能',
+  description: '面向零基础：从能跑起来到能改功能；并提供从0重写路线图',
 
   themeConfig: {
-    nav: [{ text: '从0到1', link: '/start/00-what-you-see' }],
+    nav: [
+      { text: '从0重写', link: '/rewrite/00-blueprint' }
+    ],
     sidebar: {
-      '/start/': [
+      '/rewrite/': [
         {
-          text: '从 0 到 1（零基础）',
+          text: '从 0 重写（面试亮点路线）',
           items: [
-            { text: '00. 你在页面上看到了什么？', link: '/start/00-what-you-see' },
-            { text: '01. nodes 是什么？怎么渲染出来？', link: '/start/01-nodes-and-render' },
-            { text: '02. 插件是什么？为什么功能不写在一个文件里？', link: '/start/02-plugins' },
-            { text: '03. 我如何修改一个功能？（示例：右键菜单）', link: '/start/03-edit-a-feature' }
+            { text: '00. 总蓝图（你要做什么）', link: '/rewrite/00-blueprint' },
+            { text: '01. 项目结构与分层', link: '/rewrite/01-project-structure' },
+            { text: '02. 核心数据模型（Node/Camera/Patch）', link: '/rewrite/02-core-models' },
+            { text: '03. 渲染层（DOM + Canvas + 叠层）', link: '/rewrite/03-rendering' },
+            { text: '04. Editor Runtime（插件装配）', link: '/rewrite/04-editor-runtime' },
+            { text: '05. 插件协议与扩展点', link: '/rewrite/05-plugin-contract' },
+            { text: '06. 功能路线图（按模块实现）', link: '/rewrite/06-feature-roadmap' },
+            { text: '07. 如何把它讲成面试亮点', link: '/rewrite/07-interview-story' }
           ]
         }
       ]
@@ -23,4 +29,3 @@ export default defineConfig({
     search: { provider: 'local' }
   }
 });
-
