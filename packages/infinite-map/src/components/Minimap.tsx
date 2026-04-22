@@ -122,12 +122,12 @@ export function Minimap({
     transformRef.current = { minX, minY, scale, offsetX, offsetY };
 
     sctx.clearRect(0, 0, width, height);
-    sctx.fillStyle = cssVar('--minimap-bg', 'rgba(10, 14, 22, 0.55)');
+    sctx.fillStyle = cssVar('--im-minimap-bg', 'rgba(10, 14, 22, 0.55)');
     sctx.fillRect(0, 0, width, height);
-    sctx.strokeStyle = cssVar('--minimap-border', 'rgba(255,255,255,0.10)');
+    sctx.strokeStyle = cssVar('--im-minimap-border', 'rgba(255,255,255,0.10)');
     sctx.strokeRect(0.5, 0.5, width - 1, height - 1);
 
-    const defaultNodeFill = cssVar('--minimap-node', 'rgba(120, 180, 255, 0.75)');
+    const defaultNodeFill = cssVar('--im-minimap-node', 'rgba(120, 180, 255, 0.75)');
     for (const n of nodes) {
       const x = offsetX + (n.x - minX) * scale;
       const y = offsetY + (n.y - minY) * scale;
@@ -161,7 +161,7 @@ export function Minimap({
     const vy = t.offsetY + (cam.y - t.minY) * t.scale;
     const vw = vwWorld * t.scale;
     const vh = vhWorld * t.scale;
-    ctx.strokeStyle = cssVar('--minimap-viewport', 'rgba(255,255,255,0.75)');
+    ctx.strokeStyle = cssVar('--im-minimap-viewport', 'rgba(255,255,255,0.75)');
     ctx.lineWidth = 1;
     ctx.strokeRect(vx, vy, vw, vh);
   }, [camera, width, height, viewport.w, viewport.h, nodes.length, themeVersion, staticVersion]);
@@ -245,7 +245,7 @@ export function Minimap({
         borderRadius: 10,
         overflow: 'hidden',
         boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-        border: '1px solid var(--minimap-border)',
+        border: '1px solid var(--im-minimap-border)',
         background: 'rgba(127,127,127,0.10)',
         backdropFilter: 'blur(6px)',
         transition: 'border-color 220ms ease, background-color 220ms ease',
