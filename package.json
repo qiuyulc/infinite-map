@@ -1,0 +1,14 @@
+{
+  "name": "infinite-map-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "build:docs": "pnpm -C docs build",
+    "preview:docs": "pnpm -C docs preview",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  }
+}
+
