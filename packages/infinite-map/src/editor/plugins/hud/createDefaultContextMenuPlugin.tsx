@@ -56,6 +56,7 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   const items = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
   const ref = useRef<HTMLDivElement | null>(null);
   const [, bump] = useState(0);
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
 
   // 当 menu 打开/selection 变化时刷新 enabled 状态
   useEffect(() => {
@@ -95,11 +96,12 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     minWidth: 200,
     padding: 6,
     borderRadius: 12,
-    background: 'var(--im-menu-bg, rgba(255,255,255,0.88))',
-    border: '1px solid var(--im-menu-border, rgba(15,23,42,0.12))',
+    // 与 toolbar tooltip/panel 保持一致：优先使用 im-panel-*，兼容旧的 im-menu-* 变量
+    background: 'var(--im-panel-bg, var(--im-menu-bg, rgba(255,255,255,0.88)))',
+    border: '1px solid var(--im-panel-border, var(--im-menu-border, rgba(15,23,42,0.12)))',
     boxShadow: '0 20px 50px rgba(0,0,0,0.18)',
     backdropFilter: 'blur(8px)',
-    color: 'var(--im-menu-text, rgba(15,23,42,0.85))',
+    color: 'var(--im-text-strong, var(--im-menu-text, rgba(15,23,42,0.85)))',
     pointerEvents: 'auto',
     zIndex: 9999,
   };
@@ -113,13 +115,14 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     background: 'transparent',
     cursor: 'pointer',
     fontSize: 12,
+    color: 'inherit',
   };
 
   const itemDisabled: CSSProperties = { opacity: 0.45, cursor: 'not-allowed' };
 
   const divider: CSSProperties = {
     height: 1,
-    background: 'rgba(15,23,42,0.10)',
+    background: 'var(--im-panel-border, rgba(15,23,42,0.10))',
     margin: '6px 6px',
   };
 
@@ -128,12 +131,25 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
       {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
         const enabled = it.enabled ? it.enabled(ctx, payload) : true;
+        const key = `${it.id}-${i}`;
+        const hovered = hoverKey === key;
         return (
           <button
             key={it.id}
             type="button"
-            style={{ ...item, ...(enabled ? null : itemDisabled) }}
+            style={{
+              ...item,
+              ...(hovered && enabled
+                ? {
+                    background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
+                    outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
+                  }
+                : null),
+              ...(enabled ? null : itemDisabled),
+            }}
             disabled={!enabled}
+            onPointerEnter={() => setHoverKey(key)}
+            onPointerLeave={() => setHoverKey((prev) => (prev === key ? null : prev))}
             onClick={() => {
               if (!enabled) return;
               run(ctx, it.id);
@@ -165,4 +181,3 @@ export function createDefaultContextMenuPlugin(opts: DefaultContextMenuOptions =
     overlay: ({ ctx }) => <MenuOverlay ctx={ctx} opts={opts} />,
   };
 }
-
