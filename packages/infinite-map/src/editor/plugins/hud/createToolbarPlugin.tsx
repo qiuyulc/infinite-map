@@ -286,6 +286,7 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
     width?: number;
     height?: number;
   };
+  const minimapEnabled = (ctx.store.get<boolean>(STORE_KEYS.minimapEnabled) ?? false) === true;
   const minimapW = minimapCfg.width ?? 260;
   const minimapH = minimapCfg.height ?? 160;
   const zoomDockH = 36;
@@ -293,8 +294,8 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
 
   const zoomDock: CSSProperties = {
     position: 'absolute',
-    // 放在 minimap 左侧，水平挨着
-    right: 12 + minimapW + zoomDockGap,
+    // minimap 显示：放在 minimap 左侧；minimap 关闭：占用 minimap 的位置（避免右下角空一块）
+    right: 12 + (minimapEnabled ? minimapW + zoomDockGap : 0),
     // 与 minimap 底边对齐
     bottom: 12,
     display: 'flex',

@@ -22,6 +22,7 @@ export const STORE_KEYS = {
   minimapInViewCount: 'minimap:inViewCount',
   minimapConfig: 'minimap:config',
   minimapNeedsRedraw: 'minimap:needsRedraw',
+  minimapEnabled: 'minimap:enabled',
 
   // view
   viewConfig: 'view:config',

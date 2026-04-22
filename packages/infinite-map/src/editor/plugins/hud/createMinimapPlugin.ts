@@ -1,5 +1,6 @@
 import React from 'react';
 import type { InfiniteMapPlugin } from '../../types';
+import { STORE_KEYS } from '../../keys';
 import { MinimapOverlay } from './MinimapOverlay';
 
 export type MinimapPluginOptions = {
@@ -19,13 +20,21 @@ export type MinimapPluginOptions = {
 };
 
 export function createMinimapPlugin(opts: MinimapPluginOptions = {}): InfiniteMapPlugin {
+  let ctxRef: { store: { set: (k: string, v: unknown) => void } } | null = null;
   return {
     id: 'minimap',
     provides: ['minimap'],
     requires: ['camera'],
+    setup: (ctx) => {
+      ctxRef = ctx;
+      ctx.store.set(STORE_KEYS.minimapEnabled, true);
+    },
+    teardown: () => {
+      // 退出时标记为 false，便于其它 hud 组件做布局回退（例如 zoom slider 占用 minimap 的位置）
+      ctxRef?.store.set(STORE_KEYS.minimapEnabled, false);
+    },
     slot: 'hud',
     overlayPointerEvents: 'auto',
     overlay: ({ ctx }) => React.createElement(MinimapOverlay, { ctx, opts }),
   };
 }
-
