@@ -2,6 +2,7 @@ import type { InfiniteMapPlugin, MapPointerEvent } from '../../types';
 import type { NodeData } from '../../../core/types';
 import { SelectionOverlay } from './SelectionOverlay';
 import { STORE_KEYS } from '../../keys';
+import { buildById, getAncestorChain, isGroupNode } from '../../groupUtils';
 
 export type SelectionPluginOptions = {
   /**
@@ -85,12 +86,29 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
         }
 
         const prev = ctx.store.get<string[]>(storeKey) ?? [];
+        // group：若当前已经选中了某个 group，则默认把“点到组内成员”视为点到该 group
+        // 目的：让用户可以直接拖动整组（不需要精确点到外框）
+        // - 按住 Alt：允许“钻取”选择子节点
+        let hitId = hit.id;
+        if (!e.modifiers.shift && !e.modifiers.alt && prev.length > 0) {
+          const byId = buildById(ctx.getNodes());
+          const chain = getAncestorChain(byId, hit.id);
+          for (const gid of chain) {
+            if (prev.includes(gid)) {
+              const gn = byId.get(gid);
+              if (gn && isGroupNode(gn)) {
+                hitId = gid;
+                break;
+              }
+            }
+          }
+        }
         // 选择规则（贴近常见编辑器）：
         // - Shift：切换选中（toggle）
         // - 非 Shift：
         //   - 点击已选中的节点：保持当前多选不变（便于拖动多选组）
         //   - 点击未选中的节点：变为单选该节点
-        const next = e.modifiers.shift ? toggle(prev, hit.id) : prev.includes(hit.id) ? prev : [hit.id];
+        const next = e.modifiers.shift ? toggle(prev, hitId) : prev.includes(hitId) ? prev : [hitId];
 
         // 无变化就不触发
         if (next.length === prev.length && next.every((x, i) => x === prev[i])) {
@@ -110,4 +128,3 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
     },
   };
 }
-

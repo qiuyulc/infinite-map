@@ -29,8 +29,12 @@ function handleFromEvent(e: MapPointerEvent): boolean {
 
 export function createRotatePlugin(): InfiniteMapPlugin {
   const start = (e: MapPointerEvent, ctx: MapContext): RotateState | null => {
-    const ids = ctx.store.get<string[]>(SELECTION_KEY) ?? [];
+    let ids = ctx.store.get<string[]>(SELECTION_KEY) ?? [];
     if (ids.length < 1) return null;
+
+    // group：若选中包含 group，则旋转时带上其后代（整组旋转）
+    const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
+    if (groupSvc?.expandIds) ids = groupSvc.expandIds(ids);
 
     const nodes = ctx.getNodes().filter((n) => ids.includes(n.id));
     if (nodes.length === 0) return null;
@@ -133,4 +137,3 @@ export function createRotatePlugin(): InfiniteMapPlugin {
     },
   };
 }
-

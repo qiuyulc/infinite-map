@@ -48,7 +48,10 @@ export type ChangeMeta = {
     | 'paste'
     | 'duplicate'
     | 'undo'
-    | 'redo';
+    | 'redo'
+    | 'group'
+    | 'ungroup'
+    | 'group-sync';
   phase?: 'start' | 'move' | 'end';
   ids?: string[];
 };

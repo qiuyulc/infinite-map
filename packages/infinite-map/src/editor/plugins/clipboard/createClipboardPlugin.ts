@@ -38,6 +38,11 @@ function getSelectionService(ctx: MapContext) {
   return ctx.getService<{ getIds: () => string[]; setIds: (ids: string[]) => void; clear: () => void }>('selection');
 }
 
+function expandIdsForGroups(ctx: MapContext, ids: string[]) {
+  const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
+  return groupSvc?.expandIds ? groupSvc.expandIds(ids) : ids;
+}
+
 function getDocumentService(ctx: MapContext) {
   return ctx.getService<{ applyPatches: (patches: NodePatch[], meta: ChangeMeta) => void }>('document');
 }
@@ -58,7 +63,7 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Mod+C',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = sel?.getIds() ?? [];
+      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
       if (ids.length === 0) return;
       const byId = new Map(ctx.getNodes().map((n) => [n.id, n]));
       const nodes = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];
@@ -75,7 +80,7 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Delete / Backspace',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = sel?.getIds() ?? [];
+      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
       if (ids.length === 0) return;
       const doc = getDocumentService(ctx);
       doc?.applyPatches(
@@ -115,7 +120,14 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
       const dx = targetTopLeft.x - data.bbox.x;
       const dy = targetTopLeft.y - data.bbox.y;
 
-      const newNodes: NodeData[] = data.nodes.map((n) => ({ ...n, id: genId(), x: n.x + dx, y: n.y + dy }));
+      // group：复制时需要保持 parentId 关系，因此需要做一次 id remap
+      const idMap = new Map<string, string>();
+      for (const n of data.nodes) idMap.set(n.id, genId());
+      const newNodes: NodeData[] = data.nodes.map((n) => {
+        const nextId = idMap.get(n.id)!;
+        const nextParent = n.parentId ? idMap.get(n.parentId) : undefined;
+        return { ...n, id: nextId, parentId: nextParent, x: n.x + dx, y: n.y + dy };
+      });
       doc.applyPatches(
         newNodes.map((node) => ({ type: 'add', node })),
         { source: 'plugin', plugin: 'clipboard', reason: 'paste', phase: 'end', ids: newNodes.map((n) => n.id) }
@@ -132,14 +144,20 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Mod+D',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = sel?.getIds() ?? [];
+      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
       if (ids.length === 0) return;
       const byId = new Map(ctx.getNodes().map((n) => [n.id, n]));
       const nodes = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];
       if (nodes.length === 0) return;
       const doc = getDocumentService(ctx);
       if (!doc) return;
-      const newNodes: NodeData[] = nodes.map((n) => ({ ...n, id: genId(), x: n.x + offsetWorld, y: n.y + offsetWorld }));
+      const idMap = new Map<string, string>();
+      for (const n of nodes) idMap.set(n.id, genId());
+      const newNodes: NodeData[] = nodes.map((n) => {
+        const nextId = idMap.get(n.id)!;
+        const nextParent = n.parentId ? idMap.get(n.parentId) : undefined;
+        return { ...n, id: nextId, parentId: nextParent, x: n.x + offsetWorld, y: n.y + offsetWorld };
+      });
       doc.applyPatches(
         newNodes.map((node) => ({ type: 'add', node })),
         { source: 'plugin', plugin: 'clipboard', reason: 'duplicate', phase: 'end', ids: newNodes.map((n) => n.id) }
@@ -163,4 +181,3 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     },
   };
 }
-

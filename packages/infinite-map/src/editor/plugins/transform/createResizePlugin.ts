@@ -3,6 +3,7 @@ import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
 import { getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
 import { computeAdaptiveSteps } from '../../../core/steps';
+import { DEFAULT_GROUP_PADDING } from '../../groupUtils';
 
 export type ResizePluginOptions = {
   selectionKey?: string;
@@ -26,6 +27,10 @@ type ResizeState = {
   startPointerWorld: { x: number; y: number };
   startRect: { x: number; y: number; w: number; h: number };
   lastRect: { x: number; y: number; w: number; h: number };
+  /**
+   * 若当前 resize 的是 group，则需要同步缩放其后代节点
+   */
+  groupMembers?: Array<{ id: string; x: number; y: number; w: number; h: number }>;
 };
 
 const DEFAULT_SELECTION_KEY = STORE_KEYS.selectionIds;
@@ -139,6 +144,19 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
       startRect: { x: node.x, y: node.y, w: node.width, h: node.height },
       lastRect: { x: node.x, y: node.y, w: node.width, h: node.height },
     };
+
+    // group：记录后代节点起始数据，用于“整体缩放”
+    if (node.kind === 'group') {
+      const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
+      const expanded = groupSvc?.expandIds ? groupSvc.expandIds([node.id]) : [node.id];
+      const memberIds = expanded.filter((id) => id !== node.id);
+      const byId = new Map(ctx.getNodes().map((n) => [n.id, n] as const));
+      st.groupMembers = memberIds
+        .map((id) => byId.get(id))
+        .filter(Boolean)
+        .map((n) => ({ id: n!.id, x: n!.x, y: n!.y, w: n!.width, h: n!.height }));
+    }
+
     ctx.store.set(STORE_KEY, st);
     ctx.requestRender();
     return st;
@@ -266,6 +284,25 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     ctx.store.set(STORE_KEY, st);
 
     const patches: NodePatch[] = [{ type: 'set', id: st.id, data: { x: next.x, y: next.y, width: next.w, height: next.h } }];
+
+    // group：对子节点做缩放映射（以 group 的 startRect 为基准）
+    if (st.groupMembers && st.groupMembers.length) {
+      // 以 group 的“内容区域（去掉 padding）”为基准缩放，保持 padding 恒定
+      const p = DEFAULT_GROUP_PADDING;
+      const startInner = { x: st.startRect.x + p, y: st.startRect.y + p, w: Math.max(1, st.startRect.w - 2 * p), h: Math.max(1, st.startRect.h - 2 * p) };
+      const nextInner = { x: next.x + p, y: next.y + p, w: Math.max(1, next.w - 2 * p), h: Math.max(1, next.h - 2 * p) };
+      const sx = startInner.w ? nextInner.w / startInner.w : 1;
+      const sy = startInner.h ? nextInner.h / startInner.h : 1;
+      for (const m of st.groupMembers) {
+        const rx = (m.x - startInner.x) * sx;
+        const ry = (m.y - startInner.y) * sy;
+        patches.push({
+          type: 'set',
+          id: m.id,
+          data: { x: nextInner.x + rx, y: nextInner.y + ry, width: m.w * sx, height: m.h * sy },
+        });
+      }
+    }
     ctx.applyPatches(patches, { source: 'plugin', plugin: 'resize', reason: 'drag', phase: 'move', ids: [st.id] });
     ctx.requestRender();
     return true;
@@ -276,6 +313,22 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     if (!st || st.pointerId !== e.pointerId) return false;
     const last = st.lastRect;
     const patches: NodePatch[] = [{ type: 'set', id: st.id, data: { x: last.x, y: last.y, width: last.w, height: last.h } }];
+    if (st.groupMembers && st.groupMembers.length) {
+      const p = DEFAULT_GROUP_PADDING;
+      const startInner = { x: st.startRect.x + p, y: st.startRect.y + p, w: Math.max(1, st.startRect.w - 2 * p), h: Math.max(1, st.startRect.h - 2 * p) };
+      const lastInner = { x: last.x + p, y: last.y + p, w: Math.max(1, last.w - 2 * p), h: Math.max(1, last.h - 2 * p) };
+      const sx = startInner.w ? lastInner.w / startInner.w : 1;
+      const sy = startInner.h ? lastInner.h / startInner.h : 1;
+      for (const m of st.groupMembers) {
+        const rx = (m.x - startInner.x) * sx;
+        const ry = (m.y - startInner.y) * sy;
+        patches.push({
+          type: 'set',
+          id: m.id,
+          data: { x: lastInner.x + rx, y: lastInner.y + ry, width: m.w * sx, height: m.h * sy },
+        });
+      }
+    }
     ctx.applyPatches(patches, { source: 'plugin', plugin: 'resize', reason: 'drag', phase: 'end', ids: [st.id] });
     ctx.store.set(STORE_KEY, null);
     setSnapGuides(ctx, null, STORE_KEYS.snapGuides);
@@ -316,4 +369,3 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     },
   };
 }
-

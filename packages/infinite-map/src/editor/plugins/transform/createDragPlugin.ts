@@ -3,6 +3,7 @@ import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
 import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
 import { computeAdaptiveSteps } from '../../../core/steps';
+import { buildById, getAncestorChain, isGroupNode } from '../../groupUtils';
  
 export type DragPluginOptions = {
   /**
@@ -63,7 +64,25 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
     if (!hit) return null;
  
     const selected = ctx.store.get<string[]>(selectionKey) ?? [];
-    const hitInSelection = selected.includes(hit.id);
+    const selectedSet = new Set(selected);
+    const byId = buildById(ctx.getNodes());
+
+    // 若命中的是“已选中 group 的后代”，并且未按 Alt，则把命中视为 group（方便直接拖动整组）
+    let effectiveHitId = hit.id;
+    if (!e.modifiers.alt && selected.length > 0) {
+      const chain = getAncestorChain(byId, hit.id);
+      for (const gid of chain) {
+        if (selectedSet.has(gid)) {
+          const gn = byId.get(gid);
+          if (gn && isGroupNode(gn)) {
+            effectiveHitId = gid;
+            break;
+          }
+        }
+      }
+    }
+
+    const hitInSelection = selectedSet.has(effectiveHitId);
  
     // 规则：
     // - 拖拽已选中节点：如果 selection 有多个，则整体拖动；否则单节点拖动
@@ -72,14 +91,18 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
     if (hitInSelection && selected.length > 1) {
       dragIds = selected;
     } else {
-      dragIds = [hit.id];
+      dragIds = [effectiveHitId];
       if (selectOnDrag && !hitInSelection) {
-        ctx.store.set(selectionKey, [hit.id]);
-        ctx.bus.emit('selection:change', { ids: [hit.id] });
+        ctx.store.set(selectionKey, [effectiveHitId]);
+        ctx.bus.emit('selection:change', { ids: [effectiveHitId] });
         ctx.requestRender();
       }
     }
  
+    // group：展开 dragIds（把 group 的后代加入移动集合）
+    const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
+    if (groupSvc?.expandIds) dragIds = groupSvc.expandIds(dragIds);
+
     const nodes = ctx.getNodes();
     const startById: Record<string, { x: number; y: number }> = {};
     const lastById: Record<string, { x: number; y: number }> = {};
@@ -92,14 +115,14 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
  
     const st: DragState = {
       pointerId: e.pointerId,
-      primaryId: hit.id,
+      primaryId: effectiveHitId,
       ids: dragIds,
       startPointerWorld: { ...e.world },
       startById,
       lastById,
     };
     ctx.store.set(dragKey, st);
-    ctx.bus.emit('drag:start', { id: hit.id, startWorld: { ...e.world } });
+    ctx.bus.emit('drag:start', { id: effectiveHitId, startWorld: { ...e.world } });
     ctx.requestRender();
     return st;
   };
@@ -300,4 +323,3 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
     },
   };
 }
-

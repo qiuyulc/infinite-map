@@ -39,6 +39,8 @@ const DEFAULT_KEYMAP: Record<string, ShortcutAction> = {
   'Mod+V': { commandId: 'edit.paste' },
   'Mod+X': { commandId: 'edit.cut' },
   'Mod+D': { commandId: 'edit.duplicate' },
+  'Mod+G': { commandId: 'edit.group' },
+  'Shift+Mod+G': { commandId: 'edit.ungroup' },
   Backspace: { commandId: 'edit.delete' },
   Delete: { commandId: 'edit.delete' },
 };
@@ -73,4 +75,3 @@ export function createShortcutsPlugin(opts: ShortcutsPluginOptions = {}): Infini
     },
   };
 }
-

@@ -15,7 +15,8 @@ export type DefaultNodeProps = {
 };
 
 export function DefaultNode({ n, className, style, children, showMeta = false }: DefaultNodeProps) {
-  const cls = className ? `im-node ${className}` : 'im-node';
+  const base = n.kind === 'group' ? 'im-node im-group' : 'im-node';
+  const cls = className ? `${base} ${className}` : base;
   return (
     <div
       className={cls}
@@ -25,7 +26,7 @@ export function DefaultNode({ n, className, style, children, showMeta = false }:
         ...style,
       }}
     >
-      <div className="im-node-title">{n.label ?? n.id}</div>
+      <div className="im-node-title">{n.label ?? (n.kind === 'group' ? 'Group' : n.id)}</div>
       {showMeta ? (
         <div className="im-node-meta">
           ({Math.round(n.x)}, {Math.round(n.y)})

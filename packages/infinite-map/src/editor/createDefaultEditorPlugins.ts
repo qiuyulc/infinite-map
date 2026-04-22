@@ -21,6 +21,7 @@ import {
   createRotatePlugin,
   createResizePlugin,
   createSelectionPlugin,
+  createGroupPlugin,
 } from './plugins';
 
 export type DefaultEditorOptions = {
@@ -107,6 +108,8 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     createSnapGuidesPlugin({ enabled: true, gridSize: 48, thresholdPx: 6 }),
     // Alt/Option + 拖拽：3D 旋转（需优先于 selection/drag/marquee）
     createRotate3DPlugin(),
+    // group service + group/ungroup commands
+    createGroupPlugin(),
     createSelectionPlugin(),
     ...(clipboardEnabled ? [createClipboardPlugin()] : []),
     createRotatePlugin(),

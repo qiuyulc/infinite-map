@@ -35,6 +35,27 @@ export type NodeData = {
   rotationY?: number;
   label?: string;
   color?: string;
+  /**
+   * 节点种类
+   * - 'group'：编组节点（用于表达结构，不建议存放大业务数据）
+   * - 默认/未填：普通节点
+   */
+  kind?: 'node' | 'group';
+  /**
+   * 父组 id（编组结构）
+   * - 仅当被编入某个 group 时存在
+   */
+  parentId?: string;
+  /**
+   * 外置数据引用 id（可选）
+   * - 用于把“大业务数据”（图表/富文本/大数组）放到外部 store
+   * - 默认约定：不传时等同 node.id（由使用者决定如何读取）
+   */
+  resourceId?: string;
+  /**
+   * 业务自定义数据（不推荐放超大对象，建议外置到 resourceId 对应的 store）
+   */
+  data?: unknown;
 };
 
 export type Rect = { x: number; y: number; w: number; h: number };

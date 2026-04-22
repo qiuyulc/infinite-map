@@ -30,6 +30,21 @@
   text-rendering: optimizeLegibility;
 }
 
+.im-node.im-group {
+  /* 组节点默认只作为“结构外框”，不做实体卡片 */
+  background: transparent;
+  border: 2px dashed rgba(99, 102, 241, 0.55);
+  box-shadow: none;
+  padding: 10px 10px 8px;
+  cursor: default;
+}
+
+.im-node.im-group .im-node-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: rgba(99, 102, 241, 0.95);
+}
+
 .im-node-title {
   font-weight: 650;
   letter-spacing: 0.1px;
