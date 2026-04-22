@@ -14,19 +14,27 @@
   "sideEffects": [
     "**/*.css"
   ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "types": "./es/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./es/index.d.mts",
+      "import": "./es/index.js",
+      "require": "./lib/index.js"
     },
-    "./style.css": "./dist/index.css"
+    "./es/*": {
+      "types": "./es/*.d.mts",
+      "import": "./es/*.js"
+    },
+    "./lib/*": {
+      "types": "./lib/*.d.mts",
+      "require": "./lib/*.js"
+    }
   },
   "files": [
-    "dist"
+    "es",
+    "lib"
   ],
   "scripts": {
     "dev": "tsup --watch",

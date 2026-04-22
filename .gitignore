@@ -3,8 +3,11 @@ node_modules
 .DS_Store
 dist
 **/dist
+es
+lib
+**/es
+**/lib
 **/.vite
 **/.turbo
 **/.cache
 **/*.log
-
