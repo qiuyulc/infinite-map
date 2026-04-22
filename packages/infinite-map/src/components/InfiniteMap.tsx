@@ -334,6 +334,18 @@ export function InfiniteMap({
     hooksRef.current = editorHooks;
   }, [editorHooks]);
 
+  // 重要：onNodesChange/onPatches 可能在宿主每次 render 时都是新函数引用
+  // 如果直接放在 applyPatches 的依赖里，会导致 ctx 变化，从而触发 plugins.setup 反复执行（例如 toolbar/menu registry 被重复注入）
+  const onNodesChangeRef = useRef(onNodesChange);
+  useEffect(() => {
+    onNodesChangeRef.current = onNodesChange;
+  }, [onNodesChange]);
+
+  const onPatchesRef = useRef(onPatches);
+  useEffect(() => {
+    onPatchesRef.current = onPatches;
+  }, [onPatches]);
+
   // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
   const ctxRef = useRef<MapContext | null>(null);
 
@@ -358,17 +370,17 @@ export function InfiniteMap({
         }
       }
       bus.emit('patches:applied', { patches: usePatches, meta, beforeById });
-      onPatches?.(usePatches, meta);
-      if (onNodesChange) {
+      onPatchesRef.current?.(usePatches, meta);
+      if (onNodesChangeRef.current) {
         // 关键：同步更新 nodesRef，避免短时间内连续 applyPatches（例如快速 undo/redo）
         // 仍然基于旧 nodesRef 计算，导致后续操作一直在“旧快照”上叠加从而界面不更新。
         const next = applyPatchesToNodes(nodesRef.current, usePatches);
         nodesRef.current = next;
-        onNodesChange(next, meta);
+        onNodesChangeRef.current(next, meta);
       }
       hooksRef.current?.onAfterApplyPatches?.(usePatches, meta);
     },
-    [bus, onNodesChange, onPatches]
+    [bus]
   );
 
   const runCommandWithHooks = useCallback(
