@@ -23,6 +23,16 @@
       "import": "./es/index.js",
       "require": "./lib/index.js"
     },
+    "./ui": {
+      "types": "./es/ui/index.d.mts",
+      "import": "./es/ui/index.js",
+      "require": "./lib/ui/index.js"
+    },
+    "./demo": {
+      "types": "./es/demo/index.d.mts",
+      "import": "./es/demo/index.js",
+      "require": "./lib/demo/index.js"
+    },
     "./es/*": {
       "types": "./es/*.d.mts",
       "import": "./es/*.js"

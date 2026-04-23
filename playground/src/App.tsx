@@ -2,12 +2,12 @@ import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   composePlugins,
   InfiniteMap,
-  InfiniteMapThemeProvider,
   computeLayout,
   createDefaultEditorPlugins,
-  makeDemoNodes,
   type NodeData,
 } from '@qiuyulc/infinite-map';
+import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map/ui';
+import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
 
 type ResourceStore<T> = {
