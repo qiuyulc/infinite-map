@@ -134,6 +134,7 @@
 - UI 组件：`Minimap` / `BackgroundDots` / `BackgroundGrid` / `DefaultNode` / `InfiniteMapThemeProvider`
 - Theme：`InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars`
 - HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
+- 默认编辑器（带 UI）：`createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
 
 ### 2.1.2 demo 子入口导出（`@qiuyulc/infinite-map/demo`）
 - `makeDemoNodes()`

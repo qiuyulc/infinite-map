@@ -15,3 +15,6 @@ export { createMinimapPlugin } from '../editor/plugins/hud/createMinimapPlugin';
 export { createRulersPlugin } from '../editor/plugins/hud/createRulersPlugin';
 export { createZoomDockPlugin } from '../editor/plugins/hud/createZoomDockPlugin';
 
+// 默认编辑器（带 UI）
+export { createDefaultEditorPluginsWithUI } from './createDefaultEditorPluginsWithUI';
+export type { DefaultEditorWithUIOptions } from './createDefaultEditorPluginsWithUI';

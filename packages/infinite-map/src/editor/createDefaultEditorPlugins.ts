@@ -19,12 +19,6 @@ import {
   createGroupPlugin,
   createLockHidePlugin,
 } from './plugins';
-// UI plugins（不再通过 EditorPlugins 命名空间导出；此处仅用于 default editor 的可选 UI）
-import { createMinimapPlugin } from './plugins/hud/createMinimapPlugin';
-import { createRulersPlugin } from './plugins/hud/createRulersPlugin';
-import { createZoomDockPlugin } from './plugins/hud/createZoomDockPlugin';
-import { createToolbarPlugin } from './plugins/hud/createToolbarPlugin';
-import { createDefaultContextMenuPlugin } from './plugins/hud/createDefaultContextMenuPlugin';
 
 export type DefaultEditorOptions = {
   /**
@@ -39,37 +33,9 @@ export type DefaultEditorOptions = {
   marqueeRequireShift?: boolean;
 
   /**
-   * 标尺（顶部/左侧）
-   */
-  rulersEnabled?: boolean;
-
-  /**
-   * minimap（右下角）
-   */
-  minimapEnabled?: boolean;
-
-  /**
    * 剪贴板能力（删除/复制/剪切/粘贴/重复）
    */
   clipboardEnabled?: boolean;
-
-  /**
-   * 默认工具栏（hud）
-   * - 默认 false：避免 UI 污染；需要时由用户显式开启
-   */
-  toolbarEnabled?: boolean;
-
-  /**
-   * 缩放滑杆（hud）
-   * - 默认 true：这是编辑器常用能力；且不会像 toolbar 那样“占视线”
-   */
-  zoomDockEnabled?: boolean;
-
-  /**
-   * 默认右键菜单（hud）
-   * - 默认 false：避免 UI 污染；需要时由用户显式开启
-   */
-  contextMenuEnabled?: boolean;
 
   /**
    * 以 commandId 为维度覆盖快捷键
@@ -90,12 +56,7 @@ export type DefaultEditorOptions = {
 export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): InfiniteMapPlugin[] {
   const marqueeEnabled = opts.marqueeEnabled ?? true;
   const marqueeRequireShift = opts.marqueeRequireShift ?? false;
-  const rulersEnabled = opts.rulersEnabled ?? true;
-  const minimapEnabled = opts.minimapEnabled ?? true;
   const clipboardEnabled = opts.clipboardEnabled ?? true;
-  const toolbarEnabled = opts.toolbarEnabled ?? false;
-  const zoomDockEnabled = opts.zoomDockEnabled ?? true;
-  const contextMenuEnabled = opts.contextMenuEnabled ?? false;
   const shortcutOverrides = opts.shortcutOverrides;
 
   const plugins: InfiniteMapPlugin[] = [
@@ -120,27 +81,6 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     createResizePlugin(),
     createDragPlugin(),
   ];
-
-  if (toolbarEnabled) {
-    plugins.push(createToolbarPlugin());
-  }
-
-  if (zoomDockEnabled) {
-    plugins.push(createZoomDockPlugin());
-  }
-
-  if (contextMenuEnabled) {
-    plugins.push(createDefaultContextMenuPlugin());
-  }
-
-  if (rulersEnabled) {
-    // 放在末尾：保证 ruler 在最上层（视觉上更像编辑器）
-    plugins.push(createRulersPlugin());
-  }
-
-  if (minimapEnabled) {
-    plugins.push(createMinimapPlugin());
-  }
 
   if (marqueeEnabled) {
     plugins.push(createMarqueeSelectPlugin({ requireShift: marqueeRequireShift }));

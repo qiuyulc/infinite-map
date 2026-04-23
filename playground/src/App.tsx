@@ -3,10 +3,9 @@ import {
   composePlugins,
   InfiniteMap,
   computeLayout,
-  createDefaultEditorPlugins,
   type NodeData,
 } from '@qiuyulc/infinite-map';
-import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map/ui';
+import { InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map/ui';
 import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
 
@@ -94,7 +93,7 @@ export default function App() {
 
   const plugins = useMemo(() => {
     return composePlugins([
-      ...createDefaultEditorPlugins({
+      ...createDefaultEditorPluginsWithUI({
         rulersEnabled,
         minimapEnabled,
         zoomDockEnabled,
