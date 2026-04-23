@@ -704,6 +704,21 @@ export function InfiniteMap({
   const virtualizationOverscanPx = virtualization?.overscanPx ?? overscanPx;
   const keepAlive = virtualization?.keepAlive;
 
+  // panning 时防止“可见节点被卸载又重建”导致闪烁：
+  // - 在一次 pan 手势期间，把手势开始时的可见节点加入 keepAlive 列表
+  // - pan 结束后恢复（避免 keepAlive 集合无限增长）
+  const [panActive, setPanActive] = useState(false);
+  const panKeepAliveIdsRef = useRef<Set<string>>(new Set());
+
+  const keepAliveMerged = useCallback(
+    (n: NodeData) => {
+      if (keepAlive?.(n)) return true;
+      if (!panActive) return false;
+      return panKeepAliveIdsRef.current.has(n.id);
+    },
+    [keepAlive, panActive]
+  );
+
   const { visibleNodes } = useVisibleNodes({
     nodes,
     cellSize,
@@ -711,7 +726,7 @@ export function InfiniteMap({
     viewport,
     overscanPx: virtualizationOverscanPx,
     enabled: virtualizationEnabled,
-    keepAlive,
+    keepAlive: keepAliveMerged,
   });
 
   useEffect(() => {
@@ -1063,6 +1078,11 @@ export function InfiniteMap({
       onPointerDown={(e) => {
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
+        // 仅当没有被插件 capture 掉的情况下才会进入这里：此时属于“画布自身的 pan”
+        if (!panActive) {
+          panKeepAliveIdsRef.current = new Set(visibleNodesRef.current.map((n) => n.id));
+          setPanActive(true);
+        }
         onPointerDown(e);
       }}
       onPointerMove={(e) => {
@@ -1074,16 +1094,28 @@ export function InfiniteMap({
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
         onPointerUp(e);
+        if (panActive) {
+          setPanActive(false);
+          panKeepAliveIdsRef.current = new Set();
+        }
       }}
       onPointerCancel={(e) => {
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
         onPointerUp(e);
+        if (panActive) {
+          setPanActive(false);
+          panKeepAliveIdsRef.current = new Set();
+        }
       }}
       onPointerLeave={(e) => {
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
         onPointerLeave(e);
+        if (panActive) {
+          setPanActive(false);
+          panKeepAliveIdsRef.current = new Set();
+        }
       }}
     >
       {/* 插件 background 层（在节点层之下） */}

@@ -42,7 +42,8 @@ export function usePointerPan({ containerRef, mouseRef, cameraRef, commitCamera 
     const dy = e.clientY - dragRef.current.startY;
     const nextX = dragRef.current.startCamX - dx / cam.zoom;
     const nextY = dragRef.current.startCamY - dy / cam.zoom;
-    commitCamera({ x: nextX, y: nextY, zoom: cam.zoom }, true);
+    // 使用 rAF 合并（immediate=false），避免高频 setState 导致卡顿/闪烁
+    commitCamera({ x: nextX, y: nextY, zoom: cam.zoom }, false);
   };
 
   const onPointerUp: PointerEventHandler = () => {
