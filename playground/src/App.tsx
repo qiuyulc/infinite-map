@@ -76,10 +76,10 @@ export default function App() {
     const base = makeDemoNodes(30);
     const laid = computeLayout(base, 'grid', { seed: 1 });
     // 将前 3 个节点作为 “图表节点”（重组件节点示例）
-    return laid.map((n, i) => (i < 3 ? { ...n, label: `Chart ${i}`, color: '#60a5fa' } : n));
+    return laid.map((n: NodeData, i: number) => (i < 3 ? { ...n, label: `Chart ${i}`, color: '#60a5fa' } : n));
   });
 
-  const chartNodeIds = useMemo(() => nodes.slice(0, 3).map((n) => n.id), [nodes]);
+  const chartNodeIds = useMemo(() => nodes.slice(0, 3).map((n: NodeData) => n.id), [nodes]);
   const chartNodeIdSet = useMemo(() => new Set(chartNodeIds), [chartNodeIds]);
 
   // 外置数据仓库（示例）：key=dataRefId, value=number
@@ -201,7 +201,7 @@ export default function App() {
         <main style={{ flex: 1, minWidth: 0 }}>
           <InfiniteMap
             nodes={nodes}
-            onNodesChange={(next) => setNodes(next)}
+            onNodesChange={(next: NodeData[]) => setNodes(next)}
             plugins={plugins}
             themeBase={themeBase}
             backgroundMode={backgroundMode}
@@ -210,9 +210,9 @@ export default function App() {
             virtualization={{
               enabled: virtualizationEnabled,
               // 图表节点：即使被虚拟化裁掉，也不卸载（避免图表重建）
-              keepAlive: keepAliveEnabled ? (n) => chartNodeIdSet.has(n.id) : undefined,
+              keepAlive: keepAliveEnabled ? (n: NodeData) => chartNodeIdSet.has(n.id) : undefined,
             }}
-            renderNodeContent={(n) => {
+            renderNodeContent={(n: NodeData) => {
               if (!chartNodeIdSet.has(n.id)) return null;
               // 初始化外置 store 的 key（首次渲染时把 placeholder 替换为真实 nodeId）
               if (chartStore.get(n.id) == null) chartStore.set(n.id, 10);

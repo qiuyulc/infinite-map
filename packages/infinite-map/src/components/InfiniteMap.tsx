@@ -581,8 +581,9 @@ export function InfiniteMap({
         const prevPlugin = from[id] ?? 'unknown';
         const nextPlugin = p.id;
         const msg = `[InfiniteMap] command 冲突：${id} 来自 ${prevPlugin} 与 ${nextPlugin}`;
-        // 作为三方库：不要依赖 Vite 的 import.meta.env 类型，避免 d.ts 构建失败
-        const isDev = typeof process !== 'undefined' ? process.env.NODE_ENV !== 'production' : false;
+        // 作为三方库：不要依赖 Vite 的 import.meta.env 类型；也避免直接引用全局 process（浏览器/tsconfig 可能没 node types）
+        const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
+        const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
         const shouldWarn = Boolean(warnOnCommandConflict) && isDev;
         if (commandConflictPolicy === 'error') {
           if (shouldWarn) console.error(msg);

@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Slider } from '../../../components/Slider';
 import { STORE_KEYS } from '../../keys';
 import type { Camera } from '../../../core/types';
@@ -148,4 +148,3 @@ export function createZoomDockPlugin(opts: ZoomDockPluginOptions = {}): Infinite
     overlay: ({ ctx }) => <ZoomDockOverlay ctx={ctx} opts={opts} />,
   };
 }
-

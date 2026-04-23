@@ -39,7 +39,7 @@ export function createHudContributionExamplePlugin(): InfiniteMapPlugin {
         },
       },
     },
-    setup: (ctx) => {
+    setup: (ctx: any) => {
       // hud service 是库提供的扩展点（本 demo 只需要用到 addToolbarItems/addContextMenuItems）
       // 注意：如果你的 ctx 是 any（例如在 JS 文件里写插件），直接写 ctx.getService<...>() 会报：
       // “非类型化函数调用不能接受类型参数”
