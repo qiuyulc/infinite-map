@@ -2,7 +2,7 @@ import type { InfiniteMapPlugin, MapPointerEvent } from '../../types';
 import type { NodeData } from '../../../core/types';
 import { SelectionOverlay } from './SelectionOverlay';
 import { STORE_KEYS } from '../../keys';
-import { buildById, getAncestorChain, isGroupNode } from '../../groupUtils';
+import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 export type SelectionPluginOptions = {
   /**
@@ -83,6 +83,11 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
           }
           // 空白处不拦截：让 core 去 pan
           return { handled: false };
+        }
+
+        // locked/hidden：不可选
+        if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) {
+          return { handled: true, mode: 'continue' };
         }
 
         const prev = ctx.store.get<string[]>(storeKey) ?? [];

@@ -1,6 +1,7 @@
 import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
 import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch, Point } from '../../types';
+import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 type ClipboardData = {
   nodes: NodeData[]; // snapshot
@@ -43,6 +44,11 @@ function expandIdsForGroups(ctx: MapContext, ids: string[]) {
   return groupSvc?.expandIds ? groupSvc.expandIds(ids) : ids;
 }
 
+function filterEditable(ctx: MapContext, ids: string[]) {
+  const nodes = ctx.getNodes();
+  return ids.filter((id) => !isHiddenEffective(nodes, id) && !isLockedEffective(nodes, id));
+}
+
 function getDocumentService(ctx: MapContext) {
   return ctx.getService<{ applyPatches: (patches: NodePatch[], meta: ChangeMeta) => void }>('document');
 }
@@ -63,7 +69,7 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Mod+C',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
+      const ids = filterEditable(ctx, expandIdsForGroups(ctx, sel?.getIds() ?? []));
       if (ids.length === 0) return;
       const byId = new Map(ctx.getNodes().map((n) => [n.id, n]));
       const nodes = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];
@@ -80,7 +86,7 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Delete / Backspace',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
+      const ids = filterEditable(ctx, expandIdsForGroups(ctx, sel?.getIds() ?? []));
       if (ids.length === 0) return;
       const doc = getDocumentService(ctx);
       doc?.applyPatches(
@@ -144,7 +150,7 @@ export function createClipboardPlugin(opts: ClipboardPluginOptions = {}): Infini
     shortcut: 'Mod+D',
     run: (ctx) => {
       const sel = getSelectionService(ctx);
-      const ids = expandIdsForGroups(ctx, sel?.getIds() ?? []);
+      const ids = filterEditable(ctx, expandIdsForGroups(ctx, sel?.getIds() ?? []));
       if (ids.length === 0) return;
       const byId = new Map(ctx.getNodes().map((n) => [n.id, n]));
       const nodes = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];

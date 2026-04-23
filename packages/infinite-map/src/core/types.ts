@@ -53,6 +53,17 @@ export type NodeData = {
    */
   resourceId?: string;
   /**
+   * 锁定（编辑器结构字段）
+   * - 锁定后：不可被点击选中、不可框选、不可拖拽/缩放/旋转
+   * - 对 group：采用“锁定传递”策略，即锁定 group 等价锁定其所有后代
+   */
+  locked?: boolean;
+  /**
+   * 隐藏（编辑器结构字段）
+   * - hidden=true：不渲染、不参与命中/选择/虚拟化可见列表
+   */
+  hidden?: boolean;
+  /**
    * 业务自定义数据（不推荐放超大对象，建议外置到 resourceId 对应的 store）
    */
   data?: unknown;

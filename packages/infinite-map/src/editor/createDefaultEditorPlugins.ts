@@ -22,6 +22,7 @@ import {
   createResizePlugin,
   createSelectionPlugin,
   createGroupPlugin,
+  createLockHidePlugin,
 } from './plugins';
 
 export type DefaultEditorOptions = {
@@ -110,6 +111,8 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     createRotate3DPlugin(),
     // group service + group/ungroup commands
     createGroupPlugin(),
+    // lock/hide commands + hud entries
+    createLockHidePlugin(),
     createSelectionPlugin(),
     ...(clipboardEnabled ? [createClipboardPlugin()] : []),
     createRotatePlugin(),

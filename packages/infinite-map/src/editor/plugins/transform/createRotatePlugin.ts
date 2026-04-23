@@ -1,5 +1,6 @@
 import type { InfiniteMapPlugin, MapContext, MapPointerEvent, NodePatch } from '../../types';
 import { STORE_KEYS } from '../../keys';
+import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 type RotateState = {
   pointerId: number;
@@ -94,6 +95,10 @@ export function createRotatePlugin(): InfiniteMapPlugin {
     let ids = ctx.store.get<string[]>(SELECTION_KEY) ?? [];
     if (ids.length < 1) return null;
 
+    // locked/hidden：不可旋转
+    ids = ids.filter((id) => !isHiddenEffective(ctx.getNodes(), id) && !isLockedEffective(ctx.getNodes(), id));
+    if (ids.length === 0) return null;
+
     // group：若选中包含 group，则旋转时带上其后代（整组旋转）
     const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
     if (groupSvc?.expandIds) ids = groupSvc.expandIds(ids);
@@ -102,6 +107,7 @@ export function createRotatePlugin(): InfiniteMapPlugin {
     // 否则会与 group-sync（自动 bbox）产生“拉扯”，导致看起来像旋转失效/抖动。
     const byId = new Map(ctx.getNodes().map((n) => [n.id, n] as const));
     ids = ids.filter((id) => byId.get(id)?.kind !== 'group');
+    ids = ids.filter((id) => !isHiddenEffective(ctx.getNodes(), id) && !isLockedEffective(ctx.getNodes(), id));
     if (ids.length === 0) return null;
 
     const nodes = ctx.getNodes().filter((n) => ids.includes(n.id));

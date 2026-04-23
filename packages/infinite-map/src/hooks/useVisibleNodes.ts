@@ -20,7 +20,30 @@ type Params = {
  * - 对结果排序保证 DOM 顺序稳定
  */
 export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx, enabled = true, keepAlive }: Params) {
-  const index = useMemo(() => (enabled ? buildSpatialIndex(nodes, cellSize) : null), [enabled, nodes, cellSize]);
+  // hidden 需要“向下传递”：只要任意祖先是 hidden，则该节点也应视为隐藏
+  const renderNodes = useMemo(() => {
+    const byId = new Map(nodes.map((n) => [n.id, n] as const));
+    const memo = new Map<string, boolean>();
+    const isHidden = (id: string): boolean => {
+      const cached = memo.get(id);
+      if (cached != null) return cached;
+      const n = byId.get(id);
+      if (!n) return false;
+      if (n.hidden) {
+        memo.set(id, true);
+        return true;
+      }
+      if (n.parentId) {
+        const v = isHidden(n.parentId);
+        memo.set(id, v);
+        return v;
+      }
+      memo.set(id, false);
+      return false;
+    };
+    return nodes.filter((n) => !isHidden(n.id));
+  }, [nodes]);
+  const index = useMemo(() => (enabled ? buildSpatialIndex(renderNodes, cellSize) : null), [enabled, renderNodes, cellSize]);
 
   const keepAliveNodes = useMemo(() => {
     if (!enabled) return [];
@@ -51,7 +74,7 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx,
   useEffect(() => {
     if (!enabled) {
       // 关闭虚拟化：渲染全部节点（仍保持稳定排序）
-      const all = [...nodes];
+      const all = [...renderNodes];
       all.sort((a, b) => {
         const za = a.z ?? 0;
         const zb = b.z ?? 0;
@@ -88,7 +111,7 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx,
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [enabled, index, keepAliveNodes, nodes, viewWorldRect]);
+  }, [enabled, index, keepAliveNodes, renderNodes, viewWorldRect]);
 
   return { visibleNodes, visibleNodesRef, viewWorldRect };
 }

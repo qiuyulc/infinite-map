@@ -3,6 +3,7 @@ export { createHistoryPlugin } from './core/createHistoryPlugin';
 export { createCoreServicesPlugin } from './core/createCoreServicesPlugin';
 export { createCommandRunnerPlugin } from './core/createCommandRunnerPlugin';
 export { createGroupPlugin } from './core/createGroupPlugin';
+export { createLockHidePlugin } from './core/createLockHidePlugin';
 export { createShortcutsPlugin } from './core/createShortcutsPlugin';
 export { createViewCommandsPlugin } from './core/createViewCommandsPlugin';
 export { createZIndexPlugin } from './core/createZIndexPlugin';

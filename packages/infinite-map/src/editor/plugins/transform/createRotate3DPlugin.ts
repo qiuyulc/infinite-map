@@ -1,6 +1,7 @@
 import type { InfiniteMapPlugin, MapContext, MapPointerEvent, NodePatch } from '../../types';
 import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
+import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 type Rotate3DState = {
   pointerId: number;
@@ -17,6 +18,7 @@ const SPACE_KEY = STORE_KEYS.keyboardSpace;
 function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i];
+    if (n.hidden) continue;
     if (p.x >= n.x && p.x <= n.x + n.width && p.y >= n.y && p.y <= n.y + n.height) return n;
   }
   return null;
@@ -39,6 +41,7 @@ export function createRotate3DPlugin(): InfiniteMapPlugin {
   const start = (e: MapPointerEvent, ctx: MapContext): Rotate3DState | null => {
     const hit = hitTest(ctx.getVisibleNodes(), e.world);
     if (!hit) return null;
+    if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return null;
 
     // 若当前未单选命中节点，则切到单选（符合“旋转选中节点”的预期）
     const prevSel = ctx.store.get<string[]>(SELECTION_KEY) ?? [];
@@ -119,4 +122,3 @@ export function createRotate3DPlugin(): InfiniteMapPlugin {
     },
   };
 }
-

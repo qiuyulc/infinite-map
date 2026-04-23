@@ -3,7 +3,7 @@ import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
 import { getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
 import { computeAdaptiveSteps } from '../../../core/steps';
-import { DEFAULT_GROUP_PADDING } from '../../groupUtils';
+import { DEFAULT_GROUP_PADDING, isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 export type ResizePluginOptions = {
   selectionKey?: string;
@@ -131,6 +131,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
 
     const node = findNode(ctx.getNodes(), ids[0]);
     if (!node) return null;
+    if (isHiddenEffective(ctx.getNodes(), node.id) || isLockedEffective(ctx.getNodes(), node.id)) return null;
 
     // 优先从 DOM 指示点读取（可 hover/可点击）；否则回退到几何命中
     const handle = handleFromEvent(e) ?? hitHandle(ctx, node, e.screen, hitRadiusPx);

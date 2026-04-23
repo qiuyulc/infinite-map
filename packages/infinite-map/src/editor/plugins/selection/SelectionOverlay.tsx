@@ -11,7 +11,8 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   const nodes = ctx.getNodes();
   const selected = new Set(ids);
 
-  const selectedNodes = nodes.filter((n) => selected.has(n.id));
+  const selectedNodes = nodes.filter((n) => selected.has(n.id) && !n.hidden);
+  if (selectedNodes.length === 0) return null;
 
   const boxStyle: CSSProperties = {
     position: 'absolute',

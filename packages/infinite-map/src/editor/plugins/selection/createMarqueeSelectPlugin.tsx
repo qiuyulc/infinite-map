@@ -3,6 +3,7 @@ import type { NodeData, Rect } from '../../../core/types';
 import { rectIntersects } from '../../../core/types';
 import { MarqueeOverlay } from './MarqueeOverlay';
 import { STORE_KEYS } from '../../keys';
+import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 export type MarqueeSelectPluginOptions = {
   storeKey?: string;
@@ -104,6 +105,7 @@ export function createMarqueeSelectPlugin(opts: MarqueeSelectPluginOptions = {})
     const candidates = ctx.queryNodesInWorldRect(rectWorld) as NodeData[];
     const hitIds = candidates
       .filter((n) => rectIntersects(rectWorld, { x: n.x, y: n.y, w: n.width, h: n.height }))
+      .filter((n) => !isHiddenEffective(ctx.getNodes(), n.id) && !isLockedEffective(ctx.getNodes(), n.id))
       .map((n) => n.id);
 
     if (shift) {
@@ -140,7 +142,12 @@ export function createMarqueeSelectPlugin(opts: MarqueeSelectPluginOptions = {})
 
         // 命中节点则不启用框选（让 selection/drag 处理）
         const hit = hitTest(ctx.getVisibleNodes(), e.world);
-        if (hit) return { handled: false };
+        if (hit) {
+          // 命中 locked/hidden：当作“空白”（避免出现点到锁定节点就无法框选）
+          if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) {
+            // continue：让后续插件（例如 pan）按需处理
+          } else return { handled: false };
+        }
 
         const st: MarqueeState = {
           active: true,
@@ -194,4 +201,3 @@ export function createMarqueeSelectPlugin(opts: MarqueeSelectPluginOptions = {})
     },
   };
 }
-

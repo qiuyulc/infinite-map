@@ -3,7 +3,7 @@ import type { NodeData } from '../../../core/types';
 import { STORE_KEYS } from '../../keys';
 import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
 import { computeAdaptiveSteps } from '../../../core/steps';
-import { buildById, getAncestorChain, isGroupNode } from '../../groupUtils';
+import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../../groupUtils';
  
 export type DragPluginOptions = {
   /**
@@ -49,6 +49,7 @@ function isResizeHandleEvent(e: MapPointerEvent): boolean {
 function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i];
+    if (n.hidden) continue;
     if (p.x >= n.x && p.x <= n.x + n.width && p.y >= n.y && p.y <= n.y + n.height) return n;
   }
   return null;
@@ -62,6 +63,7 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
   const startDrag = (e: MapPointerEvent, ctx: MapContext) => {
     const hit = hitTest(ctx.getVisibleNodes(), e.world);
     if (!hit) return null;
+    if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return null;
  
     const selected = ctx.store.get<string[]>(selectionKey) ?? [];
     const selectedSet = new Set(selected);
@@ -102,6 +104,9 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
     // group：展开 dragIds（把 group 的后代加入移动集合）
     const groupSvc = ctx.getService<{ expandIds: (ids: string[]) => string[] }>('group');
     if (groupSvc?.expandIds) dragIds = groupSvc.expandIds(dragIds);
+    // locked/hidden：剔除不可编辑的节点（组锁定传递）
+    dragIds = dragIds.filter((id) => !isHiddenEffective(ctx.getNodes(), id) && !isLockedEffective(ctx.getNodes(), id));
+    if (dragIds.length === 0) return null;
 
     const nodes = ctx.getNodes();
     const startById: Record<string, { x: number; y: number }> = {};

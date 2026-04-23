@@ -39,6 +39,28 @@ export function getAncestorChain(byId: Map<string, NodeData>, nodeId: string) {
   return out;
 }
 
+export function isLockedEffective(nodes: NodeData[], nodeId: string) {
+  const byId = buildById(nodes);
+  let cur = byId.get(nodeId);
+  while (cur) {
+    if (cur.locked) return true;
+    if (!cur.parentId) return false;
+    cur = byId.get(cur.parentId);
+  }
+  return false;
+}
+
+export function isHiddenEffective(nodes: NodeData[], nodeId: string) {
+  const byId = buildById(nodes);
+  let cur = byId.get(nodeId);
+  while (cur) {
+    if (cur.hidden) return true;
+    if (!cur.parentId) return false;
+    cur = byId.get(cur.parentId);
+  }
+  return false;
+}
+
 export function computeBBox(nodes: NodeData[]) {
   let minX = Infinity,
     minY = Infinity,
