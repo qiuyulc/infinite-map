@@ -50,7 +50,9 @@
     "dev": "tsup --watch",
     "build": "tsup",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
     "react": ">=18",
@@ -60,6 +62,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "eslint": "^9.0.0",
+    "vitest": "^2.1.8",
     "typescript": "^5.7.0",
     "tsup": "^8.0.0"
   }
