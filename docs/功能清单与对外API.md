@@ -272,12 +272,8 @@
 - `createClipboardPlugin`
 
 #### hud
-- `createRulersPlugin`
-- `createMinimapPlugin`
-- `createToolbarPlugin`
 - `createContextMenuPlugin`
-- `createDefaultContextMenuPlugin`
-- `createZoomDockPlugin`
+> HUD UI 插件已移至：`@qiuyulc/infinite-map/ui`
 
 ---
 

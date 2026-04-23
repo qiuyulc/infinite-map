@@ -8,15 +8,10 @@ import {
   createHistoryPlugin,
   createKeyboardStatePlugin,
   createMarqueeSelectPlugin,
-  createMinimapPlugin,
-  createRulersPlugin,
   createShortcutsPlugin,
   createSnapGuidesPlugin,
   createViewCommandsPlugin,
-  createZoomDockPlugin,
   createZIndexPlugin,
-  createToolbarPlugin,
-  createDefaultContextMenuPlugin,
   createRotate3DPlugin,
   createRotatePlugin,
   createResizePlugin,
@@ -24,6 +19,12 @@ import {
   createGroupPlugin,
   createLockHidePlugin,
 } from './plugins';
+// UI plugins（不再通过 EditorPlugins 命名空间导出；此处仅用于 default editor 的可选 UI）
+import { createMinimapPlugin } from './plugins/hud/createMinimapPlugin';
+import { createRulersPlugin } from './plugins/hud/createRulersPlugin';
+import { createZoomDockPlugin } from './plugins/hud/createZoomDockPlugin';
+import { createToolbarPlugin } from './plugins/hud/createToolbarPlugin';
+import { createDefaultContextMenuPlugin } from './plugins/hud/createDefaultContextMenuPlugin';
 
 export type DefaultEditorOptions = {
   /**
