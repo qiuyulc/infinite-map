@@ -256,6 +256,21 @@ export function InfiniteMap({
   const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { camera, cameraRef, commitCamera } = useCamera(initialCamera);
   const { viewport, viewportRef } = useViewportSize(containerRef);
+  // resize 后虚拟化可能处于“旧快照”（useVisibleNodes 默认 rAF 计算），
+  // 在下一次交互开始前强制同步重算一次，避免节点在 pan 时被卸载/重建造成闪烁。
+  const [virtualizationResetKey, setVirtualizationResetKey] = useState(0);
+  const resizeResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (resizeResetTimerRef.current != null) clearTimeout(resizeResetTimerRef.current);
+    resizeResetTimerRef.current = setTimeout(() => {
+      resizeResetTimerRef.current = null;
+      setVirtualizationResetKey((v) => v + 1);
+    }, 80);
+    return () => {
+      if (resizeResetTimerRef.current != null) clearTimeout(resizeResetTimerRef.current);
+      resizeResetTimerRef.current = null;
+    };
+  }, [viewport.w, viewport.h]);
 
   // nodes/visibleNodes refs：给插件 ctx 读取，避免闭包过期
   const nodesRef = useRef(nodes);
@@ -727,6 +742,7 @@ export function InfiniteMap({
     overscanPx: virtualizationOverscanPx,
     enabled: virtualizationEnabled,
     keepAlive: keepAliveMerged,
+    resetKey: virtualizationResetKey,
   });
 
   useEffect(() => {
