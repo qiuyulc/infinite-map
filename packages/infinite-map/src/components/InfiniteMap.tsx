@@ -349,14 +349,97 @@ export function InfiniteMap({
   // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
   const ctxRef = useRef<MapContext | null>(null);
 
+  // move-phase patches 节流：拖拽/缩放/旋转期间把高频 patch 合并到 rAF，避免频繁 setState 导致卡顿/闪烁
+  const pendingMoveRafRef = useRef<number | null>(null);
+  const pendingMovePatchesRef = useRef<NodePatch[] | null>(null);
+  const pendingMoveMetaRef = useRef<ChangeMeta | null>(null);
+
+  const flushPendingMovePatches = useCallback(() => {
+    const patches = pendingMovePatchesRef.current;
+    const meta = pendingMoveMetaRef.current;
+    pendingMovePatchesRef.current = null;
+    pendingMoveMetaRef.current = null;
+    if (pendingMoveRafRef.current != null) {
+      cancelAnimationFrame(pendingMoveRafRef.current);
+      pendingMoveRafRef.current = null;
+    }
+    if (!patches || patches.length === 0 || !meta) return;
+
+    // history：采样本次变更涉及到的节点“变更前”快照
+    const beforeById: Record<string, NodeData | undefined> = {};
+    const byId = new Map(nodesRef.current.map((n) => [n.id, n]));
+    for (const p of patches) {
+      if (p.type === 'add') {
+        const id = p.node.id;
+        if (!(id in beforeById)) beforeById[id] = byId.get(id);
+      } else {
+        const id = p.id;
+        if (!(id in beforeById)) beforeById[id] = byId.get(id);
+      }
+    }
+    bus.emit('patches:applied', { patches, meta, beforeById });
+    onPatchesRef.current?.(patches, meta);
+    if (onNodesChangeRef.current) {
+      const next = applyPatchesToNodes(nodesRef.current, patches);
+      nodesRef.current = next;
+      onNodesChangeRef.current(next, meta);
+    }
+    hooksRef.current?.onAfterApplyPatches?.(patches, meta);
+  }, [bus]);
+
+  const mergeMovePatches = (base: NodePatch[] | null, next: NodePatch[]) => {
+    // 目标：同一帧内对同一节点的 move/set 取“最后一次”，减少 patch 数量与重渲染
+    const moveById = new Map<string, NodePatch & { type: 'move' }>();
+    const setById = new Map<string, NodePatch & { type: 'set' }>();
+    const others: NodePatch[] = [];
+
+    const consume = (arr: NodePatch[]) => {
+      for (const p of arr) {
+        if (p.type === 'move') {
+          moveById.set(p.id, p);
+        } else if (p.type === 'set') {
+          const prev = setById.get(p.id);
+          setById.set(p.id, prev ? ({ ...p, data: { ...(prev.data ?? {}), ...(p.data ?? {}) } } as any) : p);
+        } else {
+          others.push(p);
+        }
+      }
+    };
+    if (base && base.length) consume(base);
+    if (next && next.length) consume(next);
+
+    return [...others, ...setById.values(), ...moveById.values()];
+  };
+
   const applyPatches = useCallback(
     (patches: NodePatch[], meta: ChangeMeta) => {
       if (!patches || patches.length === 0) return;
+
+      // 若有 move-phase 队列，而当前不是 move，则先 flush，保证顺序正确
+      if (pendingMovePatchesRef.current && meta.phase !== 'move') {
+        flushPendingMovePatches();
+      }
 
       const hook = hooksRef.current?.onBeforeApplyPatches;
       const nextPatches = hook ? hook(patches, meta) : undefined;
       const usePatches = Array.isArray(nextPatches) ? nextPatches : patches;
       if (!usePatches || usePatches.length === 0) return;
+
+      // move-phase：rAF 合并后再提交，避免高频 setState/重渲染导致卡顿和“闪烁”
+      if (meta.phase === 'move') {
+        pendingMovePatchesRef.current = mergeMovePatches(pendingMovePatchesRef.current, usePatches);
+        pendingMoveMetaRef.current = pendingMoveMetaRef.current
+          ? { ...meta, ids: Array.from(new Set([...(pendingMoveMetaRef.current.ids ?? []), ...(meta.ids ?? [])])) }
+          : meta;
+        if (pendingMoveRafRef.current == null) {
+          pendingMoveRafRef.current = requestAnimationFrame(() => {
+            pendingMoveRafRef.current = null;
+            flushPendingMovePatches();
+          });
+        }
+        return;
+      }
+
       // history：采样本次变更涉及到的节点“变更前”快照
       const beforeById: Record<string, NodeData | undefined> = {};
       const byId = new Map(nodesRef.current.map((n) => [n.id, n]));
@@ -380,7 +463,7 @@ export function InfiniteMap({
       }
       hooksRef.current?.onAfterApplyPatches?.(usePatches, meta);
     },
-    [bus]
+    [bus, flushPendingMovePatches]
   );
 
   const runCommandWithHooks = useCallback(
@@ -637,7 +720,7 @@ export function InfiniteMap({
 
   // 严格 “in view”：不包含 overscan，用于 UI 展示当前屏幕内真正可见的节点数量
   const inViewCount = useMemo(() => {
-    if (nodes.length === 0) return 0;
+    if (visibleNodes.length === 0) return 0;
     if (viewport.w <= 0 || viewport.h <= 0) return 0;
     const z = camera.zoom || 1;
     const viewWorldRect = {
@@ -646,14 +729,10 @@ export function InfiniteMap({
       w: viewport.w / z,
       h: viewport.h / z,
     };
-    const index = buildSpatialIndex(nodes, cellSize);
-    const candidates = querySpatialIndex(index, viewWorldRect);
     let count = 0;
-    for (const n of candidates) {
-      if (rectIntersects(viewWorldRect, { x: n.x, y: n.y, w: n.width, h: n.height })) count++;
-    }
+    for (const n of visibleNodes) if (rectIntersects(viewWorldRect, { x: n.x, y: n.y, w: n.width, h: n.height })) count++;
     return count;
-  }, [camera.x, camera.y, camera.zoom, cellSize, nodes, viewport.h, viewport.w]);
+  }, [camera.x, camera.y, camera.zoom, visibleNodes, viewport.h, viewport.w]);
 
   // 给插件提供严格 inViewCount（用于“可视区域内只有 1 个节点”的判断）
   useEffect(() => {
