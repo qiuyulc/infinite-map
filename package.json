@@ -22,5 +22,11 @@
   "dependencies": {
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-arm64-gnu": "4.60.2",
+    "@rollup/rollup-linux-x64-gnu": "4.60.2",
+    "@rolldown/binding-linux-arm64-gnu": "1.0.0-rc.16",
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-rc.16"
   }
 }

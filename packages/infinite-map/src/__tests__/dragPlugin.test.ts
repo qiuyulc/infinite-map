@@ -5,9 +5,9 @@ import type { ChangeMeta, MapContext, MapPointerEvent, NodePatch } from '../edit
 import { STORE_KEYS } from '../editor/keys';
 import { createDragPlugin } from '../editor/plugins/transform/createDragPlugin';
 
-function makePointerEvent(world: { x: number; y: number }, pointerId = 1): MapPointerEvent {
+function makePointerEvent(type: 'down' | 'move' | 'up' | 'cancel', world: { x: number; y: number }, pointerId = 1): MapPointerEvent {
   return {
-    type: 'pointer',
+    type,
     pointerId,
     button: 0,
     buttons: 1,
@@ -50,9 +50,9 @@ describe('createDragPlugin', () => {
     } as MapContext;
 
     const drag = createDragPlugin();
-    const down = makePointerEvent({ x: 10, y: 10 }, 7);
-    const move = makePointerEvent({ x: 110, y: 10 }, 7);
-    const up = makePointerEvent({ x: 110, y: 10 }, 7);
+    const down = makePointerEvent('down', { x: 10, y: 10 }, 7);
+    const move = makePointerEvent('move', { x: 110, y: 10 }, 7);
+    const up = makePointerEvent('up', { x: 110, y: 10 }, 7);
 
     expect(drag.handlers?.onPointerDown?.(down, ctx).handled).toBe(true);
     expect(store.get(STORE_KEYS.dragState)).toBeTruthy();
@@ -68,4 +68,3 @@ describe('createDragPlugin', () => {
     expect(patchesApplied.some((x) => x.meta.phase === 'end')).toBe(true);
   });
 });
-

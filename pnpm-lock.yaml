@@ -36,6 +36,19 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+    optionalDependencies:
+      '@rolldown/binding-linux-arm64-gnu':
+        specifier: 1.0.0-rc.16
+        version: 1.0.0-rc.16
+      '@rolldown/binding-linux-x64-gnu':
+        specifier: 1.0.0-rc.16
+        version: 1.0.0-rc.16
+      '@rollup/rollup-linux-arm64-gnu':
+        specifier: 4.60.2
+        version: 4.60.2
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: 4.60.2
+        version: 4.60.2
 
   docs:
     devDependencies:

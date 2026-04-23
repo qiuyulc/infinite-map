@@ -86,5 +86,4 @@ class MockResizeObserver {
   }
 }
 
-// @ts-expect-error override global
-globalThis.ResizeObserver = MockResizeObserver;
+globalThis.ResizeObserver = MockResizeObserver as any;
