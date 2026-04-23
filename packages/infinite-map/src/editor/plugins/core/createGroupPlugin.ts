@@ -1,3 +1,4 @@
+import { createElement, type ReactNode } from 'react';
 import type { NodeData } from '../../../core/types';
 import { applyPatchesToNodes } from '../../runtime';
 import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
@@ -13,6 +14,31 @@ import {
 } from '../../groupUtils';
 import type { ToolbarItem } from '../hud/createToolbarPlugin';
 import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
+
+const Icon = ({ children }: { children?: ReactNode }) =>
+  createElement(
+    'svg',
+    { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, 'aria-hidden': 'true' },
+    children
+  );
+
+const Icons = {
+  group: createElement(
+    Icon,
+    {},
+    createElement('rect', { x: 3, y: 3, width: 8, height: 8, rx: 2 }),
+    createElement('rect', { x: 13, y: 13, width: 8, height: 8, rx: 2 }),
+    createElement('path', { d: 'M11 7h2a4 4 0 0 1 4 4v2' })
+  ),
+  ungroup: createElement(
+    Icon,
+    {},
+    createElement('rect', { x: 3, y: 3, width: 8, height: 8, rx: 2 }),
+    createElement('rect', { x: 13, y: 13, width: 8, height: 8, rx: 2 }),
+    createElement('path', { d: 'M11 7h2' }),
+    createElement('path', { d: 'M17 13v-2' })
+  ),
+} as const;
 
 function genGroupId() {
   return `g_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -150,6 +176,7 @@ export function createGroupPlugin(): InfiniteMapPlugin {
           id: 'edit.group',
           label: 'Group',
           title: '编组（Mod+G）',
+          icon: Icons.group,
           enabled: (ctx2) => {
             const ids = getSelectionService(ctx2)?.getIds?.() ?? [];
             return ids.length >= 2;
@@ -160,6 +187,7 @@ export function createGroupPlugin(): InfiniteMapPlugin {
           id: 'edit.ungroup',
           label: 'Ungroup',
           title: '解除编组（Shift+Mod+G）',
+          icon: Icons.ungroup,
           enabled: (ctx2) => {
             const ids = getSelectionService(ctx2)?.getIds?.() ?? [];
             if (ids.length !== 1) return false;
@@ -175,12 +203,14 @@ export function createGroupPlugin(): InfiniteMapPlugin {
           type: 'command',
           id: 'edit.group',
           label: '编组',
+          icon: Icons.group,
           enabled: (ctx2) => (getSelectionService(ctx2)?.getIds?.() ?? []).length >= 2,
         },
         {
           type: 'command',
           id: 'edit.ungroup',
           label: '解除编组',
+          icon: Icons.ungroup,
           enabled: (ctx2) => {
             const ids = getSelectionService(ctx2)?.getIds?.() ?? [];
             if (ids.length !== 1) return false;
