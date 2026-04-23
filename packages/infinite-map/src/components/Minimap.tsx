@@ -237,6 +237,7 @@ export function Minimap({
 
   return (
     <div
+      data-im-ui
       style={{
         position: 'absolute',
         right: 12,

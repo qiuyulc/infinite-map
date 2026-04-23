@@ -12,6 +12,10 @@ type Params = {
   enabled?: boolean;
   keepAlive?: (node: NodeData) => boolean;
   /**
+   * 冻结可见节点列表（用于 pan 过程中避免节点频繁卸载/重建导致闪烁）
+   */
+  freeze?: boolean;
+  /**
    * 用于“重置虚拟化”的 key：
    * - 当 key 变化时，会同步（不经 rAF）立即重算一次可见节点
    * - 用于处理 resize 后下一次交互前，visibleNodes 仍处于旧快照导致的闪烁
@@ -25,7 +29,7 @@ type Params = {
  * - 使用 rAF 合并计算，拖动/缩放时更稳
  * - 对结果排序保证 DOM 顺序稳定
  */
-export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx, enabled = true, keepAlive, resetKey }: Params) {
+export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx, enabled = true, keepAlive, freeze = false, resetKey }: Params) {
   // hidden 需要“向下传递”：只要任意祖先是 hidden，则该节点也应视为隐藏
   const renderNodes = useMemo(() => {
     const byId = new Map(nodes.map((n) => [n.id, n] as const));
@@ -110,6 +114,14 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx,
       setVisibleNodes(all);
       return;
     }
+    // freeze：保持当前 visibleNodes 不变，避免 pan 时卸载/重建闪烁
+    if (freeze) {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      return;
+    }
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = null;
@@ -118,7 +130,7 @@ export function useVisibleNodes({ nodes, cellSize, camera, viewport, overscanPx,
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [enabled, index, keepAliveNodes, renderNodes, viewWorldRect]);
+  }, [enabled, freeze, index, keepAliveNodes, renderNodes, viewWorldRect]);
 
   // resetKey：同步重算一次（不经 rAF）
   useEffect(() => {

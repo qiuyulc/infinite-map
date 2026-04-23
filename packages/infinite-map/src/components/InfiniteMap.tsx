@@ -743,6 +743,8 @@ export function InfiniteMap({
     enabled: virtualizationEnabled,
     keepAlive: keepAliveMerged,
     resetKey: virtualizationResetKey,
+    // pan 时冻结虚拟化列表，避免节点频繁卸载/重建导致闪烁
+    freeze: panActive,
   });
 
   useEffect(() => {
