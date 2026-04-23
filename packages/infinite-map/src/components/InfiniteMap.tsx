@@ -144,6 +144,13 @@ export type InfiniteMapProps = {
     enabled?: boolean;
     overscanPx?: number;
     keepAlive?: (node: NodeData) => boolean;
+    /**
+     * pan 期间“离场节点不卸载”，避免虚拟化进出边界导致闪烁
+     * - true：启用默认策略（推荐）
+     * - false：禁用
+     * - {maxNodes}：限制 pan 期间最多 keepAlive 的节点数量（避免长距离拖动导致集合无限增长）
+     */
+    panKeepAlive?: boolean | { maxNodes?: number };
   };
 
   /**
@@ -257,21 +264,6 @@ export function InfiniteMap({
   const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { camera, cameraRef, commitCamera } = useCamera(initialCamera);
   const { viewport, viewportRef } = useViewportSize(containerRef);
-  // resize 后虚拟化可能处于“旧快照”（useVisibleNodes 默认 rAF 计算），
-  // 在下一次交互开始前强制同步重算一次，避免节点在 pan 时被卸载/重建造成闪烁。
-  const [virtualizationResetKey, setVirtualizationResetKey] = useState(0);
-  const resizeResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (resizeResetTimerRef.current != null) clearTimeout(resizeResetTimerRef.current);
-    resizeResetTimerRef.current = setTimeout(() => {
-      resizeResetTimerRef.current = null;
-      setVirtualizationResetKey((v) => v + 1);
-    }, 80);
-    return () => {
-      if (resizeResetTimerRef.current != null) clearTimeout(resizeResetTimerRef.current);
-      resizeResetTimerRef.current = null;
-    };
-  }, [viewport.w, viewport.h]);
 
   // nodes/visibleNodes refs：给插件 ctx 读取，避免闭包过期
   const nodesRef = useRef(nodes);
@@ -722,19 +714,36 @@ export function InfiniteMap({
   const virtualizationOverscanPx = virtualization?.overscanPx ?? overscanPx;
   const keepAlive = virtualization?.keepAlive;
 
-  // panning 时防止“可见节点被卸载又重建”导致闪烁：
-  // - 在一次 pan 手势期间，把手势开始时的可见节点加入 keepAlive 列表
-  // - pan 结束后恢复（避免 keepAlive 集合无限增长）
+  // panning 时防止“可见节点进出边界导致卸载/重建”造成闪烁：
+  // - pan 期间：允许“新进入视口的节点”正常 mount
+  // - 但“离开视口的节点”在 pan 结束前不卸载（保持稳定）
   const [panActive, setPanActive] = useState(false);
-  const panKeepAliveIdsRef = useRef<Set<string>>(new Set());
+  const panKeepAliveEnabled = (virtualization?.panKeepAlive ?? true) !== false;
+  const panKeepAliveMaxNodes =
+    typeof virtualization?.panKeepAlive === 'object' ? virtualization.panKeepAlive.maxNodes ?? 2000 : 2000;
+  // 用稳定引用的 Set/Map 存储（避免把 Set 换引用导致 hooks 依赖混乱）
+  const panKeepAliveIdSetRef = useRef<Set<string>>(new Set());
+  const panKeepAliveLRURef = useRef<Map<string, number>>(new Map());
 
-  const keepAliveMerged = useCallback(
-    (n: NodeData) => {
-      if (keepAlive?.(n)) return true;
-      if (!panActive) return false;
-      return panKeepAliveIdsRef.current.has(n.id);
+  const panKeepAliveAdd = useCallback(
+    (ids: Iterable<string>) => {
+      const set = panKeepAliveIdSetRef.current;
+      const lru = panKeepAliveLRURef.current;
+      for (const id of ids) {
+        set.add(id);
+        // LRU：通过 delete+set 把该 key 移到末尾
+        if (lru.has(id)) lru.delete(id);
+        lru.set(id, Date.now());
+      }
+      // 超限：移除最旧的
+      while (lru.size > panKeepAliveMaxNodes) {
+        const first = lru.keys().next().value as string | undefined;
+        if (!first) break;
+        lru.delete(first);
+        set.delete(first);
+      }
     },
-    [keepAlive, panActive]
+    [panKeepAliveMaxNodes]
   );
 
   const { visibleNodes } = useVisibleNodes({
@@ -744,11 +753,15 @@ export function InfiniteMap({
     viewport,
     overscanPx: virtualizationOverscanPx,
     enabled: virtualizationEnabled,
-    keepAlive: keepAliveMerged,
-    resetKey: virtualizationResetKey,
-    // pan 时冻结虚拟化列表，避免节点频繁卸载/重建导致闪烁
-    freeze: panActive,
+    keepAlive,
+    keepAliveIdSet: panActive && panKeepAliveEnabled ? panKeepAliveIdSetRef.current : undefined,
   });
+
+  // pan 期间：不断把“当前可见节点”加入 keepAlive 集合（允许 new nodes mount，old nodes 暂不卸载）
+  useEffect(() => {
+    if (!panActive || !panKeepAliveEnabled) return;
+    panKeepAliveAdd(visibleNodes.map((n) => n.id));
+  }, [panActive, panKeepAliveAdd, panKeepAliveEnabled, visibleNodes]);
 
   useEffect(() => {
     visibleNodesRef.current = visibleNodes;
@@ -1101,10 +1114,13 @@ export function InfiniteMap({
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
         // 仅当没有被插件 capture 掉的情况下才会进入这里：此时属于“画布自身的 pan”
-        if (!panActive) {
-          panKeepAliveIdsRef.current = new Set(visibleNodesRef.current.map((n) => n.id));
-          setPanActive(true);
+        if (!panActive && panKeepAliveEnabled) {
+          // seed：把手势开始时可见的节点加入 keepAlive
+          panKeepAliveIdSetRef.current.clear();
+          panKeepAliveLRURef.current.clear();
+          panKeepAliveAdd(visibleNodesRef.current.map((n) => n.id));
         }
+        if (!panActive) setPanActive(true);
         onPointerDown(e);
       }}
       onPointerMove={(e) => {
@@ -1118,7 +1134,8 @@ export function InfiniteMap({
         onPointerUp(e);
         if (panActive) {
           setPanActive(false);
-          panKeepAliveIdsRef.current = new Set();
+          panKeepAliveIdSetRef.current.clear();
+          panKeepAliveLRURef.current.clear();
         }
       }}
       onPointerCancel={(e) => {
@@ -1127,7 +1144,8 @@ export function InfiniteMap({
         onPointerUp(e);
         if (panActive) {
           setPanActive(false);
-          panKeepAliveIdsRef.current = new Set();
+          panKeepAliveIdSetRef.current.clear();
+          panKeepAliveLRURef.current.clear();
         }
       }}
       onPointerLeave={(e) => {
@@ -1136,7 +1154,8 @@ export function InfiniteMap({
         onPointerLeave(e);
         if (panActive) {
           setPanActive(false);
-          panKeepAliveIdsRef.current = new Set();
+          panKeepAliveIdSetRef.current.clear();
+          panKeepAliveLRURef.current.clear();
         }
       }}
     >
