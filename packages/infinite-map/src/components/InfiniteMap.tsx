@@ -1009,7 +1009,7 @@ export function InfiniteMap({
     >
       {/* 插件 background 层（在节点层之下） */}
       {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
           {plugins
             .filter((p) => p.enabled !== false && p.slot === 'background')
             .map((p) => {
@@ -1046,11 +1046,11 @@ export function InfiniteMap({
       />
 
       {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
-      <div style={worldStyle}>{domNodeElements}</div>
+      <div style={{ ...worldStyle, zIndex: 1 }}>{domNodeElements}</div>
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
       {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', zIndex: 2 }}>
           {plugins
             .filter((p) => p.enabled !== false && (p.slot === undefined || p.slot === 'overlay'))
             .map((p) => {
@@ -1066,7 +1066,7 @@ export function InfiniteMap({
 
       {/* 插件 hud 层（minimap/标尺/面板等，通常最上层） */}
       {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto' }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', zIndex: 3 }}>
           {plugins
             .filter((p) => p.enabled !== false && p.slot === 'hud')
             .map((p) => {
