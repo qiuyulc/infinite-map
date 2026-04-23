@@ -1050,7 +1050,9 @@ export function InfiniteMap({
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
       {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', zIndex: 2 }}>
+        // 重要：父层用 pointerEvents:none，避免“透明大层”成为事件 target，导致点不到 resize/rotate handle
+        // 需要交互的 overlay 由各插件 wrapper 自己设置 overlayPointerEvents: 'auto'
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2 }}>
           {plugins
             .filter((p) => p.enabled !== false && (p.slot === undefined || p.slot === 'overlay'))
             .map((p) => {
@@ -1066,7 +1068,8 @@ export function InfiniteMap({
 
       {/* 插件 hud 层（minimap/标尺/面板等，通常最上层） */}
       {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', zIndex: 3 }}>
+        // 同 overlay：父层不拦截事件，交互由各 hud 插件自己控制
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
           {plugins
             .filter((p) => p.enabled !== false && p.slot === 'hud')
             .map((p) => {
