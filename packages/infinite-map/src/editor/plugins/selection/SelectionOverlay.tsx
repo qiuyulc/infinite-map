@@ -141,7 +141,8 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
         transform: `translate(-50%, -50%) perspective(${VISUAL_CONST.perspectivePx}px) rotateX(${rx}deg) rotateY(${ry}deg) rotate(${deg}deg)`,
         transformOrigin: '50% 50%',
         transformStyle: 'preserve-3d',
-        pointerEvents: 'none',
+        // 重要：需要让 resize/rotate handle 能被命中（否则点击会落到节点/空白，导致“旋转时变框选”）
+        pointerEvents: 'auto',
       };
 
       const borderStyle: CSSProperties = {
@@ -220,4 +221,3 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
     </>
   );
 }
-
