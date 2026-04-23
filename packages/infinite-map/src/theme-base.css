@@ -1,0 +1,90 @@
+/* Base theme variables (减少 inline style 中大量 --im-* 注入)
+ * 使用方式：
+ * - 在根容器上设置 data-im-theme="light|dark"
+ * - theme 覆盖只需要注入少量差异变量（见 themeOverrideToCSSVars）
+ */
+
+[data-im-theme='light'] {
+  --im-map-bg: #f7f8fc;
+  --im-map-border: rgba(15, 23, 42, 0.1);
+  --im-map-dot: rgba(0, 0, 0, 0.12);
+  --im-map-grid: rgba(0, 0, 0, 0.08);
+
+  --im-node-bg: rgba(255, 255, 255, 0.92);
+  --im-node-text: rgba(15, 23, 42, 0.92);
+  --im-node-text-muted: rgba(15, 23, 42, 0.6);
+  --im-node-shadow-1: rgba(15, 23, 42, 0.16);
+  --im-node-shadow-2: rgba(15, 23, 42, 0.1);
+  --im-node-radius: 12px;
+
+  --im-toolbar-bg: rgba(255, 255, 255, 0.72);
+  --im-toolbar-border: rgba(15, 23, 42, 0.12);
+  --im-toolbar-btn-bg: rgba(255, 255, 255, 0.75);
+  --im-toolbar-btn-border: rgba(15, 23, 42, 0.12);
+  --im-toolbar-btn-text: rgba(15, 23, 42, 0.85);
+
+  --im-minimap-bg: rgba(255, 255, 255, 0.92);
+  --im-minimap-border: rgba(15, 23, 42, 0.12);
+  --im-minimap-node: rgba(59, 130, 246, 0.55);
+  --im-minimap-viewport: rgba(15, 23, 42, 0.55);
+
+  --im-panel-bg: rgba(255, 255, 255, 0.92);
+  --im-panel-border: rgba(15, 23, 42, 0.12);
+  --im-text-strong: rgba(15, 23, 42, 0.9);
+
+  --im-ruler-bg: rgba(255, 255, 255, 0.75);
+  --im-ruler-border: rgba(15, 23, 42, 0.14);
+  --im-ruler-tick: rgba(15, 23, 42, 0.35);
+  --im-ruler-text: rgba(15, 23, 42, 0.7);
+
+  --im-selection-stroke: rgba(110, 200, 255, 0.95);
+  --im-selection-shadow: rgba(110, 200, 255, 0.12);
+  --im-handle-fill: #ffffff;
+  --im-handle-stroke: rgba(110, 200, 255, 0.95);
+
+  --im-guide-stroke: rgba(168, 85, 247, 0.95);
+  --im-guide-shadow: rgba(168, 85, 247, 0.18);
+}
+
+[data-im-theme='dark'] {
+  --im-map-bg: #070a12;
+  --im-map-border: rgba(255, 255, 255, 0.06);
+  --im-map-dot: rgba(255, 255, 255, 0.1);
+  --im-map-grid: rgba(255, 255, 255, 0.07);
+
+  --im-node-bg: rgba(10, 14, 22, 0.92);
+  --im-node-text: rgba(255, 255, 255, 0.92);
+  --im-node-text-muted: rgba(255, 255, 255, 0.62);
+  --im-node-shadow-1: rgba(0, 0, 0, 0.55);
+  --im-node-shadow-2: rgba(0, 0, 0, 0.35);
+  --im-node-radius: 12px;
+
+  --im-toolbar-bg: rgba(10, 14, 22, 0.72);
+  --im-toolbar-border: rgba(255, 255, 255, 0.1);
+  --im-toolbar-btn-bg: rgba(10, 14, 22, 0.62);
+  --im-toolbar-btn-border: rgba(255, 255, 255, 0.1);
+  --im-toolbar-btn-text: rgba(255, 255, 255, 0.86);
+
+  --im-minimap-bg: rgba(10, 14, 22, 0.7);
+  --im-minimap-border: rgba(255, 255, 255, 0.1);
+  --im-minimap-node: rgba(120, 180, 255, 0.75);
+  --im-minimap-viewport: rgba(255, 255, 255, 0.75);
+
+  --im-panel-bg: rgba(10, 14, 22, 0.9);
+  --im-panel-border: rgba(255, 255, 255, 0.1);
+  --im-text-strong: rgba(255, 255, 255, 0.9);
+
+  --im-ruler-bg: rgba(10, 14, 22, 0.55);
+  --im-ruler-border: rgba(255, 255, 255, 0.1);
+  --im-ruler-tick: rgba(255, 255, 255, 0.28);
+  --im-ruler-text: rgba(255, 255, 255, 0.7);
+
+  --im-selection-stroke: rgba(110, 200, 255, 0.95);
+  --im-selection-shadow: rgba(110, 200, 255, 0.12);
+  --im-handle-fill: #ffffff;
+  --im-handle-stroke: rgba(110, 200, 255, 0.95);
+
+  --im-guide-stroke: rgba(168, 85, 247, 0.95);
+  --im-guide-shadow: rgba(168, 85, 247, 0.18);
+}
+

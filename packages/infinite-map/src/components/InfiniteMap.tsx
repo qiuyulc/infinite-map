@@ -17,7 +17,8 @@ import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
-import { darkTheme, lightTheme, mergeTheme, themeToCSSVars, type InfiniteMapTheme } from '../theme';
+import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
+import '../theme-base.css';
 import { useCamera } from '../hooks/useCamera';
 import { useHighlightLayer } from '../hooks/useHighlightLayer';
 import { usePointerPan } from '../hooks/usePointerPan';
@@ -290,10 +291,12 @@ export function InfiniteMap({
   // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
   const themeVars = useMemo(() => {
     // 若宿主没有显式传入，则不注入，交给外部 CSS vars / Provider 控制
-    if (!theme && !themeBase) return undefined;
-    const base = (themeBase ?? 'light') === 'dark' ? darkTheme : lightTheme;
-    return themeToCSSVars(mergeTheme(base, theme)) as unknown as CSSProperties;
-  }, [theme, themeBase]);
+    // 新策略：
+    // - base(light/dark) 由 theme-base.css 提供，通过 data-im-theme 切换
+    // - 这里只注入 override（大幅减少 inline vars 数量）
+    if (!theme) return undefined;
+    return themeOverrideToCSSVars(theme) as unknown as CSSProperties;
+  }, [theme]);
 
   // visibleNodes ref（给插件读取）
   const visibleNodesRef = useRef<NodeData[]>([]);
@@ -1027,6 +1030,7 @@ export function InfiniteMap({
   return (
     <div
       ref={containerRef}
+      data-im-theme={themeBase ?? 'light'}
       style={{
         position: 'relative',
         width: '100%',

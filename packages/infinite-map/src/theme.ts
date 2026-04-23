@@ -181,3 +181,60 @@ export function themeToCSSVars(theme: InfiniteMapTheme): InfiniteMapCssVars {
     '--im-guide-shadow': theme.guideShadow,
   };
 }
+
+/**
+ * 只把“覆盖项”转换为 CSS vars（用于减少 DOM 上 inline style 的变量数量）
+ * - base(light/dark) 由 theme-base.css 提供
+ * - 这里只注入 override 里出现的字段
+ */
+export function themeOverrideToCSSVars(override?: Partial<InfiniteMapTheme>): InfiniteMapCssVars {
+  const o = override ?? {};
+  const out: Record<string, string> = {};
+
+  const set = <K extends keyof InfiniteMapTheme>(k: K, cssVar: `--im-${string}`) => {
+    const v = o[k];
+    if (v != null) out[cssVar] = String(v);
+  };
+
+  set('mapBg', '--im-map-bg');
+  set('mapBorder', '--im-map-border');
+  set('mapDot', '--im-map-dot');
+  set('mapGrid', '--im-map-grid');
+
+  set('nodeBg', '--im-node-bg');
+  set('nodeText', '--im-node-text');
+  set('nodeTextMuted', '--im-node-text-muted');
+  set('nodeShadow1', '--im-node-shadow-1');
+  set('nodeShadow2', '--im-node-shadow-2');
+  set('nodeRadius', '--im-node-radius');
+
+  set('toolbarBg', '--im-toolbar-bg');
+  set('toolbarBorder', '--im-toolbar-border');
+  set('toolbarBtnBg', '--im-toolbar-btn-bg');
+  set('toolbarBtnBorder', '--im-toolbar-btn-border');
+  set('toolbarBtnText', '--im-toolbar-btn-text');
+
+  set('minimapBg', '--im-minimap-bg');
+  set('minimapBorder', '--im-minimap-border');
+  set('minimapNode', '--im-minimap-node');
+  set('minimapViewport', '--im-minimap-viewport');
+
+  set('panelBg', '--im-panel-bg');
+  set('panelBorder', '--im-panel-border');
+  set('textStrong', '--im-text-strong');
+
+  set('rulerBg', '--im-ruler-bg');
+  set('rulerBorder', '--im-ruler-border');
+  set('rulerTick', '--im-ruler-tick');
+  set('rulerText', '--im-ruler-text');
+
+  set('selectionStroke', '--im-selection-stroke');
+  set('selectionShadow', '--im-selection-shadow');
+  set('handleFill', '--im-handle-fill');
+  set('handleStroke', '--im-handle-stroke');
+
+  set('guideStroke', '--im-guide-stroke');
+  set('guideShadow', '--im-guide-shadow');
+
+  return out as InfiniteMapCssVars;
+}

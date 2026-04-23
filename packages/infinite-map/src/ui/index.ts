@@ -6,7 +6,7 @@ export { DefaultNode } from '../components/DefaultNode';
 export { InfiniteMapThemeProvider } from '../components/InfiniteMapThemeProvider';
 
 export type { InfiniteMapTheme } from '../theme';
-export { lightTheme, darkTheme, mergeTheme, themeToCSSVars } from '../theme';
+export { lightTheme, darkTheme, mergeTheme, themeToCSSVars, themeOverrideToCSSVars } from '../theme';
 
 // HUD plugins（可选 UI）
 export { createToolbarPlugin } from '../editor/plugins/hud/createToolbarPlugin';
