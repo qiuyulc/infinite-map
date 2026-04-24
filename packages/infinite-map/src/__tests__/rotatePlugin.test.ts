@@ -35,17 +35,18 @@ function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
 }
 
 function pe(type: MapPointerEvent['type'], partial: Partial<MapPointerEvent> & { world: { x: number; y: number } }): MapPointerEvent {
+  const { world, ...rest } = partial;
   return {
     type,
     pointerId: 7,
     button: 0,
     buttons: type === 'up' ? 0 : 1,
-    screen: { x: partial.world.x, y: partial.world.y },
-    world: partial.world,
+    screen: { x: world.x, y: world.y },
+    world,
     modifiers: { shift: false, alt: false, ctrl: false, meta: false },
     // 让 rotate 插件认为命中了 rotate handle
     originalEvent: { target: { closest: () => ({} as any) } } as any,
-    ...partial,
+    ...rest,
   } as MapPointerEvent;
 }
 
@@ -117,4 +118,3 @@ describe('createRotatePlugin', () => {
     expect(getNodes().find((n) => n.id === 'b')!.rotation).toBeUndefined();
   });
 });
-

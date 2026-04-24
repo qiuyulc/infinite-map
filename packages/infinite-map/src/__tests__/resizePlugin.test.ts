@@ -35,16 +35,17 @@ function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
 }
 
 function pe(type: MapPointerEvent['type'], partial: Partial<MapPointerEvent> & { world: { x: number; y: number } }): MapPointerEvent {
+  const { world, ...rest } = partial;
   return {
     type,
     pointerId: 1,
     button: 0,
     buttons: type === 'up' ? 0 : 1,
-    screen: { x: partial.world.x, y: partial.world.y },
-    world: partial.world,
+    screen: { x: world.x, y: world.y },
+    world,
     modifiers: { shift: false, alt: false, ctrl: false, meta: false },
     originalEvent: { target: { dataset: { handle: 'se' } } }, // 默认 se
-    ...partial,
+    ...rest,
   } as MapPointerEvent;
 }
 
@@ -120,4 +121,3 @@ describe('createResizePlugin', () => {
     expect(c2.x).toBeGreaterThan(120);
   });
 });
-

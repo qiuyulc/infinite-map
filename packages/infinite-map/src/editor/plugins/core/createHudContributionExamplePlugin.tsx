@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Command, InfiniteMapPlugin, MapContext } from '../../types';
 import type { ToolbarItem } from '../hud/createToolbarPlugin';
 import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
@@ -72,4 +71,3 @@ export function createHudContributionExamplePlugin(): InfiniteMapPlugin {
     },
   };
 }
-

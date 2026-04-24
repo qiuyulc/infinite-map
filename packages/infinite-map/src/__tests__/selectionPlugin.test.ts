@@ -32,16 +32,17 @@ function makeCtx(nodes: NodeData[]) {
 }
 
 function pe(partial: Partial<MapPointerEvent> & { world: { x: number; y: number } }): MapPointerEvent {
+  const { world, ...rest } = partial;
   return {
     type: 'down',
     pointerId: 1,
     button: 0,
     buttons: 1,
-    screen: { x: partial.world.x, y: partial.world.y },
-    world: partial.world,
+    screen: { x: world.x, y: world.y },
+    world,
     modifiers: { shift: false, alt: false, ctrl: false, meta: false },
     originalEvent: { target: null },
-    ...partial,
+    ...rest,
   };
 }
 
@@ -127,4 +128,3 @@ describe('createSelectionPlugin', () => {
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 });
-

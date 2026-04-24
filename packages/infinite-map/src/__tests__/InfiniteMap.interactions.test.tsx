@@ -1,4 +1,3 @@
-import React, { useMemo, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { InfiniteMapPlugin, MapContext } from '../editor/types';
@@ -42,7 +41,7 @@ describe('InfiniteMap integrations (jsdom)', () => {
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
 
-    const a = await screen.findByText('A');
+    await screen.findByText('A');
     // 等一拍：让 InfiniteMap 内部 useEffect 把 visibleNodesRef 写入（插件命中依赖它）
     await new Promise((r) => setTimeout(r, 0));
     // click on node A
