@@ -1,8 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
-import { STORE_KEYS } from '../../keys';
-import type { InfiniteMapPlugin, MapContext } from '../../types';
+import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import type { ContextMenuPayload } from './createContextMenuPlugin';
 import { createContextMenuPlugin } from './createContextMenuPlugin';
 

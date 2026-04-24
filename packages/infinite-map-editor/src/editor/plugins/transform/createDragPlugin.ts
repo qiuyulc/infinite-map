@@ -1,8 +1,13 @@
-import type { InfiniteMapPlugin, MapContext, MapPointerEvent, NodePatch } from '../../types';
-import type { NodeData } from '../../../core/types';
-import { STORE_KEYS } from '../../keys';
+import {
+  STORE_KEYS,
+  computeAdaptiveSteps,
+  type InfiniteMapPlugin,
+  type MapContext,
+  type MapPointerEvent,
+  type NodeData,
+  type NodePatch,
+} from '@qiuyulc/infinite-map';
 import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
-import { computeAdaptiveSteps } from '../../../core/steps';
 import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../../groupUtils';
  
 export type DragPluginOptions = {

@@ -1,6 +1,4 @@
-import { STORE_KEYS } from '../../keys';
-import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
-import type { NodeData } from '../../../core/types';
+import { STORE_KEYS, type ChangeMeta, type Command, type InfiniteMapPlugin, type MapContext, type NodeData, type NodePatch } from '@qiuyulc/infinite-map';
 import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 import type { ToolbarItem } from '../hud/createToolbarPlugin';
 import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
@@ -217,4 +215,3 @@ export function createLockHidePlugin(): InfiniteMapPlugin {
     },
   };
 }
-

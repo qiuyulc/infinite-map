@@ -1,4 +1,4 @@
-import type { InfiniteMapPlugin, MapContext, MapKeyEvent } from '../../types';
+import type { InfiniteMapPlugin, MapContext, MapKeyEvent } from '@qiuyulc/infinite-map';
 
 type ShortcutAction = { commandId: string };
 
@@ -75,4 +75,3 @@ export function createShortcutsPlugin(opts: ShortcutsPluginOptions = {}): Infini
     },
   };
 }
-

@@ -1,6 +1,4 @@
-import type { NodeData } from '../../../core/types';
-import { STORE_KEYS } from '../../keys';
-import type { InfiniteMapPlugin, MapContext, MapContextMenuEvent } from '../../types';
+import { STORE_KEYS, type InfiniteMapPlugin, type MapContext, type MapContextMenuEvent, type NodeData } from '@qiuyulc/infinite-map';
 
 export type ContextMenuPayload = {
   screen: { x: number; y: number };

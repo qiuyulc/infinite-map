@@ -1,8 +1,14 @@
 import { createElement, type ReactNode } from 'react';
-import type { NodeData } from '../../../core/types';
-import { applyPatchesToNodes } from '../../runtime';
-import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import {
+  STORE_KEYS,
+  applyPatchesToNodes,
+  type ChangeMeta,
+  type Command,
+  type InfiniteMapPlugin,
+  type MapContext,
+  type NodeData,
+  type NodePatch,
+} from '@qiuyulc/infinite-map';
 import {
   DEFAULT_GROUP_PADDING,
   buildById,
@@ -281,4 +287,3 @@ export function createGroupPlugin(): InfiniteMapPlugin {
     },
   };
 }
-

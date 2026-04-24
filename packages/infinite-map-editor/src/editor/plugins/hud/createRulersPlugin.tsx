@@ -1,4 +1,4 @@
-import type { InfiniteMapPlugin } from '../../types';
+import type { InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 import { RulersOverlay } from './RulersOverlay';
 
 export type RulersPluginOptions = {

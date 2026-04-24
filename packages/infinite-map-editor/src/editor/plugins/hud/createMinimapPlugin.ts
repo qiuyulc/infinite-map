@@ -1,6 +1,5 @@
 import React from 'react';
-import type { InfiniteMapPlugin } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 import { MinimapOverlay } from './MinimapOverlay';
 
 export type MinimapPluginOptions = {

@@ -1,4 +1,4 @@
-import type { Command, InfiniteMapPlugin, MapContext } from '../../types';
+import type { Command, InfiniteMapPlugin, MapContext } from '@qiuyulc/infinite-map';
 import type { ToolbarItem } from '../hud/createToolbarPlugin';
 import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
 
@@ -71,4 +71,3 @@ export function createHudContributionExamplePlugin(): InfiniteMapPlugin {
     },
   };
 }
-

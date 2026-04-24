@@ -1,8 +1,5 @@
-import type { InfiniteMapPlugin, MapContext, MapPointerEvent } from '../../types';
-import type { NodeData, Rect } from '../../../core/types';
-import { rectIntersects } from '../../../core/types';
+import { STORE_KEYS, rectIntersects, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodeData, type Rect } from '@qiuyulc/infinite-map';
 import { MarqueeOverlay } from './MarqueeOverlay';
-import { STORE_KEYS } from '../../keys';
 import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 export type MarqueeSelectPluginOptions = {

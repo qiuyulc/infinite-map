@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import type { MapContext } from '../../types';
-import { computeAdaptiveSteps } from '../../../core/steps';
-import { clamp } from '../../../core/utils';
+import { clamp, computeAdaptiveSteps, type MapContext } from '@qiuyulc/infinite-map';
 
 type Tick = { posPx: number; major: boolean; label?: string };
 

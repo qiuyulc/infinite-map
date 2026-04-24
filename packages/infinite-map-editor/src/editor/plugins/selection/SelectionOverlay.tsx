@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { MapContext } from '../../types';
-import { STORE_KEYS, VISUAL_CONST } from '../../keys';
+import { STORE_KEYS, VISUAL_CONST, type MapContext } from '@qiuyulc/infinite-map';
 
 const STORE_KEY = STORE_KEYS.selectionIds;
 

@@ -1,5 +1,4 @@
-import type { NodeData } from '../../../core/types';
-import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
+import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodeData, NodePatch } from '@qiuyulc/infinite-map';
 
 function getSelectionService(ctx: MapContext) {
   return ctx.getService<{ getIds: () => string[] }>('selection');
@@ -206,4 +205,3 @@ export function createZIndexPlugin(): InfiniteMapPlugin {
     },
   };
 }
-

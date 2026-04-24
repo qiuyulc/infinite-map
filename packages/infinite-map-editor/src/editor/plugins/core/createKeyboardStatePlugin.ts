@@ -1,5 +1,4 @@
-import type { InfiniteMapPlugin } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 
 export type KeyboardStatePluginOptions = {
   /**
@@ -36,4 +35,3 @@ export function createKeyboardStatePlugin(opts: KeyboardStatePluginOptions = {})
     },
   };
 }
-

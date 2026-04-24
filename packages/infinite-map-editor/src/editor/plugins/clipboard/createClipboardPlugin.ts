@@ -1,6 +1,4 @@
-import type { NodeData } from '../../../core/types';
-import { STORE_KEYS } from '../../keys';
-import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch, Point } from '../../types';
+import { STORE_KEYS, type ChangeMeta, type Command, type InfiniteMapPlugin, type MapContext, type NodeData, type NodePatch, type Point } from '@qiuyulc/infinite-map';
 import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 type ClipboardData = {

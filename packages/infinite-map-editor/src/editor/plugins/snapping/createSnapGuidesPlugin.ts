@@ -1,5 +1,4 @@
-import type { InfiniteMapPlugin } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 import { SnapGuidesOverlay } from './SnapGuidesOverlay';
 
 export type SnapConfig = {

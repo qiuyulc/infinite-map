@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { Camera } from '../../../core/types';
+import { STORE_KEYS, type Camera, type MapContext } from '@qiuyulc/infinite-map';
 import { Minimap } from '../../../components/Minimap';
-import { useThemeVersion } from '../../../hooks/useThemeVersion';
-import { STORE_KEYS } from '../../keys';
-import type { MapContext } from '../../types';
+import { useThemeVersion } from '@qiuyulc/infinite-map';
 import type { MinimapPluginOptions } from './createMinimapPlugin';
 
 export function MinimapOverlay({ ctx, opts }: { ctx: MapContext; opts: MinimapPluginOptions }) {

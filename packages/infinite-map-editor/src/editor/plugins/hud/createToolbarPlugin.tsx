@@ -1,8 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
-import { STORE_KEYS } from '../../keys';
-import type { InfiniteMapPlugin, MapContext } from '../../types';
+import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import './toolbar.css';
 
 export type ToolbarItem =

@@ -1,6 +1,4 @@
-import type { Camera } from '../../../core/types';
-import type { ChangeMeta, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type Camera, type ChangeMeta, type InfiniteMapPlugin, type MapContext, type NodePatch } from '@qiuyulc/infinite-map';
 import type { ToolbarItem } from '../hud/createToolbarPlugin';
 import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
 
@@ -58,4 +56,3 @@ export function createCoreServicesPlugin(): InfiniteMapPlugin {
     },
   };
 }
-

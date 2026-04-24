@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { MapContext } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type MapContext } from '@qiuyulc/infinite-map';
 
 const STORE_KEY = STORE_KEYS.marqueeState;
 

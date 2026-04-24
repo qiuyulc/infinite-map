@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
-import type { Camera, NodeData } from '../core/types';
-import { cssVar } from '../core/utils';
+import { cssVar, type Camera, type NodeData } from '@qiuyulc/infinite-map';
 
 type Transform = { minX: number; minY: number; scale: number; offsetX: number; offsetY: number };
 
@@ -277,4 +276,3 @@ export function Minimap({
     </div>
   );
 }
-

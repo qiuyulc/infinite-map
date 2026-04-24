@@ -1,6 +1,4 @@
-import type { ChangeMeta, InfiniteMapPlugin, MapContext, NodePatch } from '../../types';
-import type { NodeData } from '../../../core/types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type ChangeMeta, type InfiniteMapPlugin, type MapContext, type NodeData, type NodePatch } from '@qiuyulc/infinite-map';
 
 type HistoryEntry = {
   doPatches: NodePatch[];
@@ -198,4 +196,3 @@ export function createHistoryPlugin(opts: HistoryPluginOptions = {}): InfiniteMa
     },
   };
 }
-

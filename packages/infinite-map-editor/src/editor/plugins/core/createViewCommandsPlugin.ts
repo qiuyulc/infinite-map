@@ -1,6 +1,4 @@
-import type { Camera, NodeData, Rect } from '../../../core/types';
-import type { Command, InfiniteMapPlugin, MapContext } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type Camera, type Command, type InfiniteMapPlugin, type MapContext, type NodeData, type Rect } from '@qiuyulc/infinite-map';
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
@@ -200,4 +198,3 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
     } satisfies Record<string, Command>,
   };
 }
-

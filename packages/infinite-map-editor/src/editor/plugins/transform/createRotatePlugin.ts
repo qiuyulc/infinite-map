@@ -1,5 +1,4 @@
-import type { InfiniteMapPlugin, MapContext, MapPointerEvent, NodePatch } from '../../types';
-import { STORE_KEYS } from '../../keys';
+import { STORE_KEYS, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
 import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
 
 type RotateState = {

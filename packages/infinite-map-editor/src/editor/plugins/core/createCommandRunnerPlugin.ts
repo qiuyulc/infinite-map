@@ -1,4 +1,4 @@
-import type { Command, InfiniteMapPlugin, MapContext } from '../../types';
+import type { Command, InfiniteMapPlugin, MapContext } from '@qiuyulc/infinite-map';
 
 export function createCommandRunnerPlugin(): InfiniteMapPlugin {
   return {
@@ -20,4 +20,3 @@ export function createCommandRunnerPlugin(): InfiniteMapPlugin {
     },
   };
 }
-
