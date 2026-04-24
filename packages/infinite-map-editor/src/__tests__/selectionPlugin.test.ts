@@ -86,7 +86,7 @@ describe('createSelectionPlugin', () => {
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 
-  it('locked/hidden nodes are not selectable', () => {
+  it('locked nodes are selectable (but stop), hidden nodes are ignored', () => {
     const { ctx, store } = makeCtx([
       { id: 'a', x: 0, y: 0, width: 100, height: 80, locked: true },
       { id: 'b', x: 200, y: 0, width: 100, height: 80, hidden: true },
@@ -96,12 +96,12 @@ describe('createSelectionPlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['c']);
 
     const res1 = plugin.handlers!.onPointerDown!(pe({ world: { x: 10, y: 10 } }), ctx);
-    expect(res1).toEqual({ handled: true, mode: 'continue' });
-    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['c']);
+    expect(res1).toEqual({ handled: true, mode: 'stop' });
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
 
     const res2 = plugin.handlers!.onPointerDown!(pe({ world: { x: 210, y: 10 } }), ctx);
     expect(res2).toEqual({ handled: true, mode: 'continue' });
-    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['c']);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 
   it('click on resize handle does not clear selection (continue propagation)', () => {

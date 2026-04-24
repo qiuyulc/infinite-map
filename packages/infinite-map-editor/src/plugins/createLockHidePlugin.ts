@@ -101,8 +101,14 @@ export function createLockHidePlugin(): InfiniteMapPlugin {
       const targets = getTargets(ctx);
       if (targets.length === 0) return;
       const nodes = ctx.getNodes();
-      // 允许对“有效锁定”的节点解锁：只需要把该节点自身 locked=false（祖先锁定仍会生效）
-      const ids = targets.filter((id) => !isHiddenEffective(nodes, id));
+      // 只对“自身 locked=true”的节点解锁（避免对未锁定节点产生无意义 patches）
+      const byId = new Map(nodes.map((n) => [n.id, n]));
+      const ids = targets.filter((id) => {
+        const n = byId.get(id);
+        if (!n) return false;
+        if (isHiddenEffective(nodes, id)) return false;
+        return n.locked === true;
+      });
       if (ids.length === 0) return;
       doc.applyPatches(
         ids.map((id) => ({ type: 'set', id, data: { locked: false } as Partial<NodeData> })),
@@ -156,7 +162,13 @@ export function createLockHidePlugin(): InfiniteMapPlugin {
     const ids = getSelectionService(ctx)?.getIds?.() ?? [];
     if (ids.length === 0) return false;
     const nodes = ctx.getNodes();
-    return ids.some((id) => !isHiddenEffective(nodes, id));
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    return ids.some((id) => {
+      const n = byId.get(id);
+      if (!n) return false;
+      if (isHiddenEffective(nodes, id)) return false;
+      return n.locked === true;
+    });
   };
 
   const enabledForHideToolbar = (ctx: MapContext) => {
@@ -174,7 +186,13 @@ export function createLockHidePlugin(): InfiniteMapPlugin {
   const enabledForUnlockMenu = (ctx: MapContext, s: ContextMenuPayload) => {
     const nodes = ctx.getNodes();
     const ids = s.selectionIds.length ? s.selectionIds : s.hitNodeId ? [s.hitNodeId] : [];
-    return ids.some((id) => !isHiddenEffective(nodes, id));
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    return ids.some((id) => {
+      const n = byId.get(id);
+      if (!n) return false;
+      if (isHiddenEffective(nodes, id)) return false;
+      return n.locked === true;
+    });
   };
 
   const enabledForHideMenu = (ctx: MapContext, s: ContextMenuPayload) => {

@@ -83,11 +83,6 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
           return { handled: false };
         }
 
-        // locked/hidden：不可选
-        if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) {
-          return { handled: true, mode: 'continue' };
-        }
-
         const prev = ctx.store.get<string[]>(storeKey) ?? [];
         // group：若当前已经选中了某个 group，则默认把“点到组内成员”视为点到该 group
         // 目的：让用户可以直接拖动整组（不需要精确点到外框）
@@ -113,8 +108,15 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
         //   - 点击未选中的节点：变为单选该节点
         const next = e.modifiers.shift ? toggle(prev, hitId) : prev.includes(hitId) ? prev : [hitId];
 
+        // hidden：不可选（不改变 selection），但继续传播，避免阻断画布 pan
+        if (isHiddenEffective(ctx.getNodes(), hitId)) {
+          return { handled: true, mode: 'continue' };
+        }
+
         // 无变化就不触发
         if (next.length === prev.length && next.every((x, i) => x === prev[i])) {
+          // 若命中的是 locked 节点：阻断后续交互（避免 drag/resize 接管）
+          if (isLockedEffective(ctx.getNodes(), hitId)) return { handled: true, mode: 'stop' };
           // 依然继续传播：允许 drag 插件接管拖拽
           return { handled: true, mode: 'continue' };
         }
@@ -122,6 +124,9 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
         ctx.store.set(storeKey, next);
         ctx.bus.emit('selection:change', { ids: next });
         ctx.requestRender();
+
+        // locked 节点允许被选中（用于解锁等），但不允许继续交互（drag/resize/rotate）
+        if (isLockedEffective(ctx.getNodes(), hitId)) return { handled: true, mode: 'stop' };
 
         // 命中节点时继续传播：
         // - 允许后续 drag 插件接管拖拽
