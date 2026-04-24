@@ -84,9 +84,8 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
   const marqueeRequireShift = opts.marquee?.requireShift ?? false;
   const clipboardEnabled = opts.clipboard?.enabled ?? true;
 
-  // 默认 snapping 参数：保持与当前行为一致（grid=48）
-  const defaultSnap: SnapGuidesPluginOptions = { enabled: true, gridSize: 48, thresholdPx: 6 };
-  const snap = { ...defaultSnap, ...(opts.snap ?? {}) } satisfies SnapGuidesPluginOptions;
+  // snapping 默认值回归到插件自身默认（gridSize='auto' 等）
+  const snap: SnapGuidesPluginOptions = opts.snap ?? {};
 
   const view = opts.view ?? {};
 

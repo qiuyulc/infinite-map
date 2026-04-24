@@ -2,6 +2,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Slider } from '../components/Slider';
 import { STORE_KEYS, type Camera, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
+import { getViewLimits } from './createViewCommandsPlugin';
 
 export type ZoomDockPluginOptions = {
   /**
@@ -45,13 +46,7 @@ function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginO
   if (!enabled) return null;
 
   const cam = ctx.getCamera();
-  const viewCfg =
-    ctx.store.get<{
-      minZoom?: number;
-      maxZoom?: number;
-    }>(STORE_KEYS.viewConfig) ?? {};
-  const minZoom = viewCfg.minZoom ?? 0.25;
-  const maxZoom = viewCfg.maxZoom ?? 2.5;
+  const { minZoom, maxZoom } = getViewLimits(ctx);
 
   // slider 用对数映射（更符合缩放直觉）
   const logMin = Math.log(minZoom);

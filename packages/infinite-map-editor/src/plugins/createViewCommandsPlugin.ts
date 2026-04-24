@@ -4,6 +4,8 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
 
+const DEFAULT_VIEW_LIMITS = { minZoom: 0.25, maxZoom: 2.5, zoomStep: 1.2, paddingPx: 48 } as const;
+
 function bboxFromNodes(nodes: NodeData[]): Rect | null {
   if (nodes.length === 0) return null;
   let minX = Infinity,
@@ -35,7 +37,7 @@ function getCameraService(ctx: MapContext) {
   return ctx.getService<{ get: () => Camera; set: (c: Camera, immediate?: boolean) => void }>('camera');
 }
 
-function getLimits(ctx: MapContext): { minZoom: number; maxZoom: number; zoomStep: number; paddingPx: number } {
+export function getViewLimits(ctx: MapContext): { minZoom: number; maxZoom: number; zoomStep: number; paddingPx: number } {
   const cfg =
     ctx.store.get<{
       minZoom?: number;
@@ -48,10 +50,10 @@ function getLimits(ctx: MapContext): { minZoom: number; maxZoom: number; zoomSte
       paddingPx?: number;
     }>(STORE_KEYS.viewConfig) ?? {};
   return {
-    minZoom: cfg.minZoom ?? 0.25,
-    maxZoom: cfg.maxZoom ?? 2.5,
-    zoomStep: cfg.zoomStep ?? 1.2,
-    paddingPx: cfg.paddingPx ?? 48,
+    minZoom: cfg.minZoom ?? DEFAULT_VIEW_LIMITS.minZoom,
+    maxZoom: cfg.maxZoom ?? DEFAULT_VIEW_LIMITS.maxZoom,
+    zoomStep: cfg.zoomStep ?? DEFAULT_VIEW_LIMITS.zoomStep,
+    paddingPx: cfg.paddingPx ?? DEFAULT_VIEW_LIMITS.paddingPx,
   };
 }
 
@@ -62,7 +64,7 @@ function setCamera(ctx: MapContext, next: Camera, immediate?: boolean) {
 }
 
 function fitRect(ctx: MapContext, rect: Rect, opts?: { paddingPx?: number; immediate?: boolean }) {
-  const { minZoom, maxZoom, paddingPx } = getLimits(ctx);
+  const { minZoom, maxZoom, paddingPx } = getViewLimits(ctx);
   const padPx = opts?.paddingPx ?? paddingPx;
   const vp = ctx.getViewport();
   const availW = Math.max(1, vp.w - padPx * 2);
@@ -110,6 +112,7 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
     requires: ['commands', 'camera'],
     setup: (ctx) => {
       // 将配置写入 store，便于命令实现读取（不依赖闭包）
+      // 约定：这里会补齐默认值，使 view/zoomDock 等都能读取到“统一的默认值来源”
       const prev = ctx.store.get<{
         minZoom?: number;
         maxZoom?: number;
@@ -117,11 +120,10 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
         paddingPx?: number;
       }>(STORE_KEYS.viewConfig);
       ctx.store.set(STORE_KEYS.viewConfig, {
-        ...prev,
-        minZoom: opts.minZoom ?? prev?.minZoom,
-        maxZoom: opts.maxZoom ?? prev?.maxZoom,
-        paddingPx: opts.paddingPx ?? prev?.paddingPx,
-        zoomStep: opts.zoomStep ?? prev?.zoomStep,
+        minZoom: opts.minZoom ?? prev?.minZoom ?? DEFAULT_VIEW_LIMITS.minZoom,
+        maxZoom: opts.maxZoom ?? prev?.maxZoom ?? DEFAULT_VIEW_LIMITS.maxZoom,
+        paddingPx: opts.paddingPx ?? prev?.paddingPx ?? DEFAULT_VIEW_LIMITS.paddingPx,
+        zoomStep: opts.zoomStep ?? prev?.zoomStep ?? DEFAULT_VIEW_LIMITS.zoomStep,
       });
     },
     commands: {
@@ -130,7 +132,7 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
         title: 'Zoom in',
         shortcut: 'Mod+=',
         run: (ctx) => {
-          const { minZoom, maxZoom, zoomStep } = getLimits(ctx);
+          const { minZoom, maxZoom, zoomStep } = getViewLimits(ctx);
           const cam = getCameraService(ctx)?.get?.() ?? ctx.getCamera();
           const nextZoom = clamp(cam.zoom * zoomStep, minZoom, maxZoom);
           setCamera(ctx, { ...cam, zoom: nextZoom });
@@ -141,7 +143,7 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
         title: 'Zoom out',
         shortcut: 'Mod+-',
         run: (ctx) => {
-          const { minZoom, maxZoom, zoomStep } = getLimits(ctx);
+          const { minZoom, maxZoom, zoomStep } = getViewLimits(ctx);
           const cam = getCameraService(ctx)?.get?.() ?? ctx.getCamera();
           const nextZoom = clamp(cam.zoom / zoomStep, minZoom, maxZoom);
           setCamera(ctx, { ...cam, zoom: nextZoom });
@@ -151,7 +153,7 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
         id: 'view.resetZoom',
         title: 'Reset zoom',
         run: (ctx) => {
-          const { minZoom, maxZoom } = getLimits(ctx);
+          const { minZoom, maxZoom } = getViewLimits(ctx);
           const cam = getCameraService(ctx)?.get?.() ?? ctx.getCamera();
           setCamera(ctx, { ...cam, zoom: clamp(1, minZoom, maxZoom) });
         },
