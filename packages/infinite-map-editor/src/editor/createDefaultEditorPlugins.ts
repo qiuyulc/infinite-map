@@ -32,23 +32,6 @@ import {
 
 export type DefaultEditorOptions = {
   /**
-   * @deprecated 请改用 `marquee.enabled`
-   */
-  marqueeEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `marquee.requireShift`
-   */
-  marqueeRequireShift?: boolean;
-  /**
-   * @deprecated 请改用 `clipboard.enabled`
-   */
-  clipboardEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `shortcuts.commandShortcuts`
-   */
-  shortcutOverrides?: Record<string, string | null>;
-
-  /**
    * 框选插件（marquee）
    */
   marquee?: MarqueeSelectPluginOptions & { enabled?: boolean };
@@ -97,13 +80,9 @@ export type DefaultEditorOptions = {
  * - marquee：空白拖拽框选（放最后，避免抢占 handle/drag）
  */
 export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): InfiniteMapPlugin[] {
-  const marqueeEnabled = opts.marquee?.enabled ?? opts.marqueeEnabled ?? true;
-  const marqueeRequireShift = opts.marquee?.requireShift ?? opts.marqueeRequireShift ?? false;
-  const clipboardEnabled = opts.clipboard?.enabled ?? opts.clipboardEnabled ?? true;
-
-  const shortcuts: ShortcutsPluginOptions | undefined =
-    opts.shortcuts ??
-    (opts.shortcutOverrides ? ({ commandShortcuts: opts.shortcutOverrides } satisfies ShortcutsPluginOptions) : undefined);
+  const marqueeEnabled = opts.marquee?.enabled ?? true;
+  const marqueeRequireShift = opts.marquee?.requireShift ?? false;
+  const clipboardEnabled = opts.clipboard?.enabled ?? true;
 
   // 默认 snapping 参数：保持与当前行为一致（grid=48）
   const defaultSnap: SnapGuidesPluginOptions = { enabled: true, gridSize: 48, thresholdPx: 6 };
@@ -115,7 +94,7 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     createKeyboardStatePlugin(opts.keyboardState),
     createCoreServicesPlugin(),
     createCommandRunnerPlugin(),
-    createShortcutsPlugin(shortcuts),
+    createShortcutsPlugin(opts.shortcuts),
     createHistoryPlugin(opts.history),
     createViewCommandsPlugin(view),
     createZIndexPlugin(),

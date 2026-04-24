@@ -93,13 +93,12 @@ export default function App() {
   const plugins = useMemo(() => {
     return composePlugins([
       ...createDefaultEditorPluginsWithUI({
-        rulersEnabled,
-        minimapEnabled,
-        zoomDockEnabled,
-        toolbarEnabled,
-        contextMenuEnabled,
-        marqueeEnabled: true,
-        marqueeRequireShift: false,
+        rulers: { enabled: rulersEnabled },
+        minimap: { enabled: minimapEnabled },
+        zoomDock: { enabled: zoomDockEnabled },
+        toolbar: { enabled: toolbarEnabled },
+        contextMenu: { enabled: contextMenuEnabled },
+        marquee: { enabled: true, requireShift: false },
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
       createHudContributionExamplePlugin(),

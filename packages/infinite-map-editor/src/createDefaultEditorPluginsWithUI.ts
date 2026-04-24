@@ -20,27 +20,6 @@ import {
 
 export type DefaultEditorWithUIOptions = DefaultEditorOptions & {
   /**
-   * @deprecated 请改用 `rulers`（或 `rulersEnabled` 仅作为开关）
-   */
-  rulersEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `minimap`（或 `minimapEnabled` 仅作为开关）
-   */
-  minimapEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `toolbar`（或 `toolbarEnabled` 仅作为开关）
-   */
-  toolbarEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `zoomDock`（或 `zoomDockEnabled` 仅作为开关）
-   */
-  zoomDockEnabled?: boolean;
-  /**
-   * @deprecated 请改用 `contextMenu`（或 `contextMenuEnabled` 仅作为开关）
-   */
-  contextMenuEnabled?: boolean;
-
-  /**
    * HUD/UI 插件配置（按插件名分组）
    * - enabled：是否挂载该 HUD 插件（不挂载 = 连 overlay 都不会创建）
    */
@@ -63,18 +42,21 @@ export type DefaultEditorWithUIOptions = DefaultEditorOptions & {
  * - HUD/UI 插件：toolbar / zoomDock / contextMenu / rulers / minimap
  */
 export function createDefaultEditorPluginsWithUI(opts: DefaultEditorWithUIOptions = {}): InfiniteMapPlugin[] {
-  const marqueeEnabled = opts.marquee?.enabled ?? opts.marqueeEnabled ?? true;
-  const marqueeRequireShift = opts.marquee?.requireShift ?? opts.marqueeRequireShift ?? false;
+  const marqueeEnabled = opts.marquee?.enabled ?? true;
+  const marqueeRequireShift = opts.marquee?.requireShift ?? false;
 
   // 先构造 core，但暂时不加 marquee，避免 UI 插件被插在 marquee 后面
-  const core = createDefaultEditorPlugins({ ...opts, marqueeEnabled: false });
+  const core = createDefaultEditorPlugins({
+    ...opts,
+    marquee: { ...(opts.marquee ?? {}), enabled: false },
+  });
   const out: InfiniteMapPlugin[] = [...core];
 
-  const toolbarEnabled = opts.toolbar?.enabled ?? opts.toolbarEnabled ?? false;
-  const zoomDockEnabled = opts.zoomDock?.enabled ?? opts.zoomDockEnabled ?? true;
-  const contextMenuEnabled = opts.contextMenu?.enabled ?? opts.contextMenuEnabled ?? false;
-  const rulersEnabled = opts.rulers?.enabled ?? opts.rulersEnabled ?? true;
-  const minimapEnabled = opts.minimap?.enabled ?? opts.minimapEnabled ?? true;
+  const toolbarEnabled = opts.toolbar?.enabled ?? false;
+  const zoomDockEnabled = opts.zoomDock?.enabled ?? true;
+  const contextMenuEnabled = opts.contextMenu?.enabled ?? false;
+  const rulersEnabled = opts.rulers?.enabled ?? true;
+  const minimapEnabled = opts.minimap?.enabled ?? true;
 
   if (toolbarEnabled) {
     const { enabled: _enabled, ...toolbar } = opts.toolbar ?? {};

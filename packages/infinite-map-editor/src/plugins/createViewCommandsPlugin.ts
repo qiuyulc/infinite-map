@@ -46,10 +46,6 @@ function getLimits(ctx: MapContext): { minZoom: number; maxZoom: number; zoomSte
        * - 更符合编辑器直觉（与 zoom 无关）
        */
       paddingPx?: number;
-      /**
-       * @deprecated 旧字段：世界坐标 padding（保留兼容）
-       */
-      paddingWorld?: number;
     }>(STORE_KEYS.viewConfig) ?? {};
   return {
     minZoom: cfg.minZoom ?? 0.25,

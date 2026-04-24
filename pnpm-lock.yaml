@@ -141,6 +141,9 @@ importers:
       '@qiuyulc/infinite-map':
         specifier: workspace:*
         version: link:../packages/infinite-map
+      '@qiuyulc/infinite-map-editor':
+        specifier: workspace:*
+        version: link:../packages/infinite-map-editor
       react:
         specifier: ^19.2.5
         version: 19.2.5

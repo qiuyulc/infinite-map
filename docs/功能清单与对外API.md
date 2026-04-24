@@ -143,7 +143,7 @@
 - `createDefaultEditorPlugins(opts?)` / `type DefaultEditorOptions`
 - `EditorPlugins`（命名空间导出内置插件工厂）
 
-> 备注：`DefaultEditorOptions` 现在按“插件名分组”提供配置（例如 `snap/view/shortcuts/drag/resize/...`），并保留旧字段（如 `shortcutOverrides`）作为兼容入口（已标记为 deprecated）。
+> 备注：`DefaultEditorOptions` 现在按“插件名分组”提供配置（例如 `snap/view/shortcuts/drag/resize/...`），便于透传到对应插件工厂。
 
 ### 2.1.3 Editor UI（仍从包根入口导出）
 - `createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
