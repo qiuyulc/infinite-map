@@ -8,6 +8,7 @@ lib
 **/es
 **/lib
 **/.vite
+**/.vitepress/cache
 **/.turbo
 **/.cache
 **/*.log

@@ -2,8 +2,9 @@
  * 包入口（统一导出）
  *
  * 说明：
- * - 这里会把 core/editor/ui/demo 都统一从 `@qiuyulc/infinite-map` 导出，方便使用者一个入口拿全。
- * - 同时仍保留子路径入口（推荐按层使用，便于未来拆包）：
+ * - 本包只提供“渲染层（InfiniteMap）+ 基础类型/工具”。
+ * - 编辑器能力已拆分到：`@qiuyulc/infinite-map-editor`。
+ * - 同时仍保留子路径入口（更清晰）：
  *   - `@qiuyulc/infinite-map/ui`
  *   - `@qiuyulc/infinite-map/demo`
  */
@@ -20,22 +21,36 @@ export type { InfiniteMapProps, InfiniteMapApi } from './components/InfiniteMap'
 export type { Camera, NodeData, Rect } from './core/types';
 export { rectIntersects } from './core/types';
 
+// 基础工具（editor/hud 会复用）
+export { clamp, cssVar, cssVarNum, cssVarRgb } from './core/utils';
+export { computeAdaptiveSteps } from './core/steps';
+
 // 布局（纯计算）
 export { computeLayout } from './layout/layoutPresets';
 export type { LayoutPreset, LayoutOptions } from './layout/layoutPresets';
 
 // -----------------------------------------------------------------------------
-// Editor（插件系统与编辑器能力，UI 无关）
+// Plugin Contract（类型与运行时：供 editor 包/社区插件复用）
 // -----------------------------------------------------------------------------
 
-export { composePlugins } from './editor/composePlugins';
-export { createDefaultEditorPlugins } from './editor/createDefaultEditorPlugins';
-export type { DefaultEditorOptions } from './editor/createDefaultEditorPlugins';
+// plugin contract types（editor 包会依赖这些类型）
+export type {
+  InfiniteMapPlugin,
+  MapContext,
+  NodePatch,
+  ChangeMeta,
+  Point,
+  Command,
+  HandlerResult,
+  MapPointerEvent,
+  MapWheelEvent,
+  MapKeyEvent,
+  MapContextMenuEvent,
+} from './editor/types';
 
-export type { InfiniteMapPlugin, MapContext, NodePatch, ChangeMeta } from './editor/types';
-
-// 插件集合（按需引用：EditorPlugins.transform / EditorPlugins.hud / ...）
-export * as EditorPlugins from './editor/plugins';
+// store keys/runtime utils（editor 包需要）
+export { STORE_KEYS, VISUAL_CONST } from './editor/keys';
+export { applyPatchesToNodes, createEventBus, createStore } from './editor/runtime';
 
 // -----------------------------------------------------------------------------
 // UI Kit（默认皮肤/组件/HUD 插件）
@@ -43,6 +58,9 @@ export * as EditorPlugins from './editor/plugins';
 // 既支持从主入口拿：import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map'
 // 也支持子路径更清晰：import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map/ui'
 export * from './ui';
+
+// themeVersion（hud overlays 会复用）
+export { ThemeVersionContext, useThemeVersion } from './hooks/useThemeVersion';
 
 // -----------------------------------------------------------------------------
 // Demo（仅建议用于 playground/文档示例，不建议业务依赖）

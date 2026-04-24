@@ -18,9 +18,10 @@ export default defineConfig({
   webServer: {
     // 预览模式更接近真实发布环境（也避免 dev server 的 HMR 噪音）
     // 注意：这里的 cwd 是 playground 目录（执行 `pnpm -C playground e2e`），因此不要再写 `-C playground`
-    // e2e 运行时需要 `@qiuyulc/infinite-map` 的 es/lib 产物存在（subpath exports 指向 es/ui/...）
+    // e2e 运行时需要 workspace 依赖包的 es/lib 产物存在（subpath exports 指向 es/...）
     // 所以这里先构建依赖包，再构建 playground
-    command: 'pnpm -C ../packages/infinite-map build && pnpm build && pnpm preview --host localhost --port 4173 --strictPort',
+    command:
+      'pnpm -C ../packages/infinite-map build && pnpm -C ../packages/infinite-map-editor build && pnpm build && pnpm preview --host localhost --port 4173 --strictPort',
     url: 'http://localhost:4173',
     // 在 monorepo 本地跑 e2e 时，经常会已有 preview/dev server 占用端口
     // 这里统一复用已有服务，避免因为端口占用导致 e2e 直接失败

@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
-  composePlugins,
   InfiniteMap,
   computeLayout,
   type NodeData,
 } from '@qiuyulc/infinite-map';
-import { InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map/ui';
+import { composePlugins } from '@qiuyulc/infinite-map-editor';
+import { InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor/ui';
 import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
 

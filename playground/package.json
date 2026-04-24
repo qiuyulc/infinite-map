@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@qiuyulc/infinite-map": "workspace:*",
+    "@qiuyulc/infinite-map-editor": "workspace:*",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
