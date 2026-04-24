@@ -1,8 +1,8 @@
 import { STORE_KEYS, type ChangeMeta, type Command, type InfiniteMapPlugin, type MapContext, type NodeData, type NodePatch } from '@qiuyulc/infinite-map';
-import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
-import type { ToolbarItem } from '../hud/createToolbarPlugin';
-import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
-import type { ContextMenuPayload } from '../hud/createContextMenuPlugin';
+import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
+import type { ToolbarItem } from './createToolbarPlugin';
+import type { ContextMenuItem } from './createDefaultContextMenuPlugin';
+import type { ContextMenuPayload } from './createContextMenuPlugin';
 import { createElement, type ReactNode } from 'react';
 
 const Icon = ({ children }: { children?: ReactNode }) =>

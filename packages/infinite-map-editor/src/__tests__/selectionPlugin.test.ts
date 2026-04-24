@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type MapContext, type MapPointerEvent } from '@qiuyulc/infinite-map';
-import { createSelectionPlugin } from '../editor/plugins/selection/createSelectionPlugin';
+import { createSelectionPlugin } from '../plugins/createSelectionPlugin';
 
 function makeCtx(nodes: NodeData[]) {
   const bus = createEventBus();
@@ -125,4 +125,3 @@ describe('createSelectionPlugin', () => {
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 });
-

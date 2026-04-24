@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
-import { createRotatePlugin } from '../editor/plugins/transform/createRotatePlugin';
+import { createRotatePlugin } from '../plugins/createRotatePlugin';
 
 function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
   const bus = createEventBus();
@@ -115,4 +115,3 @@ describe('createRotatePlugin', () => {
     expect(getNodes().find((n) => n.id === 'b')!.rotation).toBeUndefined();
   });
 });
-

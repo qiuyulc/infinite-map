@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect, useState, type CSSProperties } from 'react';
-import { Slider } from '../../../components/Slider';
+import { Slider } from '../components/Slider';
 import { STORE_KEYS, type Camera, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 
 export type ZoomDockPluginOptions = {

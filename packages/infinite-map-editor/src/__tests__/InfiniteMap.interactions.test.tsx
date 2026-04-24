@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { InfiniteMap, STORE_KEYS, type InfiniteMapPlugin, type MapContext, type NodeData } from '@qiuyulc/infinite-map';
 import { createDefaultEditorPlugins } from '../editor/createDefaultEditorPlugins';
-import { createMinimapPlugin } from '../editor/plugins/hud/createMinimapPlugin';
+import { createMinimapPlugin } from '../plugins/createMinimapPlugin';
 
 function setRect(el: Element, rect: Partial<DOMRect>) {
   (el as any).getBoundingClientRect = () =>
@@ -87,4 +87,3 @@ describe('InfiniteMap integrations (jsdom)', () => {
     });
   });
 });
-

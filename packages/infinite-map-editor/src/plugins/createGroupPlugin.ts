@@ -17,9 +17,9 @@ import {
   getAncestorChain,
   getDescendantIds,
   isGroupNode,
-} from '../../groupUtils';
-import type { ToolbarItem } from '../hud/createToolbarPlugin';
-import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
+} from '../editor/groupUtils';
+import type { ToolbarItem } from './createToolbarPlugin';
+import type { ContextMenuItem } from './createDefaultContextMenuPlugin';
 
 const Icon = ({ children }: { children?: ReactNode }) =>
   createElement(

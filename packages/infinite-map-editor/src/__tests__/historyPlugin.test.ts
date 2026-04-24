@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type ChangeMeta, type MapContext, type NodePatch } from '@qiuyulc/infinite-map';
-import { createHistoryPlugin } from '../editor/plugins/core/createHistoryPlugin';
+import { createHistoryPlugin } from '../plugins/createHistoryPlugin';
 
 function makeCtx(initialNodes: NodeData[]) {
   const bus = createEventBus();
@@ -96,4 +96,3 @@ describe('createHistoryPlugin', () => {
     expect(getNodes().map((n) => n.id)).toEqual(['n1']);
   });
 });
-

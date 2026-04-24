@@ -18,7 +18,7 @@ import {
   createSelectionPlugin,
   createGroupPlugin,
   createLockHidePlugin,
-} from './plugins';
+} from '../plugins';
 
 export type DefaultEditorOptions = {
   /** 空白拖拽是否框选 */
@@ -84,4 +84,3 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
 
   return composePlugins(plugins);
 }
-

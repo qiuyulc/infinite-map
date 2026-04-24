@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type MapContext, type MapPointerEvent } from '@qiuyulc/infinite-map';
-import { createMarqueeSelectPlugin } from '../editor/plugins/selection/createMarqueeSelectPlugin';
+import { createMarqueeSelectPlugin } from '../plugins/createMarqueeSelectPlugin';
 
 function makeCtx(nodes: NodeData[]) {
   const bus = createEventBus();

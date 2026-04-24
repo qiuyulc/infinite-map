@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
-import { createResizePlugin } from '../editor/plugins/transform/createResizePlugin';
+import { createResizePlugin } from '../plugins/createResizePlugin';
 
 function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
   const bus = createEventBus();
@@ -118,4 +118,3 @@ describe('createResizePlugin', () => {
     expect(c2.x).toBeGreaterThan(120);
   });
 });
-

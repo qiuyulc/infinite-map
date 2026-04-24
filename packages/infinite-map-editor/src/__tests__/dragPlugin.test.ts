@@ -11,7 +11,7 @@ import {
   type MapPointerEvent,
   type NodePatch,
 } from '@qiuyulc/infinite-map';
-import { createDragPlugin } from '../editor/plugins/transform/createDragPlugin';
+import { createDragPlugin } from '../plugins/createDragPlugin';
 
 function makePointerEvent(type: 'down' | 'move' | 'up' | 'cancel', world: { x: number; y: number }, pointerId = 1): MapPointerEvent {
   return {
@@ -76,4 +76,3 @@ describe('createDragPlugin', () => {
     expect(patchesApplied.some((x) => x.meta.phase === 'end')).toBe(true);
   });
 });
-

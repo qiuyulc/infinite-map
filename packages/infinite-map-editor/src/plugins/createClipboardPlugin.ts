@@ -1,5 +1,5 @@
 import { STORE_KEYS, type ChangeMeta, type Command, type InfiniteMapPlugin, type MapContext, type NodeData, type NodePatch, type Point } from '@qiuyulc/infinite-map';
-import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 type ClipboardData = {
   nodes: NodeData[]; // snapshot

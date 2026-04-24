@@ -7,8 +7,8 @@ import {
   type NodeData,
   type NodePatch,
 } from '@qiuyulc/infinite-map';
-import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
-import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../editor/snapUtils';
+import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
  
 export type DragPluginOptions = {
   /**

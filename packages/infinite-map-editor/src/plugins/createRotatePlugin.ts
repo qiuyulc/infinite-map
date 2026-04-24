@@ -1,5 +1,5 @@
 import { STORE_KEYS, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
-import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 type RotateState = {
   pointerId: number;

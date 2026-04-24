@@ -7,8 +7,8 @@ import {
   type NodeData,
   type NodePatch,
 } from '@qiuyulc/infinite-map';
-import { getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../../snapUtils';
-import { DEFAULT_GROUP_PADDING, isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../editor/snapUtils';
+import { DEFAULT_GROUP_PADDING, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 export type ResizePluginOptions = {
   selectionKey?: string;

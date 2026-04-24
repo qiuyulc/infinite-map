@@ -1,6 +1,6 @@
 import { STORE_KEYS, type Camera, type ChangeMeta, type InfiniteMapPlugin, type MapContext, type NodePatch } from '@qiuyulc/infinite-map';
-import type { ToolbarItem } from '../hud/createToolbarPlugin';
-import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
+import type { ToolbarItem } from './createToolbarPlugin';
+import type { ContextMenuItem } from './createDefaultContextMenuPlugin';
 
 /**
  * 核心 services（建议默认启用）

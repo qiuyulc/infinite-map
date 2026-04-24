@@ -1,6 +1,6 @@
 import { STORE_KEYS, rectIntersects, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodeData, type Rect } from '@qiuyulc/infinite-map';
 import { MarqueeOverlay } from './MarqueeOverlay';
-import { isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 export type MarqueeSelectPluginOptions = {
   storeKey?: string;

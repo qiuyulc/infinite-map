@@ -18,18 +18,18 @@ export type { InfiniteMapTheme } from '@qiuyulc/infinite-map';
 export { lightTheme, darkTheme, mergeTheme, themeToCSSVars, themeOverrideToCSSVars } from '@qiuyulc/infinite-map';
 
 // HUD plugins
-export { createToolbarPlugin } from './editor/plugins/hud/createToolbarPlugin';
-export { createDefaultContextMenuPlugin } from './editor/plugins/hud/createDefaultContextMenuPlugin';
-export { createMinimapPlugin } from './editor/plugins/hud/createMinimapPlugin';
-export { createRulersPlugin } from './editor/plugins/hud/createRulersPlugin';
-export { createZoomDockPlugin } from './editor/plugins/hud/createZoomDockPlugin';
+export { createToolbarPlugin } from './plugins/createToolbarPlugin';
+export { createDefaultContextMenuPlugin } from './plugins/createDefaultContextMenuPlugin';
+export { createMinimapPlugin } from './plugins/createMinimapPlugin';
+export { createRulersPlugin } from './plugins/createRulersPlugin';
+export { createZoomDockPlugin } from './plugins/createZoomDockPlugin';
 
 // editor utils（供插件/上层使用）
 export * from './editor/groupUtils';
 export * from './editor/snapUtils';
 
 // 插件集合（按需引用）
-export * as EditorPlugins from './editor/plugins';
+export * as EditorPlugins from './plugins';
 
 // 便于用户只引一个包：把核心类型从 core 包再导出一份
 export type { InfiniteMapPlugin, MapContext, NodePatch, ChangeMeta } from '@qiuyulc/infinite-map';

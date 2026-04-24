@@ -1,6 +1,6 @@
 import { STORE_KEYS, type InfiniteMapPlugin, type MapPointerEvent, type NodeData } from '@qiuyulc/infinite-map';
 import { SelectionOverlay } from './SelectionOverlay';
-import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../../groupUtils';
+import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 export type SelectionPluginOptions = {
   /**

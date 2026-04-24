@@ -1,6 +1,6 @@
 import type { Command, InfiniteMapPlugin, MapContext } from '@qiuyulc/infinite-map';
-import type { ToolbarItem } from '../hud/createToolbarPlugin';
-import type { ContextMenuItem } from '../hud/createDefaultContextMenuPlugin';
+import type { ToolbarItem } from './createToolbarPlugin';
+import type { ContextMenuItem } from './createDefaultContextMenuPlugin';
 
 function icon() {
   return (

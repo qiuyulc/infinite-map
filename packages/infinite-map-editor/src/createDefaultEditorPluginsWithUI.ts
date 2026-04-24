@@ -3,12 +3,14 @@ import { composePlugins } from './editor/composePlugins';
 import type { DefaultEditorOptions } from './editor/createDefaultEditorPlugins';
 import { createDefaultEditorPlugins } from './editor/createDefaultEditorPlugins';
 
-import { createMinimapPlugin } from './editor/plugins/hud/createMinimapPlugin';
-import { createRulersPlugin } from './editor/plugins/hud/createRulersPlugin';
-import { createZoomDockPlugin } from './editor/plugins/hud/createZoomDockPlugin';
-import { createToolbarPlugin } from './editor/plugins/hud/createToolbarPlugin';
-import { createDefaultContextMenuPlugin } from './editor/plugins/hud/createDefaultContextMenuPlugin';
-import { createMarqueeSelectPlugin } from './editor/plugins/selection/createMarqueeSelectPlugin';
+import {
+  createDefaultContextMenuPlugin,
+  createMarqueeSelectPlugin,
+  createMinimapPlugin,
+  createRulersPlugin,
+  createToolbarPlugin,
+  createZoomDockPlugin,
+} from './plugins';
 
 export type DefaultEditorWithUIOptions = DefaultEditorOptions & {
   /** 标尺（顶部/左侧） */
@@ -61,4 +63,3 @@ export function createDefaultEditorPluginsWithUI(opts: DefaultEditorWithUIOption
 
   return composePlugins(out);
 }
-

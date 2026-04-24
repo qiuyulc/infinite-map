@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { STORE_KEYS, type Camera, type MapContext } from '@qiuyulc/infinite-map';
-import { Minimap } from '../../../components/Minimap';
+import { Minimap } from '../components/Minimap';
 import { useThemeVersion } from '@qiuyulc/infinite-map';
 import type { MinimapPluginOptions } from './createMinimapPlugin';
 
