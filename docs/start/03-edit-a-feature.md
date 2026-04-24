@@ -13,10 +13,10 @@
 相关文件（两段都要看）：
 
 1) 右键菜单的“状态开关/坐标”：
-   - `packages/infinite-map/src/editor/plugins/hud/createContextMenuPlugin.ts`
+   - `packages/infinite-map-editor/src/plugins/createContextMenuPlugin.ts`
 
 2) 右键菜单的“UI 长什么样/有哪些项”：
-   - `packages/infinite-map/src/editor/plugins/hud/createDefaultContextMenuPlugin.tsx`
+   - `packages/infinite-map-editor/src/plugins/createDefaultContextMenuPlugin.tsx`
 
 ## 第 2 步：菜单位置为什么不会跑出容器？
 
@@ -44,9 +44,9 @@
 
 对应命令实现的位置（举例）：
 
-- 缩放相关：`packages/infinite-map/src/editor/plugins/core/createViewCommandsPlugin.ts`
-- zIndex 相关：`packages/infinite-map/src/editor/plugins/core/createZIndexPlugin.ts`
-- 剪贴板相关：`packages/infinite-map/src/editor/plugins/clipboard/createClipboardPlugin.ts`
+- 缩放相关：`packages/infinite-map-editor/src/plugins/createViewCommandsPlugin.ts`
+- zIndex 相关：`packages/infinite-map-editor/src/plugins/createZIndexPlugin.ts`
+- 剪贴板相关：`packages/infinite-map-editor/src/plugins/createClipboardPlugin.ts`
 
 ---
 
@@ -64,4 +64,3 @@
    - 去改对应 command/plugin（上面列了常见的几个）
 
 这就是插件化的好处：你不会在 InfiniteMap.tsx 里迷路。
-

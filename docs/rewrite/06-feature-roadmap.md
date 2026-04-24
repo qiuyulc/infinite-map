@@ -24,8 +24,8 @@
 - `bus.emit('selection:change')`
 
 ### 3) 代码位置（建议）
-- `src/editor/plugins/selection/createSelectionPlugin.tsx`
-- `src/editor/plugins/selection/SelectionOverlay.tsx`（选中框 UI）
+- `src/plugins/createSelectionPlugin.tsx`
+- `src/plugins/SelectionOverlay.tsx`（选中框 UI）
 
 ### 4) 伪代码
 ```txt
@@ -55,7 +55,7 @@ onPointerDown(e):
 - 节点 `x/y` 改变（输出 patches 或直接 setNodes）
 
 ### 3) 代码位置
-- `src/editor/plugins/transform/createDragPlugin.ts`
+- `src/plugins/createDragPlugin.ts`
 
 ### 4) 伪代码（核心：screen → world）
 ```txt
@@ -82,7 +82,7 @@ onMove:
 - 节点 `w/h` 改变
 
 ### 3) 代码位置
-- `src/editor/plugins/transform/createResizePlugin.ts`
+- `src/plugins/createResizePlugin.ts`
 
 ### 4) 伪代码
 ```txt
@@ -108,7 +108,7 @@ onMove:
 - undoStack / redoStack（在 store）
 
 ### 代码位置
-- `src/editor/plugins/core/createHistoryPlugin.ts`
+- `src/plugins/createHistoryPlugin.ts`
 
 ### 核心原则（面试亮点）
 - 所有修改走 patch 管道
@@ -119,7 +119,7 @@ onMove:
 ## E. Clipboard（复制/粘贴/重复）
 
 代码位置：
-- `src/editor/plugins/clipboard/createClipboardPlugin.ts`
+- `src/plugins/createClipboardPlugin.ts`
 
 为什么是插件？
 - 业务是否支持剪贴板不一定（有些只读场景）
@@ -129,7 +129,7 @@ onMove:
 ## F. ZIndex（层级）
 
 代码位置：
-- `src/editor/plugins/core/createZIndexPlugin.ts`
+- `src/plugins/createZIndexPlugin.ts`
 
 功能：
 - 置顶/置底/上移一层/下移一层
@@ -139,7 +139,7 @@ onMove:
 ## G. View Commands（视图命令）
 
 代码位置：
-- `src/editor/plugins/core/createViewCommandsPlugin.ts`
+- `src/plugins/createViewCommandsPlugin.ts`
 
 功能：
 - zoomIn/out/reset、fit/center view、fit/center selection
@@ -149,8 +149,7 @@ onMove:
 ## H. HUD（UI：右键/工具栏/minimap/缩放条/标尺）
 
 目录：
-- `src/editor/plugins/hud/`
+- `src/plugins/`
 
 原则：
 - HUD 只做 UI + 触发 command（不要把核心逻辑写在 UI 里）
-

@@ -43,12 +43,14 @@ return [
 
 目录：
 
-`packages/infinite-map-editor/src/editor/plugins/`
+`packages/infinite-map-editor/src/plugins/`
 
-最常用的子目录：
+我们现在采用“按功能点排列”，所以这里没有再分 `transform/selection/hud` 这类子目录，而是直接用文件名表达功能：
 
-- `transform/`：拖拽/缩放/旋转
-- `selection/`：选中/框选
-- `hud/`：UI（右键菜单、工具栏、minimap、缩放条）
+- `createDragPlugin.ts`：拖拽
+- `createResizePlugin.ts`：缩放
+- `createRotatePlugin.ts` / `createRotate3DPlugin.ts`：旋转
+- `createSelectionPlugin.tsx` / `createMarqueeSelectPlugin.tsx`：选中/框选
+- `createToolbarPlugin.tsx` / `createDefaultContextMenuPlugin.tsx` / `createMinimapPlugin.ts` 等：HUD/UI
 
 下一章我们会选一个具体功能（右键菜单），从“我点右键”开始一步步追代码。
