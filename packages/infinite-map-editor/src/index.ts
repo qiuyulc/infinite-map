@@ -8,6 +8,22 @@ export { composePlugins } from './editor/composePlugins';
 export { createDefaultEditorPlugins } from './editor/createDefaultEditorPlugins';
 export type { DefaultEditorOptions } from './editor/createDefaultEditorPlugins';
 
+// 默认编辑器（带 UI / HUD）
+export { createDefaultEditorPluginsWithUI } from './createDefaultEditorPluginsWithUI';
+export type { DefaultEditorWithUIOptions } from './createDefaultEditorPluginsWithUI';
+
+// UI：直接从编辑器包根入口导出（避免 `@qiuyulc/infinite-map-editor/ui`）
+export { BackgroundDots, BackgroundGrid, DefaultNode, InfiniteMapThemeProvider } from '@qiuyulc/infinite-map';
+export type { InfiniteMapTheme } from '@qiuyulc/infinite-map';
+export { lightTheme, darkTheme, mergeTheme, themeToCSSVars, themeOverrideToCSSVars } from '@qiuyulc/infinite-map';
+
+// HUD plugins
+export { createToolbarPlugin } from './editor/plugins/hud/createToolbarPlugin';
+export { createDefaultContextMenuPlugin } from './editor/plugins/hud/createDefaultContextMenuPlugin';
+export { createMinimapPlugin } from './editor/plugins/hud/createMinimapPlugin';
+export { createRulersPlugin } from './editor/plugins/hud/createRulersPlugin';
+export { createZoomDockPlugin } from './editor/plugins/hud/createZoomDockPlugin';
+
 // editor utils（供插件/上层使用）
 export * from './editor/groupUtils';
 export * from './editor/snapUtils';
@@ -17,4 +33,3 @@ export * as EditorPlugins from './editor/plugins';
 
 // 便于用户只引一个包：把核心类型从 core 包再导出一份
 export type { InfiniteMapPlugin, MapContext, NodePatch, ChangeMeta } from '@qiuyulc/infinite-map';
-

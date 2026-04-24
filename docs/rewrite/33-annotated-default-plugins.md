@@ -20,7 +20,7 @@
 - `marqueeEnabled / marqueeRequireShift`
 - `shortcutOverrides`
 
-> 如果你想控制 minimap / rulers / toolbar / contextMenu / zoomDock 这类“HUD/UI”开关，它们在 `@qiuyulc/infinite-map-editor/ui` 的 `createDefaultEditorPluginsWithUI()` 里。
+> 如果你想控制 minimap / rulers / toolbar / contextMenu / zoomDock 这类“HUD/UI”开关，它们在 `@qiuyulc/infinite-map-editor` 的 `createDefaultEditorPluginsWithUI()` 里。
 
 这些开关最终只影响一件事：
 

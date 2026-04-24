@@ -4,8 +4,7 @@ import {
   computeLayout,
   type NodeData,
 } from '@qiuyulc/infinite-map';
-import { composePlugins } from '@qiuyulc/infinite-map-editor';
-import { InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor/ui';
+import { composePlugins, InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
 import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
 

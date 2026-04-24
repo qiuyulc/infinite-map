@@ -1,14 +1,14 @@
 import type { InfiniteMapPlugin } from '@qiuyulc/infinite-map';
-import { composePlugins } from '../editor/composePlugins';
-import type { DefaultEditorOptions } from '../editor/createDefaultEditorPlugins';
-import { createDefaultEditorPlugins } from '../editor/createDefaultEditorPlugins';
+import { composePlugins } from './editor/composePlugins';
+import type { DefaultEditorOptions } from './editor/createDefaultEditorPlugins';
+import { createDefaultEditorPlugins } from './editor/createDefaultEditorPlugins';
 
-import { createMinimapPlugin } from '../editor/plugins/hud/createMinimapPlugin';
-import { createRulersPlugin } from '../editor/plugins/hud/createRulersPlugin';
-import { createZoomDockPlugin } from '../editor/plugins/hud/createZoomDockPlugin';
-import { createToolbarPlugin } from '../editor/plugins/hud/createToolbarPlugin';
-import { createDefaultContextMenuPlugin } from '../editor/plugins/hud/createDefaultContextMenuPlugin';
-import { createMarqueeSelectPlugin } from '../editor/plugins/selection/createMarqueeSelectPlugin';
+import { createMinimapPlugin } from './editor/plugins/hud/createMinimapPlugin';
+import { createRulersPlugin } from './editor/plugins/hud/createRulersPlugin';
+import { createZoomDockPlugin } from './editor/plugins/hud/createZoomDockPlugin';
+import { createToolbarPlugin } from './editor/plugins/hud/createToolbarPlugin';
+import { createDefaultContextMenuPlugin } from './editor/plugins/hud/createDefaultContextMenuPlugin';
+import { createMarqueeSelectPlugin } from './editor/plugins/selection/createMarqueeSelectPlugin';
 
 export type DefaultEditorWithUIOptions = DefaultEditorOptions & {
   /** 标尺（顶部/左侧） */

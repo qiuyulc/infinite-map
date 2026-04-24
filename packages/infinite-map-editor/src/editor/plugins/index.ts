@@ -20,6 +20,5 @@ export { createSnapGuidesPlugin } from './snapping/createSnapGuidesPlugin';
 
 export { createClipboardPlugin } from './clipboard/createClipboardPlugin';
 
-// hud 相关插件依旧放在 editor 包里（并通过 `@qiuyulc/infinite-map-editor/ui` 统一导出）
+// hud 相关插件依旧放在 editor 包里（现在也从 `@qiuyulc/infinite-map-editor` 根入口直接导出）
 export { createContextMenuPlugin } from './hud/createContextMenuPlugin';
-

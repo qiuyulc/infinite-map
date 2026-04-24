@@ -136,14 +136,14 @@
 - UI 组件（渲染层）：`BackgroundDots` / `BackgroundGrid` / `DefaultNode` / `InfiniteMapThemeProvider`
 - Theme：`InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars`
 
-> HUD/UI（minimap / rulers / toolbar / context menu / zoom dock）已拆分到：`@qiuyulc/infinite-map-editor/ui`
+> HUD/UI（minimap / rulers / toolbar / context menu / zoom dock）已统一由：`@qiuyulc/infinite-map-editor` 导出
 
 ### 2.1.2 Editor 包入口导出（`@qiuyulc/infinite-map-editor`）
 - `composePlugins(plugins)`
 - `createDefaultEditorPlugins(opts?)` / `type DefaultEditorOptions`
 - `EditorPlugins`（命名空间导出内置插件工厂）
 
-### 2.1.3 Editor UI 子入口导出（`@qiuyulc/infinite-map-editor/ui`）
+### 2.1.3 Editor UI（仍从包根入口导出）
 - `createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
 - HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
 

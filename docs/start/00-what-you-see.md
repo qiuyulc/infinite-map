@@ -61,6 +61,6 @@ const plugins = useMemo(() => createDefaultEditorPluginsWithUI({ ... }), [...])
   A：`<InfiniteMap />`
 
 - Q：页面上那些“开关”控制什么？  
-  A：控制 `createDefaultEditorPluginsWithUI({ ... })` 里哪些插件启用（它来自 `@qiuyulc/infinite-map-editor/ui`）
+  A：控制 `createDefaultEditorPluginsWithUI({ ... })` 里哪些插件启用（它来自 `@qiuyulc/infinite-map-editor`）
 
 下一章我们讲清楚：**nodes 到底是什么结构？它是怎么被渲染出来的？**
