@@ -16,6 +16,27 @@ async function pickVisible(locator: ReturnType<import('@playwright/test').Page['
   return locator.first();
 }
 
+async function pointerTapOnMap(mapRoot: ReturnType<import('@playwright/test').Page['locator']>, clientX: number, clientY: number) {
+  await mapRoot.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX, clientY });
+  await mapRoot.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX, clientY });
+}
+
+async function pointerDragOnMap(
+  mapRoot: ReturnType<import('@playwright/test').Page['locator']>,
+  from: { x: number; y: number },
+  to: { x: number; y: number }
+) {
+  await mapRoot.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: from.x, clientY: from.y });
+  // 多步 move，更贴近真实拖拽
+  const steps = 12;
+  for (let i = 1; i <= steps; i++) {
+    const x = from.x + ((to.x - from.x) * i) / steps;
+    const y = from.y + ((to.y - from.y) * i) / steps;
+    await mapRoot.dispatchEvent('pointermove', { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 1, clientX: x, clientY: y });
+  }
+  await mapRoot.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', button: 0, buttons: 0, clientX: to.x, clientY: to.y });
+}
+
 test('playground loads', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('本地测试面板')).toBeVisible();
@@ -28,13 +49,14 @@ test('click selects a node (selection overlay appears)', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('本地测试面板')).toBeVisible();
 
+  const mapRoot = await pickVisible(page.locator('[data-im-theme]'));
   // 不强依赖具体文案（节点布局/命名可能调整），选择一个“在视口内”的节点标题即可
   const nodeTitle = await pickVisible(page.locator('.im-node-title'));
   await expect(nodeTitle).toBeVisible();
-  // locator.click 在某些 transform 场景下会误判“在视口外”，这里直接按 boundingBox 点击
+  // 用 pointer 事件直接点在 mapRoot 上（InfiniteMap 监听的是 pointer capture），避免 mouse/click 兼容差异
   const box = await nodeTitle.boundingBox();
   expect(box).toBeTruthy();
-  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await pointerTapOnMap(mapRoot, box!.x + box!.width / 2, box!.y + box!.height / 2);
 
   // 选中后，SelectionOverlay 会渲染带 data-handle/data-nodeid 的控制点
   await expect(page.locator('[data-handle][data-nodeid]').first()).toBeVisible();
@@ -45,6 +67,7 @@ test('drag moves a node (bounding box changes)', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('本地测试面板')).toBeVisible();
 
+  const mapRoot = await pickVisible(page.locator('[data-im-theme]'));
   const node = await pickVisible(page.locator('.im-node-title'));
   await expect(node).toBeVisible();
 
@@ -52,12 +75,10 @@ test('drag moves a node (bounding box changes)', async ({ page }) => {
   expect(before).toBeTruthy();
 
   // 拖动：使用页面坐标拖拽节点
-  const startX = before!.x + Math.min(20, before!.width / 2);
-  const startY = before!.y + Math.min(10, before!.height / 2);
-  await page.mouse.move(startX, startY);
-  await page.mouse.down();
-  await page.mouse.move(startX + 160, startY + 10);
-  await page.mouse.up();
+  const startX = before!.x + before!.width / 2;
+  const startY = before!.y + before!.height / 2;
+  await pointerDragOnMap(mapRoot, { x: startX, y: startY }, { x: startX + 200, y: startY + 20 });
+  await page.waitForTimeout(50);
 
   const after = await node.boundingBox();
   expect(after).toBeTruthy();
