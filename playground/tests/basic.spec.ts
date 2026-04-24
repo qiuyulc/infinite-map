@@ -1,10 +1,27 @@
 import { test, expect } from '@playwright/test';
 
+async function pickVisible(locator: ReturnType<import('@playwright/test').Page['locator']>) {
+  const count = await locator.count();
+  const vp = locator.page().viewportSize() ?? { width: 1280, height: 720 };
+  for (let i = 0; i < count; i++) {
+    const el = locator.nth(i);
+    const box = await el.boundingBox();
+    if (!box) continue;
+    // 认为“在视口内”的元素：其中心点落在 viewport 范围内
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    if (cx >= 0 && cy >= 0 && cx <= vp.width && cy <= vp.height) return el;
+  }
+  // 兜底：返回第一个（让后续报错更直观）
+  return locator.first();
+}
+
 test('playground loads', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('本地测试面板')).toBeVisible();
   // 核心画布根节点
-  await expect(page.locator('[data-im-theme]')).toBeVisible();
+  const mapRoot = await pickVisible(page.locator('[data-im-theme]'));
+  await expect(mapRoot).toBeVisible();
 });
 
 test('click selects a node (selection overlay appears)', async ({ page }) => {
@@ -12,7 +29,7 @@ test('click selects a node (selection overlay appears)', async ({ page }) => {
   await expect(page.getByText('本地测试面板')).toBeVisible();
 
   // 默认有 “Chart 0/1/2”
-  const nodeTitle = page.getByText('Chart 0').first();
+  const nodeTitle = await pickVisible(page.getByText('Chart 0'));
   await expect(nodeTitle).toBeVisible();
   await nodeTitle.click();
 
@@ -25,16 +42,18 @@ test('drag moves a node (bounding box changes)', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('本地测试面板')).toBeVisible();
 
-  const node = page.getByText('Chart 0').first();
+  const node = await pickVisible(page.getByText('Chart 0'));
   await expect(node).toBeVisible();
 
   const before = await node.boundingBox();
   expect(before).toBeTruthy();
 
   // 拖动：使用页面坐标拖拽节点
-  await node.hover();
+  const startX = before!.x + Math.min(20, before!.width / 2);
+  const startY = before!.y + Math.min(10, before!.height / 2);
+  await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move((before!.x ?? 0) + 160, (before!.y ?? 0) + 10);
+  await page.mouse.move(startX + 160, startY + 10);
   await page.mouse.up();
 
   const after = await node.boundingBox();
