@@ -24,6 +24,24 @@ export { createMinimapPlugin } from './plugins/createMinimapPlugin';
 export { createRulersPlugin } from './plugins/createRulersPlugin';
 export { createZoomDockPlugin } from './plugins/createZoomDockPlugin';
 
+// 常用 Options/类型（便于使用者配置默认组装）
+export type { SnapConfig, SnapGuidesPluginOptions } from './plugins/createSnapGuidesPlugin';
+export type { ViewCommandsPluginOptions } from './plugins/createViewCommandsPlugin';
+export type { HistoryPluginOptions } from './plugins/createHistoryPlugin';
+export type { ShortcutsPluginOptions } from './plugins/createShortcutsPlugin';
+export type { KeyboardStatePluginOptions } from './plugins/createKeyboardStatePlugin';
+export type { DragPluginOptions } from './plugins/createDragPlugin';
+export type { ResizePluginOptions } from './plugins/createResizePlugin';
+export type { SelectionPluginOptions } from './plugins/createSelectionPlugin';
+export type { MarqueeSelectPluginOptions } from './plugins/createMarqueeSelectPlugin';
+export type { ClipboardPluginOptions } from './plugins/createClipboardPlugin';
+export type { ToolbarItem, ToolbarPluginOptions } from './plugins/createToolbarPlugin';
+export type { ContextMenuPayload, ContextMenuPluginOptions } from './plugins/createContextMenuPlugin';
+export type { ContextMenuItem, DefaultContextMenuOptions } from './plugins/createDefaultContextMenuPlugin';
+export type { MinimapPluginOptions } from './plugins/createMinimapPlugin';
+export type { RulersPluginOptions } from './plugins/createRulersPlugin';
+export type { ZoomDockPluginOptions } from './plugins/createZoomDockPlugin';
+
 // editor utils（供插件/上层使用）
 export * from './editor/groupUtils';
 export * from './editor/snapUtils';

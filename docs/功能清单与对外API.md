@@ -143,9 +143,13 @@
 - `createDefaultEditorPlugins(opts?)` / `type DefaultEditorOptions`
 - `EditorPlugins`（命名空间导出内置插件工厂）
 
+> 备注：`DefaultEditorOptions` 现在按“插件名分组”提供配置（例如 `snap/view/shortcuts/drag/resize/...`），并保留旧字段（如 `shortcutOverrides`）作为兼容入口（已标记为 deprecated）。
+
 ### 2.1.3 Editor UI（仍从包根入口导出）
 - `createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
 - HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
+
+> 备注：`DefaultEditorWithUIOptions` 同样按插件名分组提供 `toolbar/minimap/rulers/zoomDock/contextMenu` 等配置对象，并可通过 `enabled` 字段控制是否挂载对应 HUD 插件。
 
 ### 2.1.4 demo 子入口导出（`@qiuyulc/infinite-map/demo`）
 - `makeDemoNodes()`

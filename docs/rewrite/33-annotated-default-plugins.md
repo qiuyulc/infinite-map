@@ -22,6 +22,8 @@
 
 > 如果你想控制 minimap / rulers / toolbar / contextMenu / zoomDock 这类“HUD/UI”开关，它们在 `@qiuyulc/infinite-map-editor` 的 `createDefaultEditorPluginsWithUI()` 里。
 
+补充：`createDefaultEditorPlugins()` / `createDefaultEditorPluginsWithUI()` 的参数现在按“插件名分组”（例如 `snap/view/toolbar/...`），便于透传到对应插件工厂。
+
 这些开关最终只影响一件事：
 
 > **plugins 数组里 push 不 push 某个插件**

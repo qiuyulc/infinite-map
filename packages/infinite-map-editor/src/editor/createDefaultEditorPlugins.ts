@@ -1,44 +1,91 @@
 import type { InfiniteMapPlugin } from '@qiuyulc/infinite-map';
 import { composePlugins } from './composePlugins';
 import {
+  type ClipboardPluginOptions,
   createDragPlugin,
   createCommandRunnerPlugin,
   createCoreServicesPlugin,
   createClipboardPlugin,
+  type DragPluginOptions,
   createHistoryPlugin,
   createKeyboardStatePlugin,
+  type KeyboardStatePluginOptions,
   createMarqueeSelectPlugin,
+  type MarqueeSelectPluginOptions,
   createShortcutsPlugin,
   createSnapGuidesPlugin,
+  type SnapGuidesPluginOptions,
   createViewCommandsPlugin,
+  type ViewCommandsPluginOptions,
   createZIndexPlugin,
   createRotate3DPlugin,
   createRotatePlugin,
   createResizePlugin,
+  type ResizePluginOptions,
   createSelectionPlugin,
+  type SelectionPluginOptions,
   createGroupPlugin,
   createLockHidePlugin,
+  type ShortcutsPluginOptions,
+  type HistoryPluginOptions,
 } from '../plugins';
 
 export type DefaultEditorOptions = {
-  /** 空白拖拽是否框选 */
+  /**
+   * @deprecated 请改用 `marquee.enabled`
+   */
   marqueeEnabled?: boolean;
   /**
-   * 是否需要按住 Shift 才能框选
-   * - false：空白拖拽默认框选（配合 Space+拖拽平移）
-   * - true：Shift+空白拖拽才框选（空白拖拽默认平移）
+   * @deprecated 请改用 `marquee.requireShift`
    */
   marqueeRequireShift?: boolean;
-
-  /** 剪贴板能力（删除/复制/剪切/粘贴/重复） */
-  clipboardEnabled?: boolean;
-
   /**
-   * 以 commandId 为维度覆盖快捷键
-   * - string：设置/覆盖
-   * - null：禁用该命令默认快捷键
+   * @deprecated 请改用 `clipboard.enabled`
+   */
+  clipboardEnabled?: boolean;
+  /**
+   * @deprecated 请改用 `shortcuts.commandShortcuts`
    */
   shortcutOverrides?: Record<string, string | null>;
+
+  /**
+   * 框选插件（marquee）
+   */
+  marquee?: MarqueeSelectPluginOptions & { enabled?: boolean };
+
+  /**
+   * 剪贴板插件（copy/cut/paste/duplicate/delete）
+   */
+  clipboard?: ClipboardPluginOptions & { enabled?: boolean };
+
+  /**
+   * 快捷键插件配置（建议使用 commandShortcuts 覆盖默认快捷键）
+   */
+  shortcuts?: ShortcutsPluginOptions;
+
+  /**
+   * snapping + guides 配置
+   */
+  snap?: SnapGuidesPluginOptions;
+
+  /**
+   * 视图命令（zoom/fit/center）配置
+   * - 注意：minZoom/maxZoom 也由这里写入 STORE_KEYS.viewConfig（供 zoomDock / view 命令共用）
+   */
+  view?: ViewCommandsPluginOptions;
+
+  /**
+   * 选择/拖拽/缩放等基础交互插件的可选参数
+   */
+  selection?: SelectionPluginOptions;
+  drag?: DragPluginOptions;
+  resize?: ResizePluginOptions;
+  keyboardState?: KeyboardStatePluginOptions;
+
+  /**
+   * 历史记录（undo/redo）配置
+   */
+  history?: HistoryPluginOptions;
 };
 
 /**
@@ -50,36 +97,46 @@ export type DefaultEditorOptions = {
  * - marquee：空白拖拽框选（放最后，避免抢占 handle/drag）
  */
 export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): InfiniteMapPlugin[] {
-  const marqueeEnabled = opts.marqueeEnabled ?? true;
-  const marqueeRequireShift = opts.marqueeRequireShift ?? false;
-  const clipboardEnabled = opts.clipboardEnabled ?? true;
-  const shortcutOverrides = opts.shortcutOverrides;
+  const marqueeEnabled = opts.marquee?.enabled ?? opts.marqueeEnabled ?? true;
+  const marqueeRequireShift = opts.marquee?.requireShift ?? opts.marqueeRequireShift ?? false;
+  const clipboardEnabled = opts.clipboard?.enabled ?? opts.clipboardEnabled ?? true;
+
+  const shortcuts: ShortcutsPluginOptions | undefined =
+    opts.shortcuts ??
+    (opts.shortcutOverrides ? ({ commandShortcuts: opts.shortcutOverrides } satisfies ShortcutsPluginOptions) : undefined);
+
+  // 默认 snapping 参数：保持与当前行为一致（grid=48）
+  const defaultSnap: SnapGuidesPluginOptions = { enabled: true, gridSize: 48, thresholdPx: 6 };
+  const snap = { ...defaultSnap, ...(opts.snap ?? {}) } satisfies SnapGuidesPluginOptions;
+
+  const view = opts.view ?? {};
 
   const plugins: InfiniteMapPlugin[] = [
-    createKeyboardStatePlugin(),
+    createKeyboardStatePlugin(opts.keyboardState),
     createCoreServicesPlugin(),
     createCommandRunnerPlugin(),
-    createShortcutsPlugin({ commandShortcuts: shortcutOverrides }),
-    createHistoryPlugin(),
-    createViewCommandsPlugin(),
+    createShortcutsPlugin(shortcuts),
+    createHistoryPlugin(opts.history),
+    createViewCommandsPlugin(view),
     createZIndexPlugin(),
     // snapping + guides（drag/resize 会读 snap:config 并写 snap:guides）
-    createSnapGuidesPlugin({ enabled: true, gridSize: 48, thresholdPx: 6 }),
+    createSnapGuidesPlugin(snap),
     // Alt/Option + 拖拽：3D 旋转（需优先于 selection/drag/marquee）
     createRotate3DPlugin(),
     // group service + group/ungroup commands
     createGroupPlugin(),
     // lock/hide commands + hud entries
     createLockHidePlugin(),
-    createSelectionPlugin(),
-    ...(clipboardEnabled ? [createClipboardPlugin()] : []),
+    createSelectionPlugin(opts.selection),
+    ...(clipboardEnabled ? [createClipboardPlugin(opts.clipboard)] : []),
     createRotatePlugin(),
-    createResizePlugin(),
-    createDragPlugin(),
+    createResizePlugin(opts.resize),
+    createDragPlugin(opts.drag),
   ];
 
   if (marqueeEnabled) {
-    plugins.push(createMarqueeSelectPlugin({ requireShift: marqueeRequireShift }));
+    const { enabled: _enabled, ...marqueeOpts } = opts.marquee ?? {};
+    plugins.push(createMarqueeSelectPlugin({ ...marqueeOpts, requireShift: marqueeRequireShift }));
   }
 
   return composePlugins(plugins);

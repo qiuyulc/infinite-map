@@ -95,6 +95,8 @@ function getSelectedNodes(ctx: MapContext) {
 }
 
 export type ViewCommandsPluginOptions = {
+  minZoom?: number;
+  maxZoom?: number;
   /**
    * fit 时的 padding（屏幕像素）
    */
@@ -120,6 +122,8 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
       }>(STORE_KEYS.viewConfig);
       ctx.store.set(STORE_KEYS.viewConfig, {
         ...prev,
+        minZoom: opts.minZoom ?? prev?.minZoom,
+        maxZoom: opts.maxZoom ?? prev?.maxZoom,
         paddingPx: opts.paddingPx ?? prev?.paddingPx,
         zoomStep: opts.zoomStep ?? prev?.zoomStep,
       });
