@@ -72,41 +72,41 @@ src/
 
 ---
 
-## 5）editor/（编辑器系统：插件化）
+## 5）packages/infinite-map-editor/（编辑器系统：插件化）
 
-### 5.1 editor/ 顶层文件（基础设施）
+### 5.1 infinite-map-editor/src/editor 顶层文件（基础设施）
 
 | 文件 | 作用 |
 |---|---|
-| `editor/types.ts` | Editor 侧核心类型：`MapContext`、`InfiniteMapPlugin`、`Command`、事件类型等 |
-| `editor/runtime.ts` | 创建 `store/bus`、patch 应用 `applyPatchesToNodes` 等运行时工具 |
-| `editor/composePlugins.ts` | 插件组合（排序/依赖处理等） |
-| `editor/createDefaultEditorPlugins.ts` | 默认插件集合（“开箱即用编辑器”） |
-| `editor/keys.ts` | store keys（插件共享状态统一命名） |
-| `editor/snapUtils.ts` | 吸附算法与工具（grid/guide/viewport center 等） |
+| `packages/infinite-map-editor/src/editor/types.ts` | Editor 侧核心类型：`MapContext`、`InfiniteMapPlugin`、`Command`、事件类型等（实际类型来自 core 包导出） |
+| `packages/infinite-map-editor/src/editor/runtime.ts` | 创建 `store/bus`、patch 应用 `applyPatchesToNodes` 等运行时工具（复用 core 包导出） |
+| `packages/infinite-map-editor/src/editor/composePlugins.ts` | 插件组合（排序/依赖处理等） |
+| `packages/infinite-map-editor/src/editor/createDefaultEditorPlugins.ts` | 默认插件集合（“开箱即用编辑器”） |
+| `packages/infinite-map-editor/src/editor/keys.ts` | store keys（插件共享状态统一命名，复用 core 包导出） |
+| `packages/infinite-map-editor/src/editor/snapUtils.ts` | 吸附算法与工具（grid/guide/viewport center 等） |
 
-### 5.2 editor/plugins/（按领域分组的功能插件）
+### 5.2 infinite-map-editor/src/editor/plugins/（按领域分组的功能插件）
 
 > 记法：`core`=基础能力；`selection/transform/snapping/clipboard`=交互能力；`hud`=界面层。
 
 | 文件 | 作用 |
 |---|---|
-| `editor/plugins/core/createCoreServicesPlugin.ts` | 注册基础 services（例如 camera/selection/document 等） |
-| `editor/plugins/core/createCommandRunnerPlugin.ts` | 提供 `ctx.runCommand` 的实现/回退逻辑 |
-| `editor/plugins/core/createShortcutsPlugin.ts` | 监听键盘并触发 command |
-| `editor/plugins/core/createViewCommandsPlugin.ts` | zoom/fit/center 等视图命令 |
-| `editor/plugins/core/createHistoryPlugin.ts` | undo/redo（通过 patches:applied 等事件） |
-| `editor/plugins/core/createZIndexPlugin.ts` | zIndex 调整命令 |
-| `editor/plugins/core/createKeyboardStatePlugin.ts` | 维护 Space/Shift 等键盘状态（给 pan/marquee/drag 用） |
-| `editor/plugins/selection/createSelectionPlugin.tsx` | 点击选中/多选规则 + selection service |
-| `editor/plugins/selection/createMarqueeSelectPlugin.tsx` | 框选（marquee） |
-| `editor/plugins/selection/SelectionOverlay.tsx` | 选中框 UI |
-| `editor/plugins/selection/MarqueeOverlay.tsx` | 框选 UI |
-| `editor/plugins/transform/createDragPlugin.ts` | 拖拽移动（支持多选整体移动） |
-| `editor/plugins/transform/createResizePlugin.ts` | resize（8个 handle） |
-| `editor/plugins/transform/createRotatePlugin.ts` | 2D 旋转 |
-| `editor/plugins/transform/createRotate3DPlugin.ts` | 3D 旋转（Alt/Option + drag） |
-| `editor/plugins/snapping/createSnapGuidesPlugin.ts` | 吸附规则 + 产出 guides |
+| `packages/infinite-map-editor/src/editor/plugins/core/createCoreServicesPlugin.ts` | 注册基础 services（例如 camera/selection/document 等） |
+| `packages/infinite-map-editor/src/editor/plugins/core/createCommandRunnerPlugin.ts` | 提供 `ctx.runCommand` 的实现/回退逻辑 |
+| `packages/infinite-map-editor/src/editor/plugins/core/createShortcutsPlugin.ts` | 监听键盘并触发 command |
+| `packages/infinite-map-editor/src/editor/plugins/core/createViewCommandsPlugin.ts` | zoom/fit/center 等视图命令 |
+| `packages/infinite-map-editor/src/editor/plugins/core/createHistoryPlugin.ts` | undo/redo（通过 patches:applied 等事件） |
+| `packages/infinite-map-editor/src/editor/plugins/core/createZIndexPlugin.ts` | zIndex 调整命令 |
+| `packages/infinite-map-editor/src/editor/plugins/core/createKeyboardStatePlugin.ts` | 维护 Space/Shift 等键盘状态（给 pan/marquee/drag 用） |
+| `packages/infinite-map-editor/src/editor/plugins/selection/createSelectionPlugin.tsx` | 点击选中/多选规则 + selection service |
+| `packages/infinite-map-editor/src/editor/plugins/selection/createMarqueeSelectPlugin.tsx` | 框选（marquee） |
+| `packages/infinite-map-editor/src/editor/plugins/selection/SelectionOverlay.tsx` | 选中框 UI |
+| `packages/infinite-map-editor/src/editor/plugins/selection/MarqueeOverlay.tsx` | 框选 UI |
+| `packages/infinite-map-editor/src/editor/plugins/transform/createDragPlugin.ts` | 拖拽移动（支持多选整体移动） |
+| `packages/infinite-map-editor/src/editor/plugins/transform/createResizePlugin.ts` | resize（8个 handle） |
+| `packages/infinite-map-editor/src/editor/plugins/transform/createRotatePlugin.ts` | 2D 旋转 |
+| `packages/infinite-map-editor/src/editor/plugins/transform/createRotate3DPlugin.ts` | 3D 旋转（Alt/Option + drag） |
+| `packages/infinite-map-editor/src/editor/plugins/snapping/createSnapGuidesPlugin.ts` | 吸附规则 + 产出 guides |
 | `editor/plugins/snapping/SnapGuidesOverlay.tsx` | 吸附辅助线 UI |
 | `editor/plugins/clipboard/createClipboardPlugin.ts` | copy/cut/paste/duplicate 等命令 |
 | `editor/plugins/hud/createToolbarPlugin.tsx` | 默认工具栏 UI（触发 commands） |
@@ -125,4 +125,3 @@ src/
 - `components/InfiniteMap.tsx`：见 **31. 注释版：InfiniteMap.tsx**
 - `editor/runtime.ts`：见 **32. 注释版：editor/runtime.ts**
 - `editor/createDefaultEditorPlugins.ts`：见 **33. 注释版：默认插件集合**
-

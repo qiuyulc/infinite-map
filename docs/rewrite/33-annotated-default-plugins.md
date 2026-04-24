@@ -2,7 +2,7 @@
 
 对应文件：
 
-- `packages/infinite-map/src/editor/createDefaultEditorPlugins.ts`
+- `packages/infinite-map-editor/src/editor/createDefaultEditorPlugins.ts`
 
 这页回答你最常问的一个问题：
 
@@ -16,9 +16,11 @@
 
 你在文件里能看到几类开关：
 
-- `minimapEnabled / rulersEnabled / toolbarEnabled / contextMenuEnabled / zoomDockEnabled`
 - `clipboardEnabled`
 - `marqueeEnabled / marqueeRequireShift`
+- `shortcutOverrides`
+
+> 如果你想控制 minimap / rulers / toolbar / contextMenu / zoomDock 这类“HUD/UI”开关，它们在 `@qiuyulc/infinite-map-editor/ui` 的 `createDefaultEditorPluginsWithUI()` 里。
 
 这些开关最终只影响一件事：
 
@@ -89,4 +91,3 @@ HUD（工具栏/右键/minimap/标尺/缩放条）大多数是 UI 展示层：
 3) 空白处拖拽是否是框选（或平移）  
 4) 右键菜单是否还能打开  
 5) 快捷键是否还能触发命令  
-

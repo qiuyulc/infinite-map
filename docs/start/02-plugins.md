@@ -8,7 +8,7 @@
 
 打开：
 
-- `packages/infinite-map/src/editor/createDefaultEditorPlugins.ts`
+- `packages/infinite-map-editor/src/editor/createDefaultEditorPlugins.ts`
 
 你会看到它返回一个数组：
 
@@ -43,7 +43,7 @@ return [
 
 目录：
 
-`packages/infinite-map/src/editor/plugins/`
+`packages/infinite-map-editor/src/editor/plugins/`
 
 最常用的子目录：
 
@@ -52,4 +52,3 @@ return [
 - `hud/`：UI（右键菜单、工具栏、minimap、缩放条）
 
 下一章我们会选一个具体功能（右键菜单），从“我点右键”开始一步步追代码。
-

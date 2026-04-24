@@ -1,6 +1,9 @@
 # Infinite Map — 功能清单与对外 API（完整版）
 
-> 统计基于当前仓库 `packages/infinite-map` 对外导出（`src/index.ts`）以及默认编辑器插件集合（`createDefaultEditorPlugins`）的实现现状。
+> 统计基于当前仓库：
+> - `packages/infinite-map`（渲染层 + plugin contract）
+> - `packages/infinite-map-editor`（编辑器插件集合 + HUD/UI）
+> 的对外导出与实现现状。
 
 ---
 
@@ -118,25 +121,33 @@
 #### Demo 数据
 > 已移动到 demo 子入口：`@qiuyulc/infinite-map/demo`
 
-#### Editor（可选使用）
-- `createDefaultEditorPlugins(opts?)`
-- `type DefaultEditorOptions`
-- `composePlugins(plugins)`
+#### Plugin Contract（供 editor 包/社区插件复用）
 - `type InfiniteMapPlugin`
 - `type MapContext`
 - `type NodePatch`
 - `type ChangeMeta`
-- `EditorPlugins`（命名空间导出所有内置插件工厂）
+- `type Command`
+- 事件类型：`MapPointerEvent` / `MapWheelEvent` / `MapKeyEvent` / `MapContextMenuEvent`
+- store/runtime：`STORE_KEYS` / `VISUAL_CONST` / `createStore` / `createEventBus` / `applyPatchesToNodes`
 
 ---
 
 ### 2.1.1 UI 子入口导出（`@qiuyulc/infinite-map/ui`）
-- UI 组件：`Minimap` / `BackgroundDots` / `BackgroundGrid` / `DefaultNode` / `InfiniteMapThemeProvider`
+- UI 组件（渲染层）：`BackgroundDots` / `BackgroundGrid` / `DefaultNode` / `InfiniteMapThemeProvider`
 - Theme：`InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars`
-- HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
-- 默认编辑器（带 UI）：`createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
 
-### 2.1.2 demo 子入口导出（`@qiuyulc/infinite-map/demo`）
+> HUD/UI（minimap / rulers / toolbar / context menu / zoom dock）已拆分到：`@qiuyulc/infinite-map-editor/ui`
+
+### 2.1.2 Editor 包入口导出（`@qiuyulc/infinite-map-editor`）
+- `composePlugins(plugins)`
+- `createDefaultEditorPlugins(opts?)` / `type DefaultEditorOptions`
+- `EditorPlugins`（命名空间导出内置插件工厂）
+
+### 2.1.3 Editor UI 子入口导出（`@qiuyulc/infinite-map-editor/ui`）
+- `createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
+- HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
+
+### 2.1.4 demo 子入口导出（`@qiuyulc/infinite-map/demo`）
 - `makeDemoNodes()`
 
 ### 2.2 `InfiniteMapProps`（组件属性，完整版）
