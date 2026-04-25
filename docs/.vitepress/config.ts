@@ -36,6 +36,7 @@ export default defineConfig({
           text: '作为三方库使用',
           items: [
             { text: 'API 总览（入门）', link: '/library/api' },
+            { text: '实现总览（总结）', link: '/library/implementation-summary' },
             { text: '命令速查表', link: '/library/commands' },
             { text: '插件开发指南', link: '/library/plugin-dev' },
             { text: 'Doc schema 与迁移', link: '/library/doc-schema' },
