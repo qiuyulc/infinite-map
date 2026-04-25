@@ -11,8 +11,10 @@
 作为三方库使用（接入/保存/扩展）：
 
 - [API 总览（入门）](/library/api)
+- [命令速查表](/library/commands)
 - [插件开发指南](/library/plugin-dev)
 - [Doc schema 与迁移](/library/doc-schema)
+- [发布流程（最小闭环）](/library/release)
 - [功能清单与对外 API（全量）](/功能清单与对外API)
 
 本地启动文档：

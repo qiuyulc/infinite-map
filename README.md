@@ -80,3 +80,17 @@ if (raw) apiRef.current?.importDoc(JSON.parse(raw), { immediate: true })
 - legacy v0（无 schemaVersion）
 - v1 → v2 迁移（新增 resources 字段）
 
+## 文档（VitePress）
+
+库使用/对外 API：
+- `docs/library/api.md`（接入与 apiRef）
+- `docs/library/commands.md`（命令速查）
+- `docs/library/plugin-dev.md`（插件开发指南）
+- `docs/library/doc-schema.md`（Doc schema 与迁移）
+- `docs/library/release.md`（发布流程）
+
+本地启动：
+
+```bash
+pnpm -C docs dev
+```
