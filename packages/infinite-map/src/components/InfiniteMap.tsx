@@ -98,12 +98,23 @@ export type InfiniteMapProps = {
   /**
    * editor hooks：提供可扩展的钩子能力
    */
+  /**
+   * hooks 模式
+   * - observe（默认）：hooks 只观察/记录，不影响执行流程
+   * - intercept：允许 onBeforeCommand 返回 false 阻止执行；允许 onBeforeApplyPatches 返回 patches 覆盖
+   */
+  hookMode?: 'observe' | 'intercept';
   editorHooks?: {
     onBeforeCommand?: (id: string, info: { source: 'keyboard' | 'toolbar' | 'menu' | 'api'; payload?: unknown }) => boolean | void;
     onAfterCommand?: (id: string, info: { ok: boolean; source: 'keyboard' | 'toolbar' | 'menu' | 'api'; payload?: unknown }) => void;
     onBeforeApplyPatches?: (patches: NodePatch[], meta: ChangeMeta) => NodePatch[] | void;
     onAfterApplyPatches?: (patches: NodePatch[], meta: ChangeMeta) => void;
   };
+
+  /**
+   * 全局错误上报（用于 hooks / command 执行等异常的收集）
+   */
+  onEditorError?: (err: unknown, info: { kind: 'hook' | 'command'; name: string; commandId?: string; source?: string }) => void;
 
   /** 点阵间距（世界坐标单位），可设为 'auto' 与标尺/网格同源 */
   dotSpacing?: number | 'auto';
@@ -237,6 +248,8 @@ export function InfiniteMap({
   commandConflictPolicy = 'keep-first',
   warnOnCommandConflict = true,
   editorHooks,
+  hookMode = 'observe',
+  onEditorError,
   dotSpacing = 48,
   dotRadiusPx = 1.35,
   dotAlpha = 0.18,
@@ -344,6 +357,16 @@ export function InfiniteMap({
     hooksRef.current = editorHooks;
   }, [editorHooks]);
 
+  const hookModeRef = useRef(hookMode);
+  useEffect(() => {
+    hookModeRef.current = hookMode;
+  }, [hookMode]);
+
+  const onEditorErrorRef = useRef(onEditorError);
+  useEffect(() => {
+    onEditorErrorRef.current = onEditorError;
+  }, [onEditorError]);
+
   // 重要：onNodesChange/onPatches 可能在宿主每次 render 时都是新函数引用
   // 如果直接放在 applyPatches 的依赖里，会导致 ctx 变化，从而触发 plugins.setup 反复执行（例如 toolbar/menu registry 被重复注入）
   const onNodesChangeRef = useRef(onNodesChange);
@@ -394,7 +417,11 @@ export function InfiniteMap({
       nodesRef.current = next;
       onNodesChangeRef.current(next, meta);
     }
-    hooksRef.current?.onAfterApplyPatches?.(patches, meta);
+    try {
+      hooksRef.current?.onAfterApplyPatches?.(patches, meta);
+    } catch (err) {
+      onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterApplyPatches' });
+    }
   }, [bus]);
 
   const mergeMovePatches = (base: NodePatch[] | null, next: NodePatch[]) => {
@@ -430,9 +457,18 @@ export function InfiniteMap({
         flushPendingMovePatches();
       }
 
+      let usePatches = patches;
       const hook = hooksRef.current?.onBeforeApplyPatches;
-      const nextPatches = hook ? hook(patches, meta) : undefined;
-      const usePatches = Array.isArray(nextPatches) ? nextPatches : patches;
+      if (hook) {
+        try {
+          const nextPatches = hook(patches, meta);
+          if (hookModeRef.current === 'intercept' && Array.isArray(nextPatches)) {
+            usePatches = nextPatches;
+          }
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onBeforeApplyPatches' });
+        }
+      }
       if (!usePatches || usePatches.length === 0) return;
 
       // move-phase：rAF 合并后再提交，避免高频 setState/重渲染导致卡顿和“闪烁”
@@ -471,7 +507,11 @@ export function InfiniteMap({
         nodesRef.current = next;
         onNodesChangeRef.current(next, meta);
       }
-      hooksRef.current?.onAfterApplyPatches?.(usePatches, meta);
+      try {
+        hooksRef.current?.onAfterApplyPatches?.(usePatches, meta);
+      } catch (err) {
+        onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterApplyPatches' });
+      }
     },
     [bus, flushPendingMovePatches]
   );
@@ -484,23 +524,40 @@ export function InfiniteMap({
 
       const before = hooksRef.current?.onBeforeCommand;
       if (before) {
-        const ok = before(id, { source, payload });
-        if (ok === false) return false;
+        try {
+          const ok = before(id, { source, payload });
+          if (hookModeRef.current === 'intercept' && ok === false) return false;
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onBeforeCommand', commandId: id, source });
+        }
       }
 
       const reg = ctx0.store.get<Record<string, Command>>('commands:registry') ?? {};
       const cmd = reg[id];
       if (!cmd) {
-        hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
+        try {
+          hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
+        }
         return false;
       }
       try {
         cmd.run(ctx0, { source });
-        hooksRef.current?.onAfterCommand?.(id, { ok: true, source, payload });
+        try {
+          hooksRef.current?.onAfterCommand?.(id, { ok: true, source, payload });
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
+        }
         return true;
       } catch (err) {
-        hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
-        throw err;
+        onEditorErrorRef.current?.(err, { kind: 'command', name: 'run', commandId: id, source });
+        try {
+          hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
+        } catch (e2) {
+          onEditorErrorRef.current?.(e2, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
+        }
+        return false;
       }
     },
     []
