@@ -240,6 +240,15 @@ export type EventMap = {
      */
     beforeById: Record<string, NodeData | undefined>;
   };
+
+  // export（宿主可监听并自行实现导出逻辑，例如 html-to-image/canvas）
+  'export:png': {
+    scope: 'all' | 'selection';
+    pixelRatio?: number;
+    background?: string;
+    fileName?: string;
+    source?: 'keyboard' | 'toolbar' | 'menu' | 'api';
+  };
 };
 
 export type EventKey = keyof EventMap;

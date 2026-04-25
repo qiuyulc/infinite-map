@@ -11,7 +11,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "verify:exports": "node scripts/verify-exports.mjs",
-    "check": "pnpm typecheck && pnpm test && pnpm build && pnpm verify:exports"
+    "check": "pnpm typecheck && pnpm build && pnpm test && pnpm verify:exports"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

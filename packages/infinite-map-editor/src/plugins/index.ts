@@ -28,6 +28,9 @@ export { createAlignDistributePlugin } from './createAlignDistributePlugin';
 export { createNudgePlugin } from './createNudgePlugin';
 export type { NudgePluginOptions } from './createNudgePlugin';
 
+export { createExportPngPlugin } from './createExportPngPlugin';
+export type { ExportPngPluginOptions } from './createExportPngPlugin';
+
 export { createSnapGuidesPlugin } from './createSnapGuidesPlugin';
 export type { SnapConfig, SnapGuidesPluginOptions } from './createSnapGuidesPlugin';
 

@@ -28,6 +28,7 @@ import {
   createLockHidePlugin,
   createAlignDistributePlugin,
   createNudgePlugin,
+  createExportPngPlugin,
   type ShortcutsPluginOptions,
   type HistoryPluginOptions,
 } from '../plugins';
@@ -99,6 +100,8 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     createHistoryPlugin(opts.history),
     createViewCommandsPlugin(view),
     createZIndexPlugin(),
+    // export png (skeleton: emits event for host)
+    createExportPngPlugin(),
     // snapping + guides（drag/resize 会读 snap:config 并写 snap:guides）
     createSnapGuidesPlugin(snap),
     // Alt/Option + 拖拽：3D 旋转（需优先于 selection/drag/marquee）
