@@ -16,6 +16,7 @@ import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
+import { OverlayErrorBoundary } from './OverlayErrorBoundary';
 import { exportDoc, importDoc, type InfiniteMapDocV2 } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
@@ -27,6 +28,7 @@ import { useHighlightLayer } from '../hooks/useHighlightLayer';
 import { useViewportSize } from '../hooks/useViewportSize';
 import { useVisibleNodes } from '../hooks/useVisibleNodes';
 import { useWheelControls } from '../hooks/useWheelControls';
+import { useCommandRegistry } from '../hooks/useCommandRegistry';
 import type {
   ChangeMeta,
   Command,
@@ -268,27 +270,6 @@ export type InfiniteMapApi = {
   exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDocV2;
   importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
-
-class OverlayErrorBoundary extends React.Component<
-  {
-    info: Omit<EditorErrorInfo, 'kind' | 'name'>;
-    onError?: (err: unknown, info: EditorErrorInfo) => void;
-    children: ReactNode;
-  },
-  { hasError: boolean }
-> {
-  state: { hasError: boolean } = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(err: unknown) {
-    this.props.onError?.(err, { kind: 'overlay', name: 'render', ...this.props.info });
-  }
-  render() {
-    if (this.state.hasError) return null;
-    return this.props.children;
-  }
-}
 
 export function InfiniteMap({
   nodes,
@@ -720,47 +701,7 @@ export function InfiniteMap({
   }, [ctx, maxZoom, minZoom]);
 
   // commands registry：将 plugins.commands 汇总到 store，供 CommandRunnerPlugin 使用
-  useEffect(() => {
-    if (!plugins || plugins.length === 0) {
-      store.set('commands:registry', {});
-      return;
-    }
-    const registry: Record<string, Command> = {};
-    const from: Record<string, string> = {};
-    for (const p of plugins) {
-      if (p.enabled === false) continue;
-      const cmds = p.commands ?? {};
-      for (const [id, cmd] of Object.entries(cmds)) {
-        if (!registry[id]) {
-          registry[id] = cmd;
-          from[id] = p.id;
-          continue;
-        }
-        // 冲突处理
-        const prevPlugin = from[id] ?? 'unknown';
-        const nextPlugin = p.id;
-        const msg = `[InfiniteMap] command 冲突：${id} 来自 ${prevPlugin} 与 ${nextPlugin}`;
-        // 作为三方库：不要依赖 Vite 的 import.meta.env 类型；也避免直接引用全局 process（浏览器/tsconfig 可能没 node types）
-        const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
-        const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
-        const shouldWarn = Boolean(warnOnCommandConflict) && isDev;
-        if (commandConflictPolicy === 'error') {
-          if (shouldWarn) console.error(msg);
-          throw new Error(msg);
-        }
-        if (commandConflictPolicy === 'override') {
-          if (shouldWarn) console.warn(msg + '（已覆盖）');
-          registry[id] = cmd;
-          from[id] = nextPlugin;
-        } else {
-          if (shouldWarn) console.warn(msg + '（已忽略）');
-          // keep-first：忽略后者
-        }
-      }
-    }
-    store.set('commands:registry', registry);
-    store.set('commands:from', from);
-  }, [plugins, store, commandConflictPolicy, warnOnCommandConflict]);
+  useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });
 
   // camera state 更新：广播 changed 事件（用于外部订阅）
   useEffect(() => {
