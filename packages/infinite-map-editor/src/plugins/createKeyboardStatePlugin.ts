@@ -14,7 +14,7 @@ export function createKeyboardStatePlugin(opts: KeyboardStatePluginOptions = {})
 
   return {
     id: 'keyboard-state',
-    handlers: {
+    input: {
       onKeyDown: (e, ctx) => {
         if (e.code === 'Space') {
           ctx.store.set(spaceKey, true);

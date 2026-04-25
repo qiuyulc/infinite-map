@@ -1,4 +1,12 @@
-import { STORE_KEYS, type InfiniteMapPlugin, type MapPointerEvent, type NodeData } from '@qiuyulc/infinite-map';
+import {
+  STORE_KEYS,
+  type HitTestContributor,
+  type HitTestTarget,
+  type InfiniteMapPlugin,
+  type MapPointerEvent,
+  type NodeData,
+  type PointerDownProcessor,
+} from '@qiuyulc/infinite-map';
 import { SelectionOverlay } from './SelectionOverlay';
 import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
@@ -16,13 +24,6 @@ export type SelectionPluginOptions = {
 const DEFAULT_KEY = STORE_KEYS.selectionIds;
 const SPACE_KEY = STORE_KEYS.keyboardSpace;
 
-function isResizeHandleEvent(e: MapPointerEvent): boolean {
-  const oe = e.originalEvent as unknown as { target?: unknown } | null;
-  const target = (oe?.target ?? null) as HTMLElement | null;
-  if (!target) return false;
-  return Boolean(target.closest?.('[data-handle],[data-rotate-handle]'));
-}
-
 function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
   // 从后往前：模拟“后渲染的在上层”（更接近 DOM 层级直觉）
   for (let i = nodes.length - 1; i >= 0; i--) {
@@ -39,6 +40,85 @@ function toggle(ids: string[], id: string) {
 export function createSelectionPlugin(opts: SelectionPluginOptions = {}): InfiniteMapPlugin {
   const storeKey = opts.storeKey ?? DEFAULT_KEY;
   const clearOnBlankClick = opts.clearOnBlankClick ?? true;
+
+  const nodeHitTest: HitTestContributor = {
+    id: 'hit.node',
+    priority: -100,
+    hitTest: (e, ctx) => {
+      // pointer/contextmenu 都可用：都带 world
+      const hit = hitTest(ctx.getVisibleNodes(), e.world);
+      if (!hit) return null;
+      if (isHiddenEffective(ctx.getNodes(), hit.id)) return null;
+      return { kind: 'node', id: hit.id };
+    },
+  };
+
+  const selectionProcessor: PointerDownProcessor = {
+    id: 'selection',
+    priority: 0,
+    onPointerDown: (e: MapPointerEvent, ctx, hit: HitTestTarget) => {
+      // 只响应主键（左键）
+      if (e.button !== 0) return;
+      // Space：平移模式，selection 不抢事件
+      if (ctx.store.get<boolean>(SPACE_KEY)) return;
+      // handle 命中：不要当成“空白点击”清空 selection，让对应 gesture 接管
+      if (hit.kind === 'handle') return;
+
+      if (hit.kind === 'blank') {
+        if (clearOnBlankClick && !e.modifiers.shift) {
+          const prev = ctx.store.get<string[]>(storeKey) ?? [];
+          if (prev.length > 0) {
+            ctx.store.set(storeKey, []);
+            ctx.bus.emit('selection:change', { ids: [] });
+            ctx.requestRender();
+          }
+        }
+        // 空白处不阻断：让 core 去 pan
+        return;
+      }
+
+      const prev = ctx.store.get<string[]>(storeKey) ?? [];
+
+      // group：若当前已经选中了某个 group，则默认把“点到组内成员”视为点到该 group
+      // 目的：让用户可以直接拖动整组（不需要精确点到外框）
+      // - 按住 Alt：允许“钻取”选择子节点
+      let hitId = hit.id;
+      if (!e.modifiers.shift && !e.modifiers.alt && prev.length > 0) {
+        const byId = buildById(ctx.getNodes());
+        const chain = getAncestorChain(byId, hit.id);
+        for (const gid of chain) {
+          if (prev.includes(gid)) {
+            const gn = byId.get(gid);
+            if (gn && isGroupNode(gn)) {
+              hitId = gid;
+              break;
+            }
+          }
+        }
+      }
+
+      // hidden：不可选（不改变 selection），但不阻断（避免影响 pan/右键等）
+      if (isHiddenEffective(ctx.getNodes(), hitId)) return;
+
+      // 选择规则（贴近常见编辑器）：
+      // - Shift：切换选中（toggle）
+      // - 非 Shift：
+      //   - 点击已选中的节点：保持当前多选不变（便于拖动多选组）
+      //   - 点击未选中的节点：变为单选该节点
+      const next = e.modifiers.shift ? toggle(prev, hitId) : prev.includes(hitId) ? prev : [hitId];
+
+      // 无变化就不触发
+      const changed = !(next.length === prev.length && next.every((x, i) => x === prev[i]));
+      if (changed) {
+        ctx.store.set(storeKey, next);
+        ctx.bus.emit('selection:change', { ids: next });
+        ctx.requestRender();
+      }
+
+      // locked 节点允许被选中（用于解锁等），但阻断后续 gesture（drag/resize/rotate/marquee）
+      if (isLockedEffective(ctx.getNodes(), hitId)) return { stop: true };
+    },
+  };
 
   return {
     id: 'selection',
@@ -60,79 +140,7 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
     },
     overlay: SelectionOverlay,
     overlayPointerEvents: 'auto',
-    handlers: {
-      onPointerDown: (e: MapPointerEvent, ctx) => {
-        // 只响应主键（左键）
-        if (e.button !== 0) return { handled: false };
-        // Space：平移模式，selection 不抢事件
-        if (ctx.store.get<boolean>(SPACE_KEY)) return { handled: false };
-        // 点在 resize handle 上：不要当成“空白点击”清空 selection，让 resize 插件接管
-        if (isResizeHandleEvent(e)) return { handled: true, mode: 'continue' };
-
-        const hit = hitTest(ctx.getVisibleNodes(), e.world);
-        if (!hit) {
-          if (clearOnBlankClick && !e.modifiers.shift) {
-            const prev = ctx.store.get<string[]>(storeKey) ?? [];
-            if (prev.length > 0) {
-              ctx.store.set(storeKey, []);
-              ctx.bus.emit('selection:change', { ids: [] });
-              ctx.requestRender();
-            }
-          }
-          // 空白处不拦截：让 core 去 pan
-          return { handled: false };
-        }
-
-        const prev = ctx.store.get<string[]>(storeKey) ?? [];
-        // group：若当前已经选中了某个 group，则默认把“点到组内成员”视为点到该 group
-        // 目的：让用户可以直接拖动整组（不需要精确点到外框）
-        // - 按住 Alt：允许“钻取”选择子节点
-        let hitId = hit.id;
-        if (!e.modifiers.shift && !e.modifiers.alt && prev.length > 0) {
-          const byId = buildById(ctx.getNodes());
-          const chain = getAncestorChain(byId, hit.id);
-          for (const gid of chain) {
-            if (prev.includes(gid)) {
-              const gn = byId.get(gid);
-              if (gn && isGroupNode(gn)) {
-                hitId = gid;
-                break;
-              }
-            }
-          }
-        }
-        // 选择规则（贴近常见编辑器）：
-        // - Shift：切换选中（toggle）
-        // - 非 Shift：
-        //   - 点击已选中的节点：保持当前多选不变（便于拖动多选组）
-        //   - 点击未选中的节点：变为单选该节点
-        const next = e.modifiers.shift ? toggle(prev, hitId) : prev.includes(hitId) ? prev : [hitId];
-
-        // hidden：不可选（不改变 selection），但继续传播，避免阻断画布 pan
-        if (isHiddenEffective(ctx.getNodes(), hitId)) {
-          return { handled: true, mode: 'continue' };
-        }
-
-        // 无变化就不触发
-        if (next.length === prev.length && next.every((x, i) => x === prev[i])) {
-          // 若命中的是 locked 节点：阻断后续交互（避免 drag/resize 接管）
-          if (isLockedEffective(ctx.getNodes(), hitId)) return { handled: true, mode: 'stop' };
-          // 依然继续传播：允许 drag 插件接管拖拽
-          return { handled: true, mode: 'continue' };
-        }
-
-        ctx.store.set(storeKey, next);
-        ctx.bus.emit('selection:change', { ids: next });
-        ctx.requestRender();
-
-        // locked 节点允许被选中（用于解锁等），但不允许继续交互（drag/resize/rotate）
-        if (isLockedEffective(ctx.getNodes(), hitId)) return { handled: true, mode: 'stop' };
-
-        // 命中节点时继续传播：
-        // - 允许后续 drag 插件接管拖拽
-        // - 最终由 drag 插件 stop，阻止画布平移
-        return { handled: true, mode: 'continue' };
-      },
-    },
+    hitTests: [nodeHitTest],
+    pointerDownProcessors: [selectionProcessor],
   };
 }

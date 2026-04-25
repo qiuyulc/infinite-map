@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
+import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type HitTestTarget, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
 import { createRotatePlugin } from '../plugins/createRotatePlugin';
 
 function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
@@ -53,12 +53,14 @@ describe('createRotatePlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['a']);
 
     const plugin = createRotatePlugin();
+    const gesture = plugin.gestures![0];
+    const hit = { kind: 'handle', owner: 'rotate', id: 'a', handle: 'rotate' } satisfies HitTestTarget;
 
     // rotation center will be node center (50,50)
     // start angle at (100,50) => 0 rad; move to (50,100) => 90deg
-    plugin.handlers!.onPointerDown!(pe('down', { world: { x: 100, y: 50 } }), ctx);
-    plugin.handlers!.onPointerMove!(pe('move', { world: { x: 50, y: 100 } }), ctx);
-    plugin.handlers!.onPointerUp!(pe('up', { world: { x: 50, y: 100 } }), ctx);
+    gesture.onStart(pe('down', { world: { x: 100, y: 50 } }), ctx, hit);
+    gesture.onMove(pe('move', { world: { x: 50, y: 100 } }), ctx);
+    gesture.onEnd(pe('up', { world: { x: 50, y: 100 } }), ctx);
 
     const a = getNodes().find((n) => n.id === 'a')!;
     // 350 + 90 = 440 => normalize => 80
@@ -84,9 +86,10 @@ describe('createRotatePlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['g']);
 
     const plugin = createRotatePlugin();
-    plugin.handlers!.onPointerDown!(pe('down', { world: { x: 200, y: 100 } }), ctx);
-    plugin.handlers!.onPointerMove!(pe('move', { world: { x: 100, y: 200 } }), ctx);
-    plugin.handlers!.onPointerUp!(pe('up', { world: { x: 100, y: 200 } }), ctx);
+    const gesture = plugin.gestures![0];
+    gesture.onStart(pe('down', { world: { x: 200, y: 100 } }), ctx, { kind: 'handle', owner: 'rotate', id: 'g', handle: 'rotate' } satisfies HitTestTarget);
+    gesture.onMove(pe('move', { world: { x: 100, y: 200 } }), ctx);
+    gesture.onEnd(pe('up', { world: { x: 100, y: 200 } }), ctx);
 
     const g = getNodes().find((n) => n.id === 'g')!;
     const c1 = getNodes().find((n) => n.id === 'c1')!;
@@ -107,8 +110,9 @@ describe('createRotatePlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['a']);
 
     const plugin = createRotatePlugin();
-    const res = plugin.handlers!.onPointerDown!(pe('down', { world: { x: 100, y: 50 } }), ctx);
-    expect(res).toEqual({ handled: false });
+    const ht = plugin.hitTests![0];
+    const hit = ht.hitTest(pe('down', { world: { x: 100, y: 50 } }), ctx, { kind: 'pointer' });
+    expect(hit).toBeNull();
 
     // ensure nothing changed
     expect(getNodes().find((n) => n.id === 'a')!.rotation).toBeUndefined();

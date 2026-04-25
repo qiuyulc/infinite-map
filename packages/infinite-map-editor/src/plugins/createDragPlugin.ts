@@ -1,10 +1,11 @@
 import {
   STORE_KEYS,
   computeAdaptiveSteps,
+  type Gesture,
+  type HitTestTarget,
   type InfiniteMapPlugin,
   type MapContext,
   type MapPointerEvent,
-  type NodeData,
   type NodePatch,
 } from '@qiuyulc/infinite-map';
 import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../editor/snapUtils';
@@ -44,29 +45,13 @@ const DEFAULT_DRAG_KEY = STORE_KEYS.dragState;
 const DEFAULT_SELECTION_KEY = STORE_KEYS.selectionIds;
 const SPACE_KEY = STORE_KEYS.keyboardSpace;
  
-function isResizeHandleEvent(e: MapPointerEvent): boolean {
-  const oe = e.originalEvent as unknown as { target?: unknown } | null;
-  const target = (oe?.target ?? null) as HTMLElement | null;
-  if (!target) return false;
-  return Boolean(target.closest?.('[data-handle],[data-rotate-handle]'));
-}
- 
-function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
-  for (let i = nodes.length - 1; i >= 0; i--) {
-    const n = nodes[i];
-    if (n.hidden) continue;
-    if (p.x >= n.x && p.x <= n.x + n.width && p.y >= n.y && p.y <= n.y + n.height) return n;
-  }
-  return null;
-}
- 
 export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugin {
   const dragKey = opts.dragKey ?? DEFAULT_DRAG_KEY;
   const selectOnDrag = opts.selectOnDrag ?? true;
   const selectionKey = opts.selectionKey ?? DEFAULT_SELECTION_KEY;
  
-  const startDrag = (e: MapPointerEvent, ctx: MapContext) => {
-    const hit = hitTest(ctx.getVisibleNodes(), e.world);
+  const startDrag = (e: MapPointerEvent, ctx: MapContext, hitId: string) => {
+    const hit = ctx.getNodes().find((n) => n.id === hitId) ?? null;
     if (!hit) return null;
     if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return null;
  
@@ -301,35 +286,38 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
  
   return {
     id: 'drag',
-    handlers: {
-      onPointerDown: (e, ctx) => {
-        if (e.button !== 0) return { handled: false };
-        // Space：平移模式，不拖拽节点
-        if (ctx.store.get<boolean>(SPACE_KEY)) return { handled: false };
-        // resize handle：不拖拽（让 resize 接管）
-        if (isResizeHandleEvent(e)) return { handled: false };
-        const st = startDrag(e, ctx);
-        if (!st) return { handled: false };
-        return { handled: true };
-      },
-      onPointerMove: (e, ctx) => {
-        const st = ctx.store.get<DragState>(dragKey);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        updateDrag(e, ctx);
-        return { handled: true };
-      },
-      onPointerUp: (e, ctx) => {
-        const st = ctx.store.get<DragState>(dragKey);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        endDrag(e, ctx);
-        return { handled: true };
-      },
-      onPointerCancel: (e, ctx) => {
-        const st = ctx.store.get<DragState>(dragKey);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        endDrag(e, ctx);
-        return { handled: true };
-      },
-    },
+    gestures: [
+      {
+        id: 'drag',
+        priority: 100,
+        canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (e.button !== 0) return false;
+          if (ctx.store.get<boolean>(SPACE_KEY)) return false;
+          if (hit.kind !== 'node') return false;
+          if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return false;
+          const selected = ctx.store.get<string[]>(selectionKey) ?? [];
+          return selected.includes(hit.id) || selectOnDrag;
+        },
+        onStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (hit.kind !== 'node') return;
+          startDrag(e, ctx, hit.id);
+        },
+        onMove: (e: MapPointerEvent, ctx: MapContext) => {
+          const st = ctx.store.get<DragState>(dragKey);
+          if (!st || st.pointerId !== e.pointerId) return;
+          updateDrag(e, ctx);
+        },
+        onEnd: (e: MapPointerEvent, ctx: MapContext) => {
+          const st = ctx.store.get<DragState>(dragKey);
+          if (!st || st.pointerId !== e.pointerId) return;
+          endDrag(e, ctx);
+        },
+        onCancel: (e: MapPointerEvent, ctx: MapContext) => {
+          const st = ctx.store.get<DragState>(dragKey);
+          if (!st || st.pointerId !== e.pointerId) return;
+          endDrag(e, ctx);
+        },
+      } satisfies Gesture,
+    ],
   };
 }

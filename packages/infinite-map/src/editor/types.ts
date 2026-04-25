@@ -61,6 +61,62 @@ export type HandlerResult =
   | { handled: true; mode?: 'stop' }
   | { handled: true; mode: 'continue' };
 
+// -----------------------------------------------------------------------------
+// Input Pipeline (Scheme C)
+// -----------------------------------------------------------------------------
+
+export type HitTestTarget =
+  | { kind: 'blank' }
+  | { kind: 'node'; id: string }
+  | { kind: 'handle'; owner: string; id: string; handle: string };
+
+export type HitTestContext = {
+  /** 是否是右键命中（context menu） */
+  kind: 'pointer' | 'contextmenu';
+};
+
+export type HitTestContributor = {
+  id: string;
+  priority?: number;
+  /**
+   * 返回 null 表示“不处理/无命中”；返回 target 表示给出命中结果
+   * - 命中结果会继续交给其它 contributor 竞争（按优先级）
+   */
+  hitTest: (e: MapPointerEvent | MapContextMenuEvent, ctx: MapContext, info: HitTestContext) => HitTestTarget | null;
+};
+
+export type GesturePhase = 'start' | 'move' | 'end' | 'cancel';
+
+export type Gesture = {
+  id: string;
+  priority?: number;
+  /**
+   * 是否可启动该手势（基于 hitTest 结果与当前状态）
+   */
+  canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => boolean;
+  onStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => void;
+  onMove: (e: MapPointerEvent, ctx: MapContext) => void;
+  onEnd: (e: MapPointerEvent, ctx: MapContext) => void;
+  onCancel: (e: MapPointerEvent, ctx: MapContext) => void;
+};
+
+export type InputPipelineHooks = {
+  onBeforeHitTest?: (e: MapPointerEvent | MapContextMenuEvent, ctx: MapContext, info: HitTestContext) => void;
+  onAfterHitTest?: (hit: HitTestTarget, e: MapPointerEvent | MapContextMenuEvent, ctx: MapContext, info: HitTestContext) => void;
+  onBeforeGesture?: (info: { phase: GesturePhase; gestureId: string; hit?: HitTestTarget; e: MapPointerEvent }, ctx: MapContext) => void;
+  onAfterGesture?: (info: { phase: GesturePhase; gestureId: string; hit?: HitTestTarget; e: MapPointerEvent }, ctx: MapContext) => void;
+};
+
+export type PointerDownProcessor = {
+  id: string;
+  priority?: number;
+  /**
+   * 在 hitTest 之后、gesture 启动之前执行（可用于 selection 等非互斥逻辑）
+   * - 返回 {stop:true} 可阻止后续 gesture 启动（例如锁定节点：允许选中但阻断拖拽）
+   */
+  onPointerDown: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => void | { stop?: boolean };
+};
+
 export type MapPointerEvent = {
   type: 'down' | 'move' | 'up' | 'cancel';
   pointerId: number;
@@ -104,14 +160,10 @@ export type MapKeyEvent = {
 };
 
 export type InputHandlers = {
-  onPointerDown?: (e: MapPointerEvent, ctx: MapContext) => HandlerResult;
-  onPointerMove?: (e: MapPointerEvent, ctx: MapContext) => HandlerResult;
-  onPointerUp?: (e: MapPointerEvent, ctx: MapContext) => HandlerResult;
-  onPointerCancel?: (e: MapPointerEvent, ctx: MapContext) => HandlerResult;
   onWheel?: (e: MapWheelEvent, ctx: MapContext) => HandlerResult;
   onKeyDown?: (e: MapKeyEvent, ctx: MapContext) => HandlerResult;
   onKeyUp?: (e: MapKeyEvent, ctx: MapContext) => HandlerResult;
-  onContextMenu?: (e: MapContextMenuEvent, ctx: MapContext) => HandlerResult;
+  onContextMenu?: (e: MapContextMenuEvent, ctx: MapContext, hit: HitTestTarget) => HandlerResult;
 };
 
 export type Unsubscribe = () => void;
@@ -232,7 +284,15 @@ export type InfiniteMapPlugin = {
   order?: { before?: string[]; after?: string[] };
   setup?: (ctx: MapContext) => void;
   teardown?: () => void;
-  handlers?: InputHandlers;
+  /**
+   * 非指针类输入（wheel/key/contextmenu）仍走 handlers
+   * - pointer 统一走 HitTest + Gesture 管线
+   */
+  input?: InputHandlers;
+  hitTests?: HitTestContributor[];
+  pointerDownProcessors?: PointerDownProcessor[];
+  gestures?: Gesture[];
+  inputHooks?: InputPipelineHooks;
   overlay?: OverlayComponent;
   /**
    * overlay 渲染插槽（分层渲染）

@@ -1,4 +1,13 @@
-import { STORE_KEYS, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
+import {
+  STORE_KEYS,
+  type Gesture,
+  type HitTestContributor,
+  type HitTestTarget,
+  type InfiniteMapPlugin,
+  type MapContext,
+  type MapPointerEvent,
+  type NodePatch,
+} from '@qiuyulc/infinite-map';
 import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 type RotateState = {
@@ -180,34 +189,52 @@ export function createRotatePlugin(): InfiniteMapPlugin {
 
   return {
     id: 'rotate',
-    handlers: {
-      onPointerDown: (e, ctx) => {
-        if (e.button !== 0) return { handled: false };
-        if (ctx.store.get<boolean>(SPACE_KEY)) return { handled: false };
-        // 优先走 DOM 命中，其次走几何命中兜底
-        if (!handleFromEvent(e) && !hitRotateHandle(e, ctx)) return { handled: false };
-        const st = start(e, ctx);
-        if (!st) return { handled: false };
-        return { handled: true };
-      },
-      onPointerMove: (e, ctx) => {
-        const st = ctx.store.get<RotateState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        move(e, ctx);
-        return { handled: true };
-      },
-      onPointerUp: (e, ctx) => {
-        const st = ctx.store.get<RotateState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-      onPointerCancel: (e, ctx) => {
-        const st = ctx.store.get<RotateState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-    },
+    hitTests: [
+      {
+        id: 'hit.rotate-handle',
+        priority: 950,
+        hitTest: (e, ctx) => {
+          if (!('button' in e)) return null;
+          if (ctx.store.get<boolean>(SPACE_KEY)) return null;
+          // 优先走 DOM 命中，其次走几何命中兜底
+          if (!handleFromEvent(e as MapPointerEvent) && !hitRotateHandle(e as MapPointerEvent, ctx)) return null;
+          // 没有可旋转目标时不返回命中（避免 gesture 抢占）
+          let ids = ctx.store.get<string[]>(SELECTION_KEY) ?? [];
+          ids = ids.filter((id) => !isHiddenEffective(ctx.getNodes(), id) && !isLockedEffective(ctx.getNodes(), id));
+          if (ids.length === 0) return null;
+          const id = ids[0] ?? '';
+          return { kind: 'handle', owner: 'rotate', id, handle: 'rotate' };
+        },
+      } satisfies HitTestContributor,
+    ],
+    gestures: [
+      {
+        id: 'rotate',
+        priority: 800,
+        canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (e.button !== 0) return false;
+          if (ctx.store.get<boolean>(SPACE_KEY)) return false;
+          return hit.kind === 'handle' && hit.owner === 'rotate';
+        },
+        onStart: (e, ctx) => {
+          start(e, ctx);
+        },
+        onMove: (e, ctx) => {
+          const st = ctx.store.get<RotateState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          move(e, ctx);
+        },
+        onEnd: (e, ctx) => {
+          const st = ctx.store.get<RotateState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          end(e, ctx);
+        },
+        onCancel: (e, ctx) => {
+          const st = ctx.store.get<RotateState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          end(e, ctx);
+        },
+      } satisfies Gesture,
+    ],
   };
 }

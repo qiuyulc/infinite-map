@@ -28,7 +28,9 @@ import { useWheelControls } from '../hooks/useWheelControls';
 import type {
   ChangeMeta,
   Command,
+  Gesture,
   HandlerResult,
+  HitTestTarget,
   InfiniteMapPlugin,
   MapContext,
   MapContextMenuEvent,
@@ -387,6 +389,11 @@ export function InfiniteMap({
   const pendingMovePatchesRef = useRef<NodePatch[] | null>(null);
   const pendingMoveMetaRef = useRef<ChangeMeta | null>(null);
 
+  // Scheme C：指针手势状态（全局互斥）
+  const gestureStateRef = useRef<{
+    active: null | { pointerId: number; gesture: Gesture; hit: HitTestTarget };
+  }>({ active: null });
+
   const flushPendingMovePatches = useCallback(() => {
     const patches = pendingMovePatchesRef.current;
     const meta = pendingMoveMetaRef.current;
@@ -743,7 +750,7 @@ export function InfiniteMap({
       let sawContinue = false;
       for (const p of plugins) {
         if (p.enabled === false) continue;
-        const res = p.handlers?.onWheel?.(m, ctx);
+        const res = p.input?.onWheel?.(m, ctx);
         if (!res || res.handled === false) continue;
         if (res.mode === 'continue') {
           sawContinue = true;
@@ -878,31 +885,107 @@ export function InfiniteMap({
         originalEvent: e,
       };
 
-      let sawContinue = false;
-      const call = () => {
-        for (const p of plugins) {
-          if (p.enabled === false) continue;
-          const handlers = p.handlers;
-          const fn =
-            type === 'down'
-              ? handlers?.onPointerDown
-              : type === 'move'
-                ? handlers?.onPointerMove
-                : type === 'up'
-                  ? handlers?.onPointerUp
-                  : handlers?.onPointerCancel;
-          const res = fn?.(m, ctx);
-          if (!res || res.handled === false) continue;
-          if (res.mode === 'continue') {
-            sawContinue = true;
-            continue;
+      // ---- Scheme C: hitTest + gesture manager ----
+      const enabledPlugins = plugins.filter((p) => p.enabled !== false);
+      const hooks = enabledPlugins.map((p) => p.inputHooks).filter(Boolean) as Array<NonNullable<InfiniteMapPlugin['inputHooks']>>;
+      const hitTests = enabledPlugins
+        .flatMap((p) => p.hitTests ?? [])
+        .slice()
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+      const processors = enabledPlugins
+        .flatMap((p) => p.pointerDownProcessors ?? [])
+        .slice()
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+      const gestures = enabledPlugins
+        .flatMap((p) => p.gestures ?? [])
+        .slice()
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
+      // active gesture state
+      const st = (gestureStateRef.current ??= { active: null });
+
+      const callHooks = <K extends keyof NonNullable<InfiniteMapPlugin['inputHooks']>>(
+        key: K,
+        ...args: Parameters<NonNullable<NonNullable<InfiniteMapPlugin['inputHooks']>[K]>>
+      ) => {
+        for (const h of hooks) {
+          const fn = h?.[key] as any;
+          if (!fn) continue;
+          try {
+            fn(...args);
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'hook', name: String(key) });
           }
-          return { handled: true, mode: 'stop' } as HandlerResult;
         }
-        return sawContinue ? ({ handled: true, mode: 'continue' } as HandlerResult) : ({ handled: false } as HandlerResult);
       };
 
-      return call();
+      const runHitTest = (info: { kind: 'pointer' | 'contextmenu' }) => {
+        callHooks('onBeforeHitTest', m, ctx, info);
+        let hit: HitTestTarget = { kind: 'blank' };
+        for (const ht of hitTests) {
+          const r = ht.hitTest(m, ctx, info);
+          if (r) {
+            hit = r;
+            break;
+          }
+        }
+        callHooks('onAfterHitTest', hit, m, ctx, info);
+        return hit;
+      };
+
+      if (type === 'down') {
+        const hit = runHitTest({ kind: 'pointer' });
+
+        // pointer down processors（selection 等）
+        let blockGesture = false;
+        for (const pr of processors) {
+          try {
+            const r = pr.onPointerDown(m, ctx, hit);
+            if (r && (r as any).stop === true) blockGesture = true;
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'hook', name: `processor.onPointerDown:${pr.id}` });
+          }
+        }
+        if (blockGesture) return { handled: true, mode: 'stop' };
+
+        // 选择一个 gesture 启动
+        for (const g of gestures) {
+          let ok = false;
+          try {
+            ok = g.canStart(m, ctx, hit);
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'hook', name: `gesture.canStart:${g.id}` });
+          }
+          if (!ok) continue;
+          st.active = { pointerId: m.pointerId, gesture: g, hit };
+          callHooks('onBeforeGesture', { phase: 'start', gestureId: g.id, hit, e: m }, ctx);
+          try {
+            g.onStart(m, ctx, hit);
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'command', name: `gesture.onStart:${g.id}` });
+          }
+          callHooks('onAfterGesture', { phase: 'start', gestureId: g.id, hit, e: m }, ctx);
+          return { handled: true, mode: 'stop' };
+        }
+        return { handled: false };
+      }
+
+      // move/up/cancel：仅派发给 active gesture
+      const active = st.active;
+      if (!active || active.pointerId !== m.pointerId) return { handled: false };
+      const g = active.gesture;
+      const phase = type === 'move' ? 'move' : type === 'up' ? 'end' : 'cancel';
+      callHooks('onBeforeGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
+      try {
+        if (phase === 'move') g.onMove(m, ctx);
+        else if (phase === 'end') g.onEnd(m, ctx);
+        else g.onCancel(m, ctx);
+      } catch (err) {
+        onEditorErrorRef.current?.(err, { kind: 'command', name: `gesture.${phase}:${g.id}` });
+      }
+      callHooks('onAfterGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
+      if (phase !== 'move') st.active = null;
+      return { handled: true, mode: 'stop' };
     },
     [plugins, ctx, screenToWorld]
   );
@@ -920,10 +1003,40 @@ export function InfiniteMap({
         modifiers: { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey },
         originalEvent: e.nativeEvent,
       };
+      const enabledPlugins = plugins.filter((p) => p.enabled !== false);
+      const hooks = enabledPlugins.map((p) => p.inputHooks).filter(Boolean) as Array<NonNullable<InfiniteMapPlugin['inputHooks']>>;
+      const hitTests = enabledPlugins
+        .flatMap((p) => p.hitTests ?? [])
+        .slice()
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+      const callHooks = <K extends keyof NonNullable<InfiniteMapPlugin['inputHooks']>>(
+        key: K,
+        ...args: Parameters<NonNullable<NonNullable<InfiniteMapPlugin['inputHooks']>[K]>>
+      ) => {
+        for (const h of hooks) {
+          const fn = h?.[key] as any;
+          if (!fn) continue;
+          try {
+            fn(...args);
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'hook', name: String(key) });
+          }
+        }
+      };
+      callHooks('onBeforeHitTest', m, ctx, { kind: 'contextmenu' });
+      let hit: HitTestTarget = { kind: 'blank' };
+      for (const ht of hitTests) {
+        const r = ht.hitTest(m, ctx, { kind: 'contextmenu' });
+        if (r) {
+          hit = r;
+          break;
+        }
+      }
+      callHooks('onAfterHitTest', hit, m, ctx, { kind: 'contextmenu' });
+
       let sawContinue = false;
-      for (const p of plugins) {
-        if (p.enabled === false) continue;
-        const res = p.handlers?.onContextMenu?.(m, ctx);
+      for (const p of enabledPlugins) {
+        const res = p.input?.onContextMenu?.(m, ctx, hit);
         if (!res || res.handled === false) continue;
         if (res.mode === 'continue') {
           sawContinue = true;
@@ -953,7 +1066,7 @@ export function InfiniteMap({
       for (const p of plugins) {
         if (p.enabled === false) continue;
         const res =
-          type === 'down' ? p.handlers?.onKeyDown?.(m, ctx) : p.handlers?.onKeyUp?.(m, ctx);
+          type === 'down' ? p.input?.onKeyDown?.(m, ctx) : p.input?.onKeyUp?.(m, ctx);
         if (!res || res.handled === false) continue;
         if (res.mode === 'continue') {
           sawContinue = true;
@@ -985,6 +1098,7 @@ export function InfiniteMap({
     startX: number;
     startY: number;
   } | null>(null);
+
 
   const onNodePointerDown = useCallback(
     (e: ReactPointerEvent, n: NodeData) => {

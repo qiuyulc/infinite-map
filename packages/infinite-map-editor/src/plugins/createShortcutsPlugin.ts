@@ -63,7 +63,7 @@ export function createShortcutsPlugin(opts: ShortcutsPluginOptions = {}): Infini
     id: 'shortcuts',
     provides: ['shortcuts'],
     requires: ['commands'],
-    handlers: {
+    input: {
       onKeyDown: (e: MapKeyEvent, ctx: MapContext) => {
         const k = normalizeKey(e);
         const hit = keymap[k];

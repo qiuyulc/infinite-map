@@ -1,6 +1,9 @@
 import {
   STORE_KEYS,
   computeAdaptiveSteps,
+  type Gesture,
+  type HitTestContributor,
+  type HitTestTarget,
   type InfiniteMapPlugin,
   type MapContext,
   type MapPointerEvent,
@@ -130,7 +133,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
   const hitRadiusPx = opts.hitRadiusPx ?? 10;
   const minSize = opts.minSize ?? 40;
 
-  const start = (e: MapPointerEvent, ctx: MapContext) => {
+  const start = (e: MapPointerEvent, ctx: MapContext, handleOverride?: Handle) => {
     const ids = ctx.store.get<string[]>(selectionKey) ?? [];
     if (ids.length !== 1) return null;
 
@@ -139,7 +142,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     if (isHiddenEffective(ctx.getNodes(), node.id) || isLockedEffective(ctx.getNodes(), node.id)) return null;
 
     // 优先从 DOM 指示点读取（可 hover/可点击）；否则回退到几何命中
-    const handle = handleFromEvent(e) ?? hitHandle(ctx, node, e.screen, hitRadiusPx);
+    const handle = handleOverride ?? handleFromEvent(e) ?? hitHandle(ctx, node, e.screen, hitRadiusPx);
     if (!handle) return null;
 
     const st: ResizeState = {
@@ -342,36 +345,57 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     return true;
   };
 
+  const hitTestContributor: HitTestContributor = {
+    id: 'hit.resize-handle',
+    priority: 1000,
+    hitTest: (e, ctx) => {
+      // 仅 pointer 才有 screen/button；但 contextmenu 也无所谓，返回 null 即可
+      if (!('button' in e)) return null;
+      if (ctx.store.get<boolean>(spaceKey)) return null;
+      const ids = ctx.store.get<string[]>(selectionKey) ?? [];
+      if (ids.length !== 1) return null;
+      const node = findNode(ctx.getNodes(), ids[0]);
+      if (!node) return null;
+      if (isHiddenEffective(ctx.getNodes(), node.id) || isLockedEffective(ctx.getNodes(), node.id)) return null;
+      const h = handleFromEvent(e as MapPointerEvent) ?? hitHandle(ctx, node, (e as MapPointerEvent).screen, hitRadiusPx);
+      if (!h) return null;
+      return { kind: 'handle', owner: 'resize', id: node.id, handle: h };
+    },
+  };
+
+  const gesture: Gesture = {
+    id: 'resize',
+    priority: 900,
+    canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+      if (e.button !== 0) return false;
+      if (ctx.store.get<boolean>(spaceKey)) return false;
+      return hit.kind === 'handle' && hit.owner === 'resize';
+    },
+    onStart: (e, ctx, hit) => {
+      if (hit.kind !== 'handle' || hit.owner !== 'resize') return;
+      start(e, ctx, hit.handle as Handle);
+    },
+    onMove: (e, ctx) => {
+      const st = ctx.store.get<ResizeState>(STORE_KEY);
+      if (!st || st.pointerId !== e.pointerId) return;
+      move(e, ctx);
+    },
+    onEnd: (e, ctx) => {
+      const st = ctx.store.get<ResizeState>(STORE_KEY);
+      if (!st || st.pointerId !== e.pointerId) return;
+      end(e, ctx);
+    },
+    onCancel: (e, ctx) => {
+      const st = ctx.store.get<ResizeState>(STORE_KEY);
+      if (!st || st.pointerId !== e.pointerId) return;
+      end(e, ctx);
+    },
+  };
+
   return {
     id: 'resize',
     overlayPointerEvents: 'auto',
-    handlers: {
-      onPointerDown: (e, ctx) => {
-        if (e.button !== 0) return { handled: false };
-        if (ctx.store.get<boolean>(spaceKey)) return { handled: false };
-        const st = start(e, ctx);
-        if (!st) return { handled: false };
-        // stop：避免被 drag/pan 接管
-        return { handled: true };
-      },
-      onPointerMove: (e, ctx) => {
-        const st = ctx.store.get<ResizeState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        move(e, ctx);
-        return { handled: true };
-      },
-      onPointerUp: (e, ctx) => {
-        const st = ctx.store.get<ResizeState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-      onPointerCancel: (e, ctx) => {
-        const st = ctx.store.get<ResizeState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-    },
+    hitTests: [hitTestContributor],
+    gestures: [gesture],
   };
 }

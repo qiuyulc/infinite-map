@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type MapContext, type MapPointerEvent } from '@qiuyulc/infinite-map';
+import {
+  createEventBus,
+  createStore,
+  STORE_KEYS,
+  type Camera,
+  type HitTestTarget,
+  type MapContext,
+  type MapPointerEvent,
+  type NodeData,
+} from '@qiuyulc/infinite-map';
 import { createSelectionPlugin } from '../plugins/createSelectionPlugin';
 
 function makeCtx(nodes: NodeData[]) {
@@ -44,6 +53,14 @@ function pe(partial: Partial<MapPointerEvent> & { world: { x: number; y: number 
 }
 
 describe('createSelectionPlugin', () => {
+  function runDown(plugin: ReturnType<typeof createSelectionPlugin>, e: MapPointerEvent, ctx: MapContext, hit?: HitTestTarget) {
+    const ht =
+      hit ??
+      plugin.hitTests?.[0]?.hitTest(e, ctx, { kind: 'pointer' }) ??
+      ({ kind: 'blank' } as HitTestTarget);
+    return plugin.pointerDownProcessors?.[0]?.onPointerDown(e, ctx, ht);
+  }
+
   it('click node selects it (single select)', () => {
     const { ctx, store } = makeCtx([
       { id: 'a', x: 0, y: 0, width: 100, height: 80 },
@@ -51,8 +68,8 @@ describe('createSelectionPlugin', () => {
     ]);
     const plugin = createSelectionPlugin();
 
-    const res = plugin.handlers!.onPointerDown!(pe({ world: { x: 10, y: 10 } }), ctx);
-    expect(res).toEqual({ handled: true, mode: 'continue' });
+    const res = runDown(plugin, pe({ world: { x: 10, y: 10 } }), ctx);
+    expect(res).toBeUndefined();
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 
@@ -64,10 +81,10 @@ describe('createSelectionPlugin', () => {
     const plugin = createSelectionPlugin();
 
     store.set(STORE_KEYS.selectionIds, ['a']);
-    plugin.handlers!.onPointerDown!(pe({ world: { x: 210, y: 10 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
+    runDown(plugin, pe({ world: { x: 210, y: 10 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
     expect(new Set(store.get<string[]>(STORE_KEYS.selectionIds))).toEqual(new Set(['a', 'b']));
 
-    plugin.handlers!.onPointerDown!(pe({ world: { x: 10, y: 10 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
+    runDown(plugin, pe({ world: { x: 10, y: 10 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['b']);
   });
 
@@ -77,16 +94,16 @@ describe('createSelectionPlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['a']);
 
     // blank click => clear
-    plugin.handlers!.onPointerDown!(pe({ world: { x: 500, y: 500 } }), ctx);
+    runDown(plugin, pe({ world: { x: 500, y: 500 } }), ctx);
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual([]);
 
     // shift blank click => keep
     store.set(STORE_KEYS.selectionIds, ['a']);
-    plugin.handlers!.onPointerDown!(pe({ world: { x: 500, y: 500 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
+    runDown(plugin, pe({ world: { x: 500, y: 500 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }), ctx);
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 
-  it('locked nodes are selectable (but stop), hidden nodes are ignored', () => {
+  it('locked nodes are selectable (but stop), hidden nodes behave as blank', () => {
     const { ctx, store } = makeCtx([
       { id: 'a', x: 0, y: 0, width: 100, height: 80, locked: true },
       { id: 'b', x: 200, y: 0, width: 100, height: 80, hidden: true },
@@ -95,13 +112,13 @@ describe('createSelectionPlugin', () => {
     const plugin = createSelectionPlugin();
     store.set(STORE_KEYS.selectionIds, ['c']);
 
-    const res1 = plugin.handlers!.onPointerDown!(pe({ world: { x: 10, y: 10 } }), ctx);
-    expect(res1).toEqual({ handled: true, mode: 'stop' });
+    const res1 = runDown(plugin, pe({ world: { x: 10, y: 10 } }), ctx);
+    expect(res1).toEqual({ stop: true });
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
 
-    const res2 = plugin.handlers!.onPointerDown!(pe({ world: { x: 210, y: 10 } }), ctx);
-    expect(res2).toEqual({ handled: true, mode: 'continue' });
-    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
+    const res2 = runDown(plugin, pe({ world: { x: 210, y: 10 } }), ctx);
+    expect(res2).toBeUndefined();
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual([]);
   });
 
   it('click on resize handle does not clear selection (continue propagation)', () => {
@@ -109,19 +126,7 @@ describe('createSelectionPlugin', () => {
     const plugin = createSelectionPlugin({ clearOnBlankClick: true });
     store.set(STORE_KEYS.selectionIds, ['a']);
 
-    const res = plugin.handlers!.onPointerDown!(
-      pe({
-        world: { x: 500, y: 500 }, // 即便 world 在空白处，只要 target 表示 handle，就不应清空
-        originalEvent: {
-          target: {
-            closest: (sel: string) => (sel.includes('[data-handle]') ? ({} as any) : null),
-          },
-        } as any,
-      }),
-      ctx
-    );
-
-    expect(res).toEqual({ handled: true, mode: 'continue' });
+    runDown(plugin, pe({ world: { x: 500, y: 500 } }), ctx, { kind: 'handle', owner: 'resize', id: 'a', handle: 'se' });
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
 });

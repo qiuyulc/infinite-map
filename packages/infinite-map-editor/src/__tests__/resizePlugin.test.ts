@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
+import { applyPatchesToNodes, createEventBus, createStore, STORE_KEYS, type Camera, type HitTestTarget, type NodeData, type ChangeMeta, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
 import { createResizePlugin } from '../plugins/createResizePlugin';
 
 function makeCtx(initialNodes: NodeData[], services?: Record<string, any>) {
@@ -52,13 +52,16 @@ describe('createResizePlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['a']);
 
     const plugin = createResizePlugin({ minSize: 40 });
+    const gesture = plugin.gestures![0];
 
     // west handle: try to shrink too much => clamp to minSize, and x should move accordingly
     const down = pe('down', { world: { x: 0, y: 0 }, originalEvent: { target: { dataset: { handle: 'w' } } } as any });
-    expect(plugin.handlers!.onPointerDown!(down, ctx)).toEqual({ handled: true });
+    const hit = { kind: 'handle', owner: 'resize', id: 'a', handle: 'w' } satisfies HitTestTarget;
+    expect(gesture.canStart(down, ctx, hit)).toBe(true);
+    gesture.onStart(down, ctx, hit);
 
     const move = pe('move', { world: { x: 100, y: 0 } }); // dx=+100 => w - dx => clamp
-    plugin.handlers!.onPointerMove!(move, ctx);
+    gesture.onMove(move, ctx);
 
     const n = getNodes().find((x) => x.id === 'a')!;
     expect(n.width).toBe(40);
@@ -72,15 +75,16 @@ describe('createResizePlugin', () => {
       { id: 'b', x: 60, y: 0, width: 50, height: 50 },
     ]);
     const plugin = createResizePlugin();
+    const ht = plugin.hitTests![0];
 
     store.set(STORE_KEYS.selectionIds, []); // none
-    expect(plugin.handlers!.onPointerDown!(pe('down', { world: { x: 0, y: 0 } }), ctx)).toEqual({ handled: false });
+    expect(ht.hitTest(pe('down', { world: { x: 0, y: 0 } }), ctx, { kind: 'pointer' })).toBeNull();
 
     store.set(STORE_KEYS.selectionIds, ['a']); // locked
-    expect(plugin.handlers!.onPointerDown!(pe('down', { world: { x: 0, y: 0 } }), ctx)).toEqual({ handled: false });
+    expect(ht.hitTest(pe('down', { world: { x: 0, y: 0 } }), ctx, { kind: 'pointer' })).toBeNull();
 
     store.set(STORE_KEYS.selectionIds, ['a', 'b']); // multi
-    expect(plugin.handlers!.onPointerDown!(pe('down', { world: { x: 0, y: 0 } }), ctx)).toEqual({ handled: false });
+    expect(ht.hitTest(pe('down', { world: { x: 0, y: 0 } }), ctx, { kind: 'pointer' })).toBeNull();
   });
 
   it('resizes group members proportionally (padding is kept)', () => {
@@ -100,11 +104,13 @@ describe('createResizePlugin', () => {
     );
     store.set(STORE_KEYS.selectionIds, ['g']);
     const plugin = createResizePlugin({ minSize: 40 });
+    const gesture = plugin.gestures![0];
 
     // resize group bigger: se drag to (100,100) => width/height +100
-    plugin.handlers!.onPointerDown!(pe('down', { world: { x: 200, y: 200 }, originalEvent: { target: { dataset: { handle: 'se' } } } as any }), ctx);
-    plugin.handlers!.onPointerMove!(pe('move', { world: { x: 300, y: 300 } }), ctx);
-    plugin.handlers!.onPointerUp!(pe('up', { world: { x: 300, y: 300 } }), ctx);
+    const down = pe('down', { world: { x: 200, y: 200 }, originalEvent: { target: { dataset: { handle: 'se' } } } as any });
+    gesture.onStart(down, ctx, { kind: 'handle', owner: 'resize', id: 'g', handle: 'se' } satisfies HitTestTarget);
+    gesture.onMove(pe('move', { world: { x: 300, y: 300 } }), ctx);
+    gesture.onEnd(pe('up', { world: { x: 300, y: 300 } }), ctx);
 
     const g = getNodes().find((n) => n.id === 'g')!;
     const c1 = getNodes().find((n) => n.id === 'c1')!;

@@ -1,4 +1,4 @@
-import { STORE_KEYS, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodeData, type NodePatch } from '@qiuyulc/infinite-map';
+import { STORE_KEYS, type Gesture, type HitTestTarget, type InfiniteMapPlugin, type MapContext, type MapPointerEvent, type NodePatch } from '@qiuyulc/infinite-map';
 import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 type Rotate3DState = {
@@ -12,15 +12,6 @@ type Rotate3DState = {
 const STORE_KEY = STORE_KEYS.rotate3dState;
 const SELECTION_KEY = STORE_KEYS.selectionIds;
 const SPACE_KEY = STORE_KEYS.keyboardSpace;
-
-function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
-  for (let i = nodes.length - 1; i >= 0; i--) {
-    const n = nodes[i];
-    if (n.hidden) continue;
-    if (p.x >= n.x && p.x <= n.x + n.width && p.y >= n.y && p.y <= n.y + n.height) return n;
-  }
-  return null;
-}
 
 function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
@@ -36,8 +27,8 @@ function clamp(v: number, min: number, max: number) {
 export function createRotate3DPlugin(): InfiniteMapPlugin {
   const sensitivity = 0.35; // deg / px
 
-  const start = (e: MapPointerEvent, ctx: MapContext): Rotate3DState | null => {
-    const hit = hitTest(ctx.getVisibleNodes(), e.world);
+  const start = (e: MapPointerEvent, ctx: MapContext, hitId: string): Rotate3DState | null => {
+    const hit = ctx.getNodes().find((n) => n.id === hitId) ?? null;
     if (!hit) return null;
     if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return null;
 
@@ -89,34 +80,37 @@ export function createRotate3DPlugin(): InfiniteMapPlugin {
 
   return {
     id: 'rotate3d',
-    handlers: {
-      onPointerDown: (e, ctx) => {
-        if (e.button !== 0) return { handled: false };
-        if (!e.modifiers.alt) return { handled: false };
-        if (ctx.store.get<boolean>(SPACE_KEY)) return { handled: false };
-        const st = start(e, ctx);
-        if (!st) return { handled: false };
-        // stop：优先于 drag/marquee
-        return { handled: true };
-      },
-      onPointerMove: (e, ctx) => {
-        const st = ctx.store.get<Rotate3DState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        move(e, ctx);
-        return { handled: true };
-      },
-      onPointerUp: (e, ctx) => {
-        const st = ctx.store.get<Rotate3DState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-      onPointerCancel: (e, ctx) => {
-        const st = ctx.store.get<Rotate3DState>(STORE_KEY);
-        if (!st || st.pointerId !== e.pointerId) return { handled: false };
-        end(e, ctx);
-        return { handled: true };
-      },
-    },
+    gestures: [
+      {
+        id: 'rotate3d',
+        priority: 700,
+        canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (e.button !== 0) return false;
+          if (!e.modifiers.alt) return false;
+          if (ctx.store.get<boolean>(SPACE_KEY)) return false;
+          if (hit.kind !== 'node') return false;
+          return !isHiddenEffective(ctx.getNodes(), hit.id) && !isLockedEffective(ctx.getNodes(), hit.id);
+        },
+        onStart: (e, ctx, hit) => {
+          if (hit.kind !== 'node') return;
+          start(e, ctx, hit.id);
+        },
+        onMove: (e, ctx) => {
+          const st = ctx.store.get<Rotate3DState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          move(e, ctx);
+        },
+        onEnd: (e, ctx) => {
+          const st = ctx.store.get<Rotate3DState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          end(e, ctx);
+        },
+        onCancel: (e, ctx) => {
+          const st = ctx.store.get<Rotate3DState>(STORE_KEY);
+          if (!st || st.pointerId !== e.pointerId) return;
+          end(e, ctx);
+        },
+      } satisfies Gesture,
+    ],
   };
 }

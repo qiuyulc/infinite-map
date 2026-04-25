@@ -5,6 +5,7 @@ import {
   createStore,
   STORE_KEYS,
   type Camera,
+  type HitTestTarget,
   type NodeData,
   type ChangeMeta,
   type MapContext,
@@ -58,15 +59,18 @@ describe('createDragPlugin', () => {
     } as MapContext;
 
     const drag = createDragPlugin();
+    const g = drag.gestures![0];
     const down = makePointerEvent('down', { x: 10, y: 10 }, 7);
     const move = makePointerEvent('move', { x: 110, y: 10 }, 7);
     const up = makePointerEvent('up', { x: 110, y: 10 }, 7);
 
-    expect(drag.handlers?.onPointerDown?.(down, ctx).handled).toBe(true);
+    const hit = { kind: 'node', id: 'a' } satisfies HitTestTarget;
+    expect(g.canStart(down, ctx, hit)).toBe(true);
+    g.onStart(down, ctx, hit);
     expect(store.get(STORE_KEYS.dragState)).toBeTruthy();
 
-    expect(drag.handlers?.onPointerMove?.(move, ctx).handled).toBe(true);
-    expect(drag.handlers?.onPointerUp?.(up, ctx).handled).toBe(true);
+    g.onMove(move, ctx);
+    g.onEnd(up, ctx);
 
     // after end, node should be moved to x=100
     expect(nodes.find((n) => n.id === 'a')?.x).toBe(100);

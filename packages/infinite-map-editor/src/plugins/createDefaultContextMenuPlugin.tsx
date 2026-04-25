@@ -373,7 +373,7 @@ export function createDefaultContextMenuPlugin(opts: DefaultContextMenuOptions =
     requires: ['commands', 'selection'],
     slot: 'hud',
     overlayPointerEvents: 'auto',
-    handlers: base.handlers, // 复用右键事件处理（写入 store）
+    input: base.input, // 复用右键事件处理（写入 store）
     overlay: ({ ctx }) => <MenuOverlay ctx={ctx} opts={opts} />,
   };
 }
