@@ -24,6 +24,10 @@ export type { ResizePluginOptions } from './createResizePlugin';
 export { createRotatePlugin } from './createRotatePlugin';
 export { createRotate3DPlugin } from './createRotate3DPlugin';
 
+export { createAlignDistributePlugin } from './createAlignDistributePlugin';
+export { createNudgePlugin } from './createNudgePlugin';
+export type { NudgePluginOptions } from './createNudgePlugin';
+
 export { createSnapGuidesPlugin } from './createSnapGuidesPlugin';
 export type { SnapConfig, SnapGuidesPluginOptions } from './createSnapGuidesPlugin';
 

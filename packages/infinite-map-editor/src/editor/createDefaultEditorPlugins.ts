@@ -26,6 +26,8 @@ import {
   type SelectionPluginOptions,
   createGroupPlugin,
   createLockHidePlugin,
+  createAlignDistributePlugin,
+  createNudgePlugin,
   type ShortcutsPluginOptions,
   type HistoryPluginOptions,
 } from '../plugins';
@@ -106,6 +108,10 @@ export function createDefaultEditorPlugins(opts: DefaultEditorOptions = {}): Inf
     // lock/hide commands + hud entries
     createLockHidePlugin(),
     createSelectionPlugin(opts.selection),
+    // arrow keys nudge (keyboard move)
+    createNudgePlugin(),
+    // align/distribute commands (requires selection + document)
+    createAlignDistributePlugin(),
     ...(clipboardEnabled ? [createClipboardPlugin(opts.clipboard)] : []),
     createRotatePlugin(),
     createResizePlugin(opts.resize),
