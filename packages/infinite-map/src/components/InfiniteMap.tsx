@@ -16,8 +16,8 @@ import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
-import { OverlayErrorBoundary } from './OverlayErrorBoundary';
-import { exportDoc, importDoc, type InfiniteMapDocV2 } from '../editor/document';
+import { RenderPluginOverlays } from './RenderPluginOverlays';
+import type { InfiniteMapDocV2 } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
@@ -32,6 +32,7 @@ import { useCommandRegistry } from '../hooks/useCommandRegistry';
 import { usePatchEngine } from '../hooks/usePatchEngine';
 import { usePluginInputDispatch } from '../hooks/usePluginInputDispatch';
 import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
+import { useAttachApiRef } from '../hooks/useAttachApiRef';
 import type {
   ChangeMeta,
   Command,
@@ -543,55 +544,16 @@ export function InfiniteMap({
     return out;
   }, [ctx, getNodeRect]);
 
-  // 对外 API（供工具栏使用）
-  useEffect(() => {
-    if (!apiRef) return;
-    if (!plugins || plugins.length === 0) {
-      apiRef.current = null;
-      return;
-    }
-    apiRef.current = {
-      undo: () => ctx.bus.emit('history:undo', { source: 'api' }),
-      redo: () => ctx.bus.emit('history:redo', { source: 'api' }),
-      canUndo: () => (ctx.store.get<unknown[]>(STORE_KEYS.historyUndoStack)?.length ?? 0) > 0,
-      canRedo: () => (ctx.store.get<unknown[]>(STORE_KEYS.historyRedoStack)?.length ?? 0) > 0,
-      subscribeHistory: (listener) => ctx.store.subscribe(STORE_KEYS.historyVersion, listener),
-      runCommand: (id, payload) => {
-        const source = (payload?.source ?? 'api') as 'keyboard' | 'toolbar' | 'menu' | 'api';
-        const rest = (payload ?? {}) as Record<string, unknown>;
-        return runCommandWithHooks(id, { ...rest, source });
-      },
-      getCommands: () => Object.values(ctx.store.get<Record<string, Command>>('commands:registry') ?? {}),
-      getCommand: (id) => (ctx.store.get<Record<string, Command>>('commands:registry') ?? {})[id],
-      subscribe: (type, handler) => ctx.bus.on(type, handler as any),
-      getSelectionIds: () => ctx.getService<{ getIds: () => string[] }>('selection')?.getIds?.() ?? [],
-      setSelectionIds: (ids) => {
-        const sel = ctx.getService<{ setIds?: (ids: string[]) => void; clear?: () => void }>('selection');
-        if (!sel?.setIds) throw new Error('[InfiniteMapApi.setSelectionIds] selection service is not available (did you enable selection plugin?)');
-        sel.setIds(ids);
-      },
-      subscribeSelection: (listener) => ctx.bus.on('selection:change', listener),
-      getNodeRect,
-      getSelectionRect,
-      getCamera: () => ctx.getCamera(),
-      setCamera: (next, opts) => commitCamera(next, Boolean(opts?.immediate)),
-      subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
-      getNodes: () => ctx.getNodes(),
-      exportDoc: (meta) => exportDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
-      importDoc: (doc, opts) => {
-        const next = importDoc(doc);
-        // 相机先应用（immediate 可用于“无动画跳转”）
-        commitCamera(next.camera, Boolean(opts?.immediate));
-        if (!onNodesChange) {
-          throw new Error('[InfiniteMapApi.importDoc] onNodesChange is required to apply imported nodes');
-        }
-        onNodesChange(next.nodes, { source: 'plugin', plugin: 'api', reason: 'import' });
-      },
-    };
-    return () => {
-      apiRef.current = null;
-    };
-  }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect]);
+  useAttachApiRef({
+    apiRef,
+    plugins,
+    ctx,
+    commitCamera,
+    runCommandWithHooks,
+    getNodeRect,
+    getSelectionRect,
+    onNodesChange,
+  });
 
   // 插件 setup/teardown（Milestone 1：只提供生命周期，不引入任何默认插件）
   useEffect(() => {
@@ -986,24 +948,7 @@ export function InfiniteMap({
       }}
     >
       {/* 插件 background 层（在节点层之下） */}
-      {plugins && plugins.length > 0 ? (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-          {plugins
-            .filter((p) => p.enabled !== false && p.slot === 'background')
-            .map((p) => {
-              const Overlay = p.overlay;
-              return (
-                <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? (
-                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'background' }} onError={onEditorErrorRef.current}>
-                      <Overlay ctx={ctx} />
-                    </OverlayErrorBoundary>
-                  ) : null}
-                </div>
-              );
-            })}
-        </div>
-      ) : null}
+      {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
 
       {backgroundMode === 'grid' ? (
         <BackgroundGrid
@@ -1031,47 +976,10 @@ export function InfiniteMap({
       <div style={{ ...worldStyle, zIndex: 1 }}>{domNodeElements}</div>
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
-      {plugins && plugins.length > 0 ? (
-        // 重要：父层用 pointerEvents:none，避免“透明大层”成为事件 target，导致点不到 resize/rotate handle
-        // 需要交互的 overlay 由各插件 wrapper 自己设置 overlayPointerEvents: 'auto'
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2 }}>
-          {plugins
-            .filter((p) => p.enabled !== false && (p.slot === undefined || p.slot === 'overlay'))
-            .map((p) => {
-              const Overlay = p.overlay;
-              return (
-                <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? (
-                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'overlay' }} onError={onEditorErrorRef.current}>
-                      <Overlay ctx={ctx} />
-                    </OverlayErrorBoundary>
-                  ) : null}
-                </div>
-              );
-            })}
-        </div>
-      ) : null}
+      {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 2, onEditorError: onEditorErrorRef.current })}
 
       {/* 插件 hud 层（minimap/标尺/面板等，通常最上层） */}
-      {plugins && plugins.length > 0 ? (
-        // 同 overlay：父层不拦截事件，交互由各 hud 插件自己控制
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
-          {plugins
-            .filter((p) => p.enabled !== false && p.slot === 'hud')
-            .map((p) => {
-              const Overlay = p.overlay;
-              return (
-                <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? (
-                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'hud' }} onError={onEditorErrorRef.current}>
-                      <Overlay ctx={ctx} />
-                    </OverlayErrorBoundary>
-                  ) : null}
-                </div>
-              );
-            })}
-        </div>
-      ) : null}
+      {RenderPluginOverlays({ plugins, slot: 'hud', ctx, zIndex: 3, onEditorError: onEditorErrorRef.current })}
 
     </div>
   );
