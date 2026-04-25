@@ -56,7 +56,15 @@ export type {
   MapContextMenuEvent,
 } from './editor/types';
 
-export { DOC_SCHEMA_VERSION, exportDoc, importDoc, type InfiniteMapDoc, type InfiniteMapDocV1, type InfiniteMapDocLegacyV0 } from './editor/document';
+export {
+  DOC_SCHEMA_VERSION,
+  exportDoc,
+  importDoc,
+  type InfiniteMapDoc,
+  type InfiniteMapDocV2,
+  type InfiniteMapDocV1,
+  type InfiniteMapDocLegacyV0,
+} from './editor/document';
 
 // store keys/runtime utils（editor 包需要）
 export { STORE_KEYS, VISUAL_CONST } from './editor/keys';

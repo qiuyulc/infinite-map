@@ -19,7 +19,17 @@ describe('doc schema', () => {
       nodes: [{ id: 'a', x: 0, y: 0, width: 10, height: 10 }],
       camera: { x: 1, y: 2, zoom: 3 },
     });
-    expect(doc.schemaVersion).toBe(1);
+    expect(doc.schemaVersion).toBe(DOC_SCHEMA_VERSION);
+  });
+
+  it('importDoc migrates v1 -> latest', () => {
+    const doc = importDoc({
+      schemaVersion: 1,
+      nodes: [{ id: 'a', x: 0, y: 0, width: 10, height: 10 }],
+      camera: { x: 1, y: 2, zoom: 3 },
+    });
+    expect(doc.schemaVersion).toBe(DOC_SCHEMA_VERSION);
+    expect(doc.resources).toBeDefined();
   });
 
   it('importDoc throws on invalid doc', () => {
@@ -27,4 +37,3 @@ describe('doc schema', () => {
     expect(() => importDoc({ schemaVersion: 1, nodes: [], camera: { x: 0, y: 0 } })).toThrow();
   });
 });
-

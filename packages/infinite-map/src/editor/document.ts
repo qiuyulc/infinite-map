@@ -4,7 +4,20 @@ import type { Camera, NodeData } from '../core/types';
  * Doc schema version（对外持久化格式）
  * - 只要格式有 breaking change，就递增 schemaVersion，并在 migrations 中补迁移
  */
-export const DOC_SCHEMA_VERSION = 1 as const;
+export const DOC_SCHEMA_VERSION = 2 as const;
+
+/**
+ * v2：在 v1 基础上新增资源表（resources）
+ * - resources：宿主可选择把“大对象业务数据”落盘到这里（key 通常为 node.resourceId）
+ *   这样 nodes.data 可以保持轻量，便于协作/历史/迁移。
+ */
+export type InfiniteMapDocV2 = {
+  schemaVersion: 2;
+  nodes: NodeData[];
+  camera: Camera;
+  resources?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+};
 
 /**
  * v1：最小持久化格式
@@ -29,7 +42,7 @@ export type InfiniteMapDocLegacyV0 = {
   meta?: Record<string, unknown>;
 };
 
-export type InfiniteMapDoc = InfiniteMapDocV1;
+export type InfiniteMapDoc = InfiniteMapDocV2;
 
 export type DocValidationError = {
   message: string;
@@ -72,17 +85,23 @@ function validateNodes(v: unknown, path: string): asserts v is NodeData[] {
 /**
  * 将任意输入解析为最新版本 doc（含迁移）
  */
-export function importDoc(input: unknown): InfiniteMapDocV1 {
+export function importDoc(input: unknown): InfiniteMapDocV2 {
   assert(isObject(input), 'doc must be an object', 'doc');
 
-  // v1
+  // v1/v2
   if ('schemaVersion' in input) {
     const sv = (input as any).schemaVersion;
     assert(typeof sv === 'number', 'schemaVersion must be a number', 'doc.schemaVersion');
+    if (sv === 2) {
+      validateNodes((input as any).nodes, 'doc.nodes');
+      validateCamera((input as any).camera, 'doc.camera');
+      // resources/meta 为可选，暂不做深校验（由宿主约束）
+      return input as InfiniteMapDocV2;
+    }
     if (sv === 1) {
       validateNodes((input as any).nodes, 'doc.nodes');
       validateCamera((input as any).camera, 'doc.camera');
-      return input as InfiniteMapDocV1;
+      return migrateV1ToV2(input as InfiniteMapDocV1);
     }
     throw new Error(`Unsupported doc schemaVersion: ${sv}`);
   }
@@ -91,24 +110,43 @@ export function importDoc(input: unknown): InfiniteMapDocV1 {
   validateNodes((input as any).nodes, 'doc.nodes');
   validateCamera((input as any).camera, 'doc.camera');
   const legacy = input as InfiniteMapDocLegacyV0;
-  return {
-    schemaVersion: 1,
-    nodes: legacy.nodes,
-    camera: legacy.camera,
-    meta: legacy.meta,
-  };
+  return migrateV1ToV2(migrateV0ToV1(legacy));
 }
 
 /**
  * 将当前状态导出为 doc（最新版本）
  * - 默认不做深拷贝：由宿主决定是否在落盘前 clone（例如 structuredClone）
  */
-export function exportDoc(input: { nodes: NodeData[]; camera: Camera; meta?: Record<string, unknown> }): InfiniteMapDocV1 {
+export function exportDoc(input: {
+  nodes: NodeData[];
+  camera: Camera;
+  resources?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+}): InfiniteMapDocV2 {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     nodes: input.nodes,
     camera: input.camera,
+    resources: input.resources ?? {},
     meta: input.meta,
   };
 }
 
+function migrateV0ToV1(v0: InfiniteMapDocLegacyV0): InfiniteMapDocV1 {
+  return {
+    schemaVersion: 1,
+    nodes: v0.nodes,
+    camera: v0.camera,
+    meta: v0.meta,
+  };
+}
+
+function migrateV1ToV2(v1: InfiniteMapDocV1): InfiniteMapDocV2 {
+  return {
+    schemaVersion: 2,
+    nodes: v1.nodes,
+    camera: v1.camera,
+    resources: {},
+    meta: v1.meta,
+  };
+}

@@ -16,7 +16,7 @@ import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
-import { exportDoc, importDoc, type InfiniteMapDocV1 } from '../editor/document';
+import { exportDoc, importDoc, type InfiniteMapDocV2 } from '../editor/document';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
@@ -241,7 +241,7 @@ export type InfiniteMapApi = {
    * - exportDoc：返回最新版本结构
    * - importDoc：解析/迁移后，用 onNodesChange + setCamera 应用到宿主
    */
-  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDocV1;
+  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDocV2;
   importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 
