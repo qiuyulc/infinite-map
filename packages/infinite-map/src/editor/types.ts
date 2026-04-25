@@ -47,6 +47,7 @@ export type ChangeMeta = {
     | 'cut'
     | 'paste'
     | 'duplicate'
+    | 'import'
     | 'undo'
     | 'redo'
     | 'group'

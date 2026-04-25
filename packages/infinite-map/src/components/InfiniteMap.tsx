@@ -16,6 +16,7 @@ import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
+import { exportDoc, importDoc, type InfiniteMapDocV1 } from '../editor/document';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
@@ -234,6 +235,14 @@ export type InfiniteMapApi = {
    * 获取节点（只读快照）
    */
   getNodes: () => NodeData[];
+
+  /**
+   * 导出/导入持久化文档（schemaVersion + migrations）
+   * - exportDoc：返回最新版本结构
+   * - importDoc：解析/迁移后，用 onNodesChange + setCamera 应用到宿主
+   */
+  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDocV1;
+  importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 
 export function InfiniteMap({
@@ -731,6 +740,16 @@ export function InfiniteMap({
       setCamera: (next, opts) => commitCamera(next, Boolean(opts?.immediate)),
       subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
       getNodes: () => ctx.getNodes(),
+      exportDoc: (meta) => exportDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
+      importDoc: (doc, opts) => {
+        const next = importDoc(doc);
+        // 相机先应用（immediate 可用于“无动画跳转”）
+        commitCamera(next.camera, Boolean(opts?.immediate));
+        if (!onNodesChange) {
+          throw new Error('[InfiniteMapApi.importDoc] onNodesChange is required to apply imported nodes');
+        }
+        onNodesChange(next.nodes, { source: 'plugin', plugin: 'api', reason: 'import' });
+      },
     };
     return () => {
       apiRef.current = null;
