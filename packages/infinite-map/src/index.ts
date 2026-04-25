@@ -44,6 +44,8 @@ export type {
   HandlerResult,
   EventMap,
   EventKey,
+  EditorErrorKind,
+  EditorErrorInfo,
   // Scheme C：input pipeline
   HitTestTarget,
   HitTestContributor,

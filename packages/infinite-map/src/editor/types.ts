@@ -63,6 +63,34 @@ export type HandlerResult =
   | { handled: true; mode: 'continue' };
 
 // -----------------------------------------------------------------------------
+// Error reporting (library-grade diagnostics)
+// -----------------------------------------------------------------------------
+
+export type EditorErrorKind = 'hook' | 'command' | 'gesture' | 'processor' | 'hitTest' | 'overlay' | 'lifecycle';
+
+export type EditorErrorInfo = {
+  kind: EditorErrorKind;
+  /**
+   * 发生错误的“位置/名称”
+   * - hook：hook 名称（例如 onBeforeApplyPatches）
+   * - command：通常为 'run'
+   * - gesture：'canStart' | 'onStart' | 'onMove' | 'onEnd' | 'onCancel'
+   * - lifecycle：'setup' | 'teardown'
+   * - overlay：'render'
+   */
+  name: string;
+
+  // 可选上下文（尽量结构化，便于宿主统一上报/埋点）
+  pluginId?: string;
+  commandId?: string;
+  source?: 'keyboard' | 'toolbar' | 'menu' | 'api';
+  gestureId?: string;
+  processorId?: string;
+  hitTestId?: string;
+  slot?: 'background' | 'overlay' | 'hud';
+};
+
+// -----------------------------------------------------------------------------
 // Input Pipeline (Scheme C)
 // -----------------------------------------------------------------------------
 

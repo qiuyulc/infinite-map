@@ -1,4 +1,4 @@
-import {
+import React, {
   useCallback,
   useEffect,
   useMemo,
@@ -30,6 +30,7 @@ import { useWheelControls } from '../hooks/useWheelControls';
 import type {
   ChangeMeta,
   Command,
+  EditorErrorInfo,
   Gesture,
   HandlerResult,
   HitTestTarget,
@@ -118,7 +119,7 @@ export type InfiniteMapProps = {
   /**
    * 全局错误上报（用于 hooks / command 执行等异常的收集）
    */
-  onEditorError?: (err: unknown, info: { kind: 'hook' | 'command'; name: string; commandId?: string; source?: string }) => void;
+  onEditorError?: (err: unknown, info: EditorErrorInfo) => void;
 
   /** 点阵间距（世界坐标单位），可设为 'auto' 与标尺/网格同源 */
   dotSpacing?: number | 'auto';
@@ -167,6 +168,12 @@ export type InfiniteMapProps = {
      */
     panKeepAlive?: boolean | { maxNodes?: number };
   };
+
+  /**
+   * 调试开关（默认关闭）
+   * - 打开后会写入一些调试信息到 store（debug:*），并在必要时 console.warn/console.debug
+   */
+  debug?: boolean;
 
   /**
    * 节点虚拟化 overscan（兼容旧字段）
@@ -262,6 +269,27 @@ export type InfiniteMapApi = {
   importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 
+class OverlayErrorBoundary extends React.Component<
+  {
+    info: Omit<EditorErrorInfo, 'kind' | 'name'>;
+    onError?: (err: unknown, info: EditorErrorInfo) => void;
+    children: ReactNode;
+  },
+  { hasError: boolean }
+> {
+  state: { hasError: boolean } = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: unknown) {
+    this.props.onError?.(err, { kind: 'overlay', name: 'render', ...this.props.info });
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
 export function InfiniteMap({
   nodes,
   plugins,
@@ -300,6 +328,7 @@ export function InfiniteMap({
   themeBase,
   theme,
   apiRef,
+  debug = false,
 }: InfiniteMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -394,6 +423,11 @@ export function InfiniteMap({
   useEffect(() => {
     onEditorErrorRef.current = onEditorError;
   }, [onEditorError]);
+
+  const debugRef = useRef(debug);
+  useEffect(() => {
+    debugRef.current = debug;
+  }, [debug]);
 
   // 重要：onNodesChange/onPatches 可能在宿主每次 render 时都是新函数引用
   // 如果直接放在 applyPatches 的依赖里，会导致 ctx 变化，从而触发 plugins.setup 反复执行（例如 toolbar/menu registry 被重复注入）
@@ -593,6 +627,7 @@ export function InfiniteMap({
       }
 
       const reg = ctx0.store.get<Record<string, Command>>('commands:registry') ?? {};
+      const cmdFrom = ctx0.store.get<Record<string, string>>('commands:from') ?? {};
       const cmd = reg[id];
       if (!cmd) {
         try {
@@ -611,7 +646,7 @@ export function InfiniteMap({
         }
         return true;
       } catch (err) {
-        onEditorErrorRef.current?.(err, { kind: 'command', name: 'run', commandId: id, source });
+        onEditorErrorRef.current?.(err, { kind: 'command', name: 'run', commandId: id, source, pluginId: cmdFrom[id] });
         try {
           hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
         } catch (e2) {
@@ -724,6 +759,7 @@ export function InfiniteMap({
       }
     }
     store.set('commands:registry', registry);
+    store.set('commands:from', from);
   }, [plugins, store, commandConflictPolicy, warnOnCommandConflict]);
 
   // camera state 更新：广播 changed 事件（用于外部订阅）
@@ -822,12 +858,20 @@ export function InfiniteMap({
     if (!plugins || plugins.length === 0) return;
     plugins.forEach((p) => {
       if (p.enabled === false) return;
-      p.setup?.(ctx);
+      try {
+        p.setup?.(ctx);
+      } catch (err) {
+        onEditorErrorRef.current?.(err, { kind: 'lifecycle', name: 'setup', pluginId: p.id });
+      }
     });
     return () => {
       plugins.forEach((p) => {
         if (p.enabled === false) return;
-        p.teardown?.();
+        try {
+          p.teardown?.();
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'lifecycle', name: 'teardown', pluginId: p.id });
+        }
       });
     };
   }, [plugins, ctx]);
@@ -940,6 +984,12 @@ export function InfiniteMap({
   useEffect(() => {
     visibleNodesRef.current = visibleNodes;
   }, [visibleNodes]);
+
+  // debug：暴露可见节点数量（便于宿主排查虚拟化策略）
+  useEffect(() => {
+    if (!debugRef.current) return;
+    store.set('debug:visibleNodesCount', visibleNodes.length);
+  }, [store, visibleNodes]);
 
   // 严格 “in view”：不包含 overscan，用于 UI 展示当前屏幕内真正可见的节点数量
   const inViewCount = useMemo(() => {
@@ -1085,14 +1135,21 @@ export function InfiniteMap({
 
       const runHitTest = (info: { kind: 'pointer' | 'contextmenu' }) => {
         callHooks('onBeforeHitTest', m, ctx, info);
+        const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
+        const t0 = debugRef.current ? now() : 0;
         let hit: HitTestTarget = { kind: 'blank' };
         for (const ht of hitTests) {
-          const r = ht.hitTest(m, ctx, info);
-          if (r) {
-            hit = r;
-            break;
+          try {
+            const r = ht.hitTest(m, ctx, info);
+            if (r) {
+              hit = r;
+              break;
+            }
+          } catch (err) {
+            onEditorErrorRef.current?.(err, { kind: 'hitTest', name: 'hitTest', hitTestId: ht.id });
           }
         }
+        if (debugRef.current) store.set('debug:lastHitTestMs', now() - t0);
         callHooks('onAfterHitTest', hit, m, ctx, info);
         return hit;
       };
@@ -1108,7 +1165,7 @@ export function InfiniteMap({
             if (r && (r as any).stop === true) blockGesture = true;
             if (r && (r as any).hit) hit = (r as any).hit as HitTestTarget;
           } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'hook', name: `processor.onPointerDown:${pr.id}` });
+            onEditorErrorRef.current?.(err, { kind: 'processor', name: 'onPointerDown', processorId: pr.id });
           }
         }
         if (blockGesture) return { handled: true, mode: 'stop' };
@@ -1119,7 +1176,7 @@ export function InfiniteMap({
           try {
             ok = g.canStart(m, ctx, hit);
           } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'hook', name: `gesture.canStart:${g.id}` });
+            onEditorErrorRef.current?.(err, { kind: 'gesture', name: 'canStart', gestureId: g.id });
           }
           if (!ok) continue;
           st.active = { pointerId: m.pointerId, gesture: g, hit };
@@ -1127,7 +1184,7 @@ export function InfiniteMap({
           try {
             g.onStart(m, ctx, hit);
           } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'command', name: `gesture.onStart:${g.id}` });
+            onEditorErrorRef.current?.(err, { kind: 'gesture', name: 'onStart', gestureId: g.id });
           }
           callHooks('onAfterGesture', { phase: 'start', gestureId: g.id, hit, e: m }, ctx);
           return { handled: true, mode: 'stop' };
@@ -1165,11 +1222,22 @@ export function InfiniteMap({
       const phase = type === 'move' ? 'move' : type === 'up' ? 'end' : 'cancel';
       callHooks('onBeforeGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
       try {
+        const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
+        const t0 = debugRef.current ? now() : 0;
         if (phase === 'move') g.onMove(m, ctx);
         else if (phase === 'end') g.onEnd(m, ctx);
         else g.onCancel(m, ctx);
+        if (debugRef.current) {
+          store.set('debug:lastGestureId', g.id);
+          store.set('debug:lastGesturePhase', phase);
+          store.set('debug:lastGestureMs', now() - t0);
+        }
       } catch (err) {
-        onEditorErrorRef.current?.(err, { kind: 'command', name: `gesture.${phase}:${g.id}` });
+        onEditorErrorRef.current?.(err, {
+          kind: 'gesture',
+          name: phase === 'move' ? 'onMove' : phase === 'end' ? 'onEnd' : 'onCancel',
+          gestureId: g.id,
+        });
       }
       callHooks('onAfterGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
       if (phase !== 'move') st.active = null;
@@ -1214,10 +1282,14 @@ export function InfiniteMap({
       callHooks('onBeforeHitTest', m, ctx, { kind: 'contextmenu' });
       let hit: HitTestTarget = { kind: 'blank' };
       for (const ht of hitTests) {
-        const r = ht.hitTest(m, ctx, { kind: 'contextmenu' });
-        if (r) {
-          hit = r;
-          break;
+        try {
+          const r = ht.hitTest(m, ctx, { kind: 'contextmenu' });
+          if (r) {
+            hit = r;
+            break;
+          }
+        } catch (err) {
+          onEditorErrorRef.current?.(err, { kind: 'hitTest', name: 'hitTest', hitTestId: ht.id });
         }
       }
       callHooks('onAfterHitTest', hit, m, ctx, { kind: 'contextmenu' });
@@ -1488,7 +1560,11 @@ export function InfiniteMap({
               const Overlay = p.overlay;
               return (
                 <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? <Overlay ctx={ctx} /> : null}
+                  {Overlay ? (
+                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'background' }} onError={onEditorErrorRef.current}>
+                      <Overlay ctx={ctx} />
+                    </OverlayErrorBoundary>
+                  ) : null}
                 </div>
               );
             })}
@@ -1531,7 +1607,11 @@ export function InfiniteMap({
               const Overlay = p.overlay;
               return (
                 <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? <Overlay ctx={ctx} /> : null}
+                  {Overlay ? (
+                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'overlay' }} onError={onEditorErrorRef.current}>
+                      <Overlay ctx={ctx} />
+                    </OverlayErrorBoundary>
+                  ) : null}
                 </div>
               );
             })}
@@ -1548,7 +1628,11 @@ export function InfiniteMap({
               const Overlay = p.overlay;
               return (
                 <div key={p.id} data-plugin={p.id} style={{ pointerEvents: p.overlayPointerEvents ?? 'none' }}>
-                  {Overlay ? <Overlay ctx={ctx} /> : null}
+                  {Overlay ? (
+                    <OverlayErrorBoundary info={{ pluginId: p.id, slot: 'hud' }} onError={onEditorErrorRef.current}>
+                      <Overlay ctx={ctx} />
+                    </OverlayErrorBoundary>
+                  ) : null}
                 </div>
               );
             })}
