@@ -281,6 +281,12 @@ export type InfiniteMapPlugin = {
   id: string;
   enabled?: boolean;
   /**
+   * 插件整体排序优先级（与输入手势 priority 不同）
+   * - 数字越大越靠前（用于 setup/teardown/commands 等生命周期顺序）
+   * - 若同时存在 order.before/after/requires/provides，优先满足依赖关系
+   */
+  priority?: number;
+  /**
    * 插件声明式能力/依赖（用于组合、校验、排序）
    * - provides 默认包含自身 id（即提供一个同名能力）
    */

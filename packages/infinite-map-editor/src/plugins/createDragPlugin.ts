@@ -9,7 +9,7 @@ import {
   type NodePatch,
 } from '@qiuyulc/infinite-map';
 import { bboxOf, getViewportCenterWorld, setSnapGuides, snapToGrid, type SnapConfig } from '../editor/snapUtils';
-import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
+import { isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
  
 export type DragPluginOptions = {
   /**
@@ -57,24 +57,10 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
  
     const selected = ctx.store.get<string[]>(selectionKey) ?? [];
     const selectedSet = new Set(selected);
-    const byId = buildById(ctx.getNodes());
-
-    // 若命中的是“已选中 group 的后代”，并且未按 Alt，则把命中视为 group（方便直接拖动整组）
-    let effectiveHitId = hit.id;
-    if (!e.modifiers.alt && selected.length > 0) {
-      const chain = getAncestorChain(byId, hit.id);
-      for (const gid of chain) {
-        if (selectedSet.has(gid)) {
-          const gn = byId.get(gid);
-          if (gn && isGroupNode(gn)) {
-            effectiveHitId = gid;
-            break;
-          }
-        }
-      }
-    }
-
-    const hitInSelection = selectedSet.has(effectiveHitId);
+    // 命中节点的 group 语义应由 selectionProcessor 统一写回 “有效 hit”
+    // - 这里直接使用 hit.id 作为 primaryId
+    const effectiveHitId = hit.id;
+    const hitInSelection = selectedSet.has(hit.id);
  
     // 规则：
     // - 拖拽已选中节点：如果 selection 有多个，则整体拖动；否则单节点拖动

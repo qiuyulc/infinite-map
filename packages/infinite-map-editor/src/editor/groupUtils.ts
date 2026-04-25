@@ -39,6 +39,21 @@ export function getAncestorChain(byId: Map<string, NodeData>, nodeId: string) {
   return out;
 }
 
+/**
+ * 若命中的是 group 或其子节点：返回最外层（root-most）的 group id
+ * - 常用于 context menu：右键命中组内节点时，对“整组”操作更符合直觉
+ */
+export function getOutermostGroupId(nodes: NodeData[], hitId: string): string {
+  const byId = buildById(nodes);
+  let out: string | null = null;
+  const chain = [hitId, ...getAncestorChain(byId, hitId)];
+  for (const id of chain) {
+    const n = byId.get(id);
+    if (n && isGroupNode(n)) out = id;
+  }
+  return out ?? hitId;
+}
+
 export function isLockedEffective(nodes: NodeData[], nodeId: string) {
   const byId = buildById(nodes);
   let cur = byId.get(nodeId);
@@ -93,4 +108,3 @@ export function expandIdsWithGroups(nodes: NodeData[], ids: string[]) {
   }
   return [...out];
 }
-

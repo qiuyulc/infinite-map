@@ -52,7 +52,8 @@ describe('createContextMenuPlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['b']);
 
     const menu = createContextMenuPlugin();
-    menu.input!.onContextMenu!(ce({ x: 10, y: 10 }), ctx, { kind: 'node', id: 'a' } satisfies HitTestTarget);
+    const hit = selection.hitTests?.[0]?.hitTest(ce({ x: 10, y: 10 }) as any, ctx, { kind: 'contextmenu' }) ?? ({ kind: 'blank' } as HitTestTarget);
+    menu.input!.onContextMenu!(ce({ x: 10, y: 10 }), ctx, hit);
 
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
     const st = store.get<any>(STORE_KEYS.contextMenuState);
@@ -70,7 +71,8 @@ describe('createContextMenuPlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['a', 'b']);
 
     const menu = createContextMenuPlugin();
-    menu.input!.onContextMenu!(ce({ x: 10, y: 10 }), ctx, { kind: 'node', id: 'a' } satisfies HitTestTarget);
+    const hit = selection.hitTests?.[0]?.hitTest(ce({ x: 10, y: 10 }) as any, ctx, { kind: 'contextmenu' }) ?? ({ kind: 'blank' } as HitTestTarget);
+    menu.input!.onContextMenu!(ce({ x: 10, y: 10 }), ctx, hit);
 
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a', 'b']);
     const st = store.get<any>(STORE_KEYS.contextMenuState);
@@ -89,7 +91,8 @@ describe('createContextMenuPlugin', () => {
     store.set(STORE_KEYS.selectionIds, []);
 
     const menu = createContextMenuPlugin();
-    menu.input!.onContextMenu!(ce({ x: 20, y: 20 }), ctx, { kind: 'node', id: 'n' } satisfies HitTestTarget);
+    const hit = selection.hitTests?.[0]?.hitTest(ce({ x: 20, y: 20 }) as any, ctx, { kind: 'contextmenu' }) ?? ({ kind: 'blank' } as HitTestTarget);
+    menu.input!.onContextMenu!(ce({ x: 20, y: 20 }), ctx, hit);
 
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['g1']);
     const st = store.get<any>(STORE_KEYS.contextMenuState);

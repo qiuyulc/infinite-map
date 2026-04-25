@@ -21,7 +21,7 @@ import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
 import { useCamera } from '../hooks/useCamera';
 import { useHighlightLayer } from '../hooks/useHighlightLayer';
-import { usePointerPan } from '../hooks/usePointerPan';
+// pan 已纳入 Scheme C gestures（不再使用独立 hook）
 import { useViewportSize } from '../hooks/useViewportSize';
 import { useVisibleNodes } from '../hooks/useVisibleNodes';
 import { useWheelControls } from '../hooks/useWheelControls';
@@ -646,6 +646,13 @@ export function InfiniteMap({
     ctxRef.current = ctx;
   }, [ctx]);
 
+  // 对外暴露 hover service（overlay 可读取当前命中，用于 hover 高亮等）
+  useEffect(() => {
+    ctx.registerService('hover', {
+      get: () => hoverRef.current,
+    });
+  }, [ctx]);
+
   // 把视图配置（min/max zoom）暴露给插件（如 ViewCommandsPlugin）
   useEffect(() => {
     ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
@@ -745,13 +752,8 @@ export function InfiniteMap({
     };
   }, [plugins, ctx]);
 
-  // 手势/输入
-  const { onPointerDown, onPointerMove, onPointerUp, onPointerLeave } = usePointerPan({
-    containerRef,
-    mouseRef,
-    cameraRef,
-    commitCamera,
-  });
+  // Scheme C：pan 手势状态
+  const panRef = useRef<null | { pointerId: number; startScreen: { x: number; y: number }; startCam: { x: number; y: number } }>(null);
 
   useWheelControls({
     containerRef,
@@ -901,6 +903,8 @@ export function InfiniteMap({
       const r = el.getBoundingClientRect();
       const sx = e.clientX - r.left;
       const sy = e.clientY - r.top;
+      // 无论是否被手势接管，都更新鼠标位置（highlight layer 会用）
+      mouseRef.current = { x: sx, y: sy };
       const m: MapPointerEvent = {
         type,
         pointerId: e.pointerId,
@@ -927,6 +931,59 @@ export function InfiniteMap({
         .flatMap((p) => p.gestures ?? [])
         .slice()
         .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
+      // 内置 pan gesture（最低优先级兜底）
+      gestures.push({
+        id: 'pan',
+        priority: -9999,
+        canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (e.button !== 0) return false;
+          // Space：全局平移模式（无视命中）
+          if (ctx.store.get<boolean>(STORE_KEYS.keyboardSpace)) return true;
+          // 空白拖动平移
+          return hit.kind === 'blank';
+        },
+        onStart: (e: MapPointerEvent, ctx: MapContext) => {
+          panRef.current = {
+            pointerId: e.pointerId,
+            startScreen: { ...e.screen },
+            startCam: { x: ctx.getCamera().x, y: ctx.getCamera().y },
+          };
+          if (!panActive && panKeepAliveEnabled) {
+            // seed：把手势开始时可见的节点加入 keepAlive
+            panKeepAliveIdSetRef.current.clear();
+            panKeepAliveLRURef.current.clear();
+            panKeepAliveAdd(visibleNodesRef.current.map((n) => n.id));
+          }
+          if (!panActive) setPanActive(true);
+        },
+        onMove: (e: MapPointerEvent, ctx: MapContext) => {
+          const st = panRef.current;
+          if (!st || st.pointerId !== e.pointerId) return;
+          const cam = ctx.getCamera();
+          const dx = e.screen.x - st.startScreen.x;
+          const dy = e.screen.y - st.startScreen.y;
+          commitCamera({ x: st.startCam.x - dx / cam.zoom, y: st.startCam.y - dy / cam.zoom, zoom: cam.zoom }, false);
+        },
+        onEnd: (e: MapPointerEvent) => {
+          const st = panRef.current;
+          if (st?.pointerId === e.pointerId) panRef.current = null;
+          if (panActive) {
+            setPanActive(false);
+            panKeepAliveIdSetRef.current.clear();
+            panKeepAliveLRURef.current.clear();
+          }
+        },
+        onCancel: (e: MapPointerEvent) => {
+          const st = panRef.current;
+          if (st?.pointerId === e.pointerId) panRef.current = null;
+          if (panActive) {
+            setPanActive(false);
+            panKeepAliveIdSetRef.current.clear();
+            panKeepAliveLRURef.current.clear();
+          }
+        },
+      } satisfies Gesture);
 
       // active gesture state
       const st = (gestureStateRef.current ??= { active: null });
@@ -1007,6 +1064,8 @@ export function InfiniteMap({
           const prev = hoverRef.current;
           if (!sameHit(prev, hit)) {
             hoverRef.current = hit;
+            store.set(STORE_KEYS.hoverHit, hit);
+            (ctx.bus as any).emit?.('hover:change', { prev, next: hit });
             for (const h of hooks) {
               const fn = h?.onHoverChange;
               if (!fn) continue;
@@ -1036,7 +1095,7 @@ export function InfiniteMap({
       if (phase !== 'move') st.active = null;
       return { handled: true, mode: 'stop' };
     },
-    [plugins, ctx, screenToWorld]
+    [plugins, ctx, screenToWorld, panActive, panKeepAliveEnabled, panKeepAliveAdd, commitCamera]
   );
 
   const dispatchContextMenu = useCallback(
@@ -1331,53 +1390,13 @@ export function InfiniteMap({
           e.stopPropagation();
         }
       }}
-      onPointerDown={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        // 仅当没有被插件 capture 掉的情况下才会进入这里：此时属于“画布自身的 pan”
-        if (!panActive && panKeepAliveEnabled) {
-          // seed：把手势开始时可见的节点加入 keepAlive
-          panKeepAliveIdSetRef.current.clear();
-          panKeepAliveLRURef.current.clear();
-          panKeepAliveAdd(visibleNodesRef.current.map((n) => n.id));
-        }
-        if (!panActive) setPanActive(true);
-        onPointerDown(e);
-      }}
-      onPointerMove={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        onPointerMove(e);
-      }}
-      onPointerUp={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        onPointerUp(e);
-        if (panActive) {
-          setPanActive(false);
-          panKeepAliveIdSetRef.current.clear();
-          panKeepAliveLRURef.current.clear();
-        }
-      }}
-      onPointerCancel={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        onPointerUp(e);
-        if (panActive) {
-          setPanActive(false);
-          panKeepAliveIdSetRef.current.clear();
-          panKeepAliveLRURef.current.clear();
-        }
-      }}
-      onPointerLeave={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        onPointerLeave(e);
-        if (panActive) {
-          setPanActive(false);
-          panKeepAliveIdSetRef.current.clear();
-          panKeepAliveLRURef.current.clear();
-        }
+      onPointerLeave={(e: ReactPointerEvent) => {
+        // leave：清理 hover + 鼠标位置，并 cancel 当前 active gesture（包括 pan）
+        mouseRef.current = null;
+        hoverRef.current = { kind: 'blank' };
+        store.set(STORE_KEYS.hoverHit, { kind: 'blank' });
+        if (containerRef.current) containerRef.current.style.cursor = 'default';
+        dispatchPointer('cancel', e);
       }}
     >
       {/* 插件 background 层（在节点层之下） */}

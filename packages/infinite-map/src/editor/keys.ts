@@ -7,6 +7,7 @@ export const STORE_KEYS = {
   selectionIds: 'selection:ids',
   marqueeState: 'marquee:state',
   keyboardSpace: 'keyboard:space',
+  hoverHit: 'hover:hit',
 
   // drag / resize / rotate state
   dragState: 'drag:state',

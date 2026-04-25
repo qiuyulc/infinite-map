@@ -8,7 +8,7 @@ import {
   type PointerDownProcessor,
 } from '@qiuyulc/infinite-map';
 import { SelectionOverlay } from './SelectionOverlay';
-import { buildById, getAncestorChain, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
+import { buildById, getAncestorChain, getOutermostGroupId, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
 
 export type SelectionPluginOptions = {
   /**
@@ -44,12 +44,13 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
   const nodeHitTest: HitTestContributor = {
     id: 'hit.node',
     priority: -100,
-    hitTest: (e, ctx) => {
+    hitTest: (e, ctx, info) => {
       // pointer/contextmenu 都可用：都带 world
       const hit = hitTest(ctx.getVisibleNodes(), e.world);
       if (!hit) return null;
       if (isHiddenEffective(ctx.getNodes(), hit.id)) return null;
-      return { kind: 'node', id: hit.id, cursor: 'grab' };
+      const id = info.kind === 'contextmenu' ? getOutermostGroupId(ctx.getNodes(), hit.id) : hit.id;
+      return { kind: 'node', id, cursor: 'grab' };
     },
   };
 

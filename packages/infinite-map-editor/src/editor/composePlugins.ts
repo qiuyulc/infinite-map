@@ -10,7 +10,8 @@ type Graph = Map<string, Set<string>>;
  * 组合插件（推荐在应用层调用）
  * - 校验重复 id
  * - 校验 requires/provides
- * - 按 order.after/before 拓扑排序（稳定：保持输入顺序）
+ * - 自动根据 requires/provides/order 生成依赖边，并做拓扑排序
+ * - 同一层级按 priority（高优先级在前）+ 输入顺序稳定排序
  */
 export function composePlugins(input: InfiniteMapPlugin[]): InfiniteMapPlugin[] {
   const plugins = input.filter((p) => p.enabled !== false);
@@ -56,15 +57,43 @@ export function composePlugins(input: InfiniteMapPlugin[]): InfiniteMapPlugin[] 
     indeg.set(b, (indeg.get(b) ?? 0) + 1);
   };
 
+  const providerOf = (capOrPluginId: string): string | null => {
+    if (byId.has(capOrPluginId)) return capOrPluginId;
+    return provides.get(capOrPluginId) ?? null;
+  };
+
+  // requires => provider must come before consumer
+  for (const p of plugins) {
+    for (const r of p.requires ?? []) {
+      const prov = providerOf(r);
+      if (!prov) continue;
+      if (prov === p.id) continue;
+      addEdge(prov, p.id);
+    }
+  }
+
   for (const p of plugins) {
     for (const b of p.order?.before ?? []) addEdge(p.id, b);
     for (const a of p.order?.after ?? []) addEdge(a, p.id);
   }
 
-  // topo sort（稳定：保持输入顺序）
+  const sortKey = (id: string) => {
+    const p = byId.get(id);
+    return { pr: p?.priority ?? 0, idx: orderIndex.get(id) ?? 0 };
+  };
+
+  const sortQ = (arr: string[]) =>
+    arr.sort((a, b) => {
+      const ka = sortKey(a);
+      const kb = sortKey(b);
+      if (ka.pr !== kb.pr) return kb.pr - ka.pr; // priority desc
+      return ka.idx - kb.idx; // stable input order
+    });
+
+  // topo sort（同层按 priority + 输入顺序）
   const q: string[] = [];
   for (const [id, d] of indeg.entries()) if (d === 0) q.push(id);
-  q.sort((a, b) => (orderIndex.get(a) ?? 0) - (orderIndex.get(b) ?? 0));
+  sortQ(q);
 
   const out: InfiniteMapPlugin[] = [];
   while (q.length) {
@@ -74,7 +103,7 @@ export function composePlugins(input: InfiniteMapPlugin[]): InfiniteMapPlugin[] 
       indeg.set(nxt, (indeg.get(nxt) ?? 0) - 1);
       if (indeg.get(nxt) === 0) {
         q.push(nxt);
-        q.sort((a, b) => (orderIndex.get(a) ?? 0) - (orderIndex.get(b) ?? 0));
+        sortQ(q);
       }
     }
   }
@@ -82,4 +111,3 @@ export function composePlugins(input: InfiniteMapPlugin[]): InfiniteMapPlugin[] 
   if (out.length !== plugins.length) throw new Error('[composePlugins] plugin order has cycle');
   return out;
 }
-
