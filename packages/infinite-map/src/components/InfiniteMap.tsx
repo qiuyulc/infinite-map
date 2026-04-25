@@ -10,7 +10,7 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
-import { buildSpatialIndex, querySpatialIndex } from '../core/spatialIndex';
+import { buildSpatialIndex } from '../core/spatialIndex';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
@@ -31,6 +31,7 @@ import { useAttachApiRef } from '../hooks/useAttachApiRef';
 import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes';
 import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
+import { useMapContext } from '../hooks/useMapContext';
 import type {
   ChangeMeta,
   Command,
@@ -326,6 +327,7 @@ export function InfiniteMap({
 
   // overlay 刷新（用于插件请求重绘 overlay）
   const [, bumpOverlay] = useState(0);
+  const requestRender = useCallback(() => bumpOverlay((v) => v + 1), []);
 
   // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
   const themeVars = useMemo(() => {
@@ -436,54 +438,23 @@ export function InfiniteMap({
 
   const runCommandWithHooks = useRunCommandWithHooks({ ctxRef, hooksRef, hookModeRef, onEditorErrorRef });
 
-  // 插件 ctx（稳定对象，但内部方法会读取 ref 以获得最新状态）
-  const ctx: MapContext = useMemo(() => {
-    const services: Record<string, unknown> = {};
-    const registerService = <T,>(name: string, service: T) => {
-      services[name] = service as unknown;
-    };
-    const getService = <T,>(name: string) => services[name] as T | undefined;
-    return {
-      // 通过 ref 读取最新值（不依赖 store，同步更可靠）
-      getCamera: () => cameraRef.current,
-      getViewport: () => viewportRef.current,
-      getNodes: () => nodesRef.current,
-      getVisibleNodes: () => visibleNodesRef.current,
-      screenToWorld,
-      worldToScreen,
-      rectScreenToWorld,
-      rectWorldToScreen,
-      queryNodesInWorldRect: (rect) => {
-        return querySpatialIndex(spatialIndexRef.current, rect);
-      },
-      applyPatches,
-      bus,
-      store,
-      services,
-      registerService,
-      getService,
-      requestRender: () => bumpOverlay((v) => v + 1),
-      // 提供默认命令执行入口（带 hooks）；CommandRunnerPlugin 会检测已存在则不覆盖
-      runCommand: (id, payload) => {
-        runCommandWithHooks(id, payload as unknown as { source: 'keyboard' | 'toolbar' | 'menu' | 'api' });
-      },
-    } as MapContext;
-  }, [
-    applyPatches,
-    bus,
+  const { ctx } = useMapContext({
+    ctxRef,
     cameraRef,
+    viewportRef,
+    nodesRef,
+    visibleNodesRef,
+    spatialIndexRef,
+    screenToWorld,
+    worldToScreen,
     rectScreenToWorld,
     rectWorldToScreen,
-    runCommandWithHooks,
-    screenToWorld,
+    applyPatches,
+    bus,
     store,
-    viewportRef,
-    worldToScreen,
-  ]);
-
-  useEffect(() => {
-    ctxRef.current = ctx;
-  }, [ctx]);
+    requestRender,
+    runCommandWithHooks,
+  });
 
   // 对外暴露 hover service（overlay 可读取当前命中，用于 hover 高亮等）
   useEffect(() => {
