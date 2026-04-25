@@ -49,7 +49,7 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
       const hit = hitTest(ctx.getVisibleNodes(), e.world);
       if (!hit) return null;
       if (isHiddenEffective(ctx.getNodes(), hit.id)) return null;
-      return { kind: 'node', id: hit.id };
+      return { kind: 'node', id: hit.id, cursor: 'grab' };
     },
   };
 

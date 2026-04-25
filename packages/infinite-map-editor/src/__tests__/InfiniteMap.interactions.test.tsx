@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { InfiniteMap, STORE_KEYS, type InfiniteMapPlugin, type MapContext, type NodeData } from '@qiuyulc/infinite-map';
 import { createDefaultEditorPlugins } from '../editor/createDefaultEditorPlugins';
 import { createMinimapPlugin } from '../plugins/createMinimapPlugin';
@@ -24,6 +24,8 @@ function createCapturePlugin(onCtx: (ctx: MapContext) => void): InfiniteMapPlugi
 }
 
 describe('InfiniteMap integrations (jsdom)', () => {
+  afterEach(() => cleanup());
+
   it('click selects a node (selection plugin)', async () => {
     let ctxRef: MapContext | null = null;
     const nodes: NodeData[] = [
@@ -52,6 +54,32 @@ describe('InfiniteMap integrations (jsdom)', () => {
       const ids = ctxRef!.store.get<string[]>(STORE_KEYS.selectionIds) ?? [];
       expect(ids).toEqual(['a']);
     });
+  });
+
+  it('hover updates cursor via hitTest pipeline', async () => {
+    const nodes: NodeData[] = [
+      { id: 'a', x: 0, y: 0, width: 80, height: 40, label: 'A' },
+      { id: 'b', x: 200, y: 0, width: 80, height: 40, label: 'B' },
+    ];
+    const plugins = createDefaultEditorPlugins();
+    const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={() => void 0} />);
+    const root = container.firstElementChild as HTMLElement;
+    setRect(root, { width: 800, height: 600, left: 0, top: 0 });
+
+    await screen.findByText('A');
+    // 等两拍：
+    // - ResizeObserver fire
+    // - visibleNodesRef useEffect
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // move mouse over node A area
+    fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 410, clientY: 260 });
+    await waitFor(() => expect(root.style.cursor).toBe('grab'));
+
+    // move mouse to blank area
+    fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 10, clientY: 10 });
+    await waitFor(() => expect(root.style.cursor).toBe('default'));
   });
 
   it('minimap click changes camera (minimap plugin)', async () => {

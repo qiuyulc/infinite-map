@@ -66,9 +66,9 @@ export type HandlerResult =
 // -----------------------------------------------------------------------------
 
 export type HitTestTarget =
-  | { kind: 'blank' }
-  | { kind: 'node'; id: string }
-  | { kind: 'handle'; owner: string; id: string; handle: string };
+  | { kind: 'blank'; cursor?: string }
+  | { kind: 'node'; id: string; cursor?: string }
+  | { kind: 'handle'; owner: string; id: string; handle: string; cursor?: string };
 
 export type HitTestContext = {
   /** 是否是右键命中（context menu） */
@@ -103,6 +103,10 @@ export type Gesture = {
 export type InputPipelineHooks = {
   onBeforeHitTest?: (e: MapPointerEvent | MapContextMenuEvent, ctx: MapContext, info: HitTestContext) => void;
   onAfterHitTest?: (hit: HitTestTarget, e: MapPointerEvent | MapContextMenuEvent, ctx: MapContext, info: HitTestContext) => void;
+  /**
+   * hover 变化（仅在没有 active gesture 时由 core 触发）
+   */
+  onHoverChange?: (info: { prev: HitTestTarget; next: HitTestTarget; e: MapPointerEvent }, ctx: MapContext) => void;
   onBeforeGesture?: (info: { phase: GesturePhase; gestureId: string; hit?: HitTestTarget; e: MapPointerEvent }, ctx: MapContext) => void;
   onAfterGesture?: (info: { phase: GesturePhase; gestureId: string; hit?: HitTestTarget; e: MapPointerEvent }, ctx: MapContext) => void;
 };

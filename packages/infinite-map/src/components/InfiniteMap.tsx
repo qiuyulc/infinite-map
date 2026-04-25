@@ -394,6 +394,33 @@ export function InfiniteMap({
     active: null | { pointerId: number; gesture: Gesture; hit: HitTestTarget };
   }>({ active: null });
 
+  // Scheme C：hover 命中（仅当没有 active gesture 时更新）
+  const hoverRef = useRef<HitTestTarget>({ kind: 'blank' });
+
+  const sameHit = (a: HitTestTarget, b: HitTestTarget) => {
+    if (a.kind !== b.kind) return false;
+    if (a.kind === 'blank') return true;
+    if (a.kind === 'node') return a.id === (b as any).id;
+    return a.owner === (b as any).owner && a.id === (b as any).id && a.handle === (b as any).handle;
+  };
+
+  const cursorFromHit = (hit: HitTestTarget) => {
+    // Space 平移模式优先
+    if (store.get<boolean>(STORE_KEYS.keyboardSpace)) return 'grab';
+    if (typeof hit.cursor === 'string' && hit.cursor) return hit.cursor;
+    if (hit.kind === 'node') return 'grab';
+    if (hit.kind === 'handle' && hit.owner === 'resize') {
+      const h = hit.handle;
+      if (h === 'n' || h === 's') return 'ns-resize';
+      if (h === 'e' || h === 'w') return 'ew-resize';
+      if (h === 'ne' || h === 'sw') return 'nesw-resize';
+      if (h === 'nw' || h === 'se') return 'nwse-resize';
+      return 'nwse-resize';
+    }
+    if (hit.kind === 'handle' && hit.owner === 'rotate') return 'grab';
+    return 'default';
+  };
+
   const flushPendingMovePatches = useCallback(() => {
     const patches = pendingMovePatchesRef.current;
     const meta = pendingMoveMetaRef.current;
@@ -972,7 +999,28 @@ export function InfiniteMap({
 
       // move/up/cancel：仅派发给 active gesture
       const active = st.active;
-      if (!active || active.pointerId !== m.pointerId) return { handled: false };
+      if (!active || active.pointerId !== m.pointerId) {
+        // hover/cursor：仅在 move 且没有 active gesture 时运行
+        if (type === 'move') {
+          const hit = runHitTest({ kind: 'pointer' });
+          const prev = hoverRef.current;
+          if (!sameHit(prev, hit)) {
+            hoverRef.current = hit;
+            for (const h of hooks) {
+              const fn = h?.onHoverChange;
+              if (!fn) continue;
+              try {
+                fn({ prev, next: hit, e: m }, ctx);
+              } catch (err) {
+                onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onHoverChange' });
+              }
+            }
+          }
+          const c = cursorFromHit(hit);
+          if (containerRef.current && containerRef.current.style.cursor !== c) containerRef.current.style.cursor = c;
+        }
+        return { handled: false };
+      }
       const g = active.gesture;
       const phase = type === 'move' ? 'move' : type === 'up' ? 'end' : 'cancel';
       callHooks('onBeforeGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
