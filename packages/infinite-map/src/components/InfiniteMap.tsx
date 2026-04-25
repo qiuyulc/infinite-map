@@ -10,29 +10,28 @@ import {
   type MutableRefObject,
 } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
-import { rectIntersects } from '../core/types';
 import { buildSpatialIndex, querySpatialIndex } from '../core/spatialIndex';
 import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
-import { DefaultNode } from './DefaultNode';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
+import { RenderDomNodes } from './RenderDomNodes';
 import type { InfiniteMapDocV2 } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
-import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
+import { STORE_KEYS } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
 import { useCamera } from '../hooks/useCamera';
 import { useHighlightLayer } from '../hooks/useHighlightLayer';
 // pan 已纳入 Scheme C gestures（不再使用独立 hook）
 import { useViewportSize } from '../hooks/useViewportSize';
-import { useVisibleNodes } from '../hooks/useVisibleNodes';
 import { useWheelControls } from '../hooks/useWheelControls';
 import { useCommandRegistry } from '../hooks/useCommandRegistry';
 import { usePatchEngine } from '../hooks/usePatchEngine';
 import { usePluginInputDispatch } from '../hooks/usePluginInputDispatch';
 import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
 import { useAttachApiRef } from '../hooks/useAttachApiRef';
+import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes';
 import type {
   ChangeMeta,
   Command,
@@ -627,89 +626,17 @@ export function InfiniteMap({
     wheelPulseStrength,
   });
 
-  const virtualizationEnabled = virtualization?.enabled ?? true;
-  const virtualizationOverscanPx = virtualization?.overscanPx ?? overscanPx;
-  const keepAlive = virtualization?.keepAlive;
-
-  // panning 时防止“可见节点进出边界导致卸载/重建”造成闪烁：
-  // - pan 期间：允许“新进入视口的节点”正常 mount
-  // - 但“离开视口的节点”在 pan 结束前不卸载（保持稳定）
-  const [panActive, setPanActive] = useState(false);
-  const panKeepAliveEnabled = (virtualization?.panKeepAlive ?? true) !== false;
-  const panKeepAliveMaxNodes =
-    typeof virtualization?.panKeepAlive === 'object' ? virtualization.panKeepAlive.maxNodes ?? 2000 : 2000;
-  // 用稳定引用的 Set/Map 存储（避免把 Set 换引用导致 hooks 依赖混乱）
-  const panKeepAliveIdSetRef = useRef<Set<string>>(new Set());
-  const panKeepAliveLRURef = useRef<Map<string, number>>(new Map());
-
-  const panKeepAliveAdd = useCallback(
-    (ids: Iterable<string>) => {
-      const set = panKeepAliveIdSetRef.current;
-      const lru = panKeepAliveLRURef.current;
-      for (const id of ids) {
-        set.add(id);
-        // LRU：通过 delete+set 把该 key 移到末尾
-        if (lru.has(id)) lru.delete(id);
-        lru.set(id, Date.now());
-      }
-      // 超限：移除最旧的
-      while (lru.size > panKeepAliveMaxNodes) {
-        const first = lru.keys().next().value as string | undefined;
-        if (!first) break;
-        lru.delete(first);
-        set.delete(first);
-      }
-    },
-    [panKeepAliveMaxNodes]
-  );
-
-  const { visibleNodes } = useVisibleNodes({
+  const { visibleNodes, pan } = useVirtualizedVisibleNodes({
     nodes,
     cellSize,
     camera,
     viewport,
-    overscanPx: virtualizationOverscanPx,
-    enabled: virtualizationEnabled,
-    keepAlive,
-    keepAliveIdSet: panActive && panKeepAliveEnabled ? panKeepAliveIdSetRef.current : undefined,
+    overscanPx,
+    virtualization,
+    store,
+    debugRef,
+    visibleNodesRef,
   });
-
-  // pan 期间：不断把“当前可见节点”加入 keepAlive 集合（允许 new nodes mount，old nodes 暂不卸载）
-  useEffect(() => {
-    if (!panActive || !panKeepAliveEnabled) return;
-    panKeepAliveAdd(visibleNodes.map((n) => n.id));
-  }, [panActive, panKeepAliveAdd, panKeepAliveEnabled, visibleNodes]);
-
-  useEffect(() => {
-    visibleNodesRef.current = visibleNodes;
-  }, [visibleNodes]);
-
-  // debug：暴露可见节点数量（便于宿主排查虚拟化策略）
-  useEffect(() => {
-    if (!debugRef.current) return;
-    store.set('debug:visibleNodesCount', visibleNodes.length);
-  }, [store, visibleNodes]);
-
-  // 严格 “in view”：不包含 overscan，用于 UI 展示当前屏幕内真正可见的节点数量
-  const inViewCount = useMemo(() => {
-    if (visibleNodes.length === 0) return 0;
-    if (viewport.w <= 0 || viewport.h <= 0) return 0;
-    const z = camera.zoom || 1;
-    const viewWorldRect = {
-      x: camera.x,
-      y: camera.y,
-      w: viewport.w / z,
-      h: viewport.h / z,
-    };
-    let count = 0;
-    for (const n of visibleNodes) if (rectIntersects(viewWorldRect, { x: n.x, y: n.y, w: n.width, h: n.height })) count++;
-    return count;
-  }, [camera.x, camera.y, camera.zoom, visibleNodes, viewport.h, viewport.w]);
-
-  // 给插件提供严格 inViewCount（用于“可视区域内只有 1 个节点”的判断）
-  useEffect(() => {
-    store.set(STORE_KEYS.minimapInViewCount, inViewCount);
-  }, [inViewCount, store]);
 
   // minimap config（供 minimap plugin 读取）
   useEffect(() => {
@@ -735,138 +662,8 @@ export function InfiniteMap({
     hoverRef,
     onEditorErrorRef,
     debugRef,
-    pan: {
-      panActive,
-      setPanActive,
-      panKeepAliveEnabled,
-      panKeepAliveAdd,
-      panKeepAliveIdSetRef,
-      panKeepAliveLRURef,
-      visibleNodesRef,
-    },
+    pan: { ...pan, visibleNodesRef },
   });
-
-  const dragRef = useRef<{
-    active: boolean;
-    id: string;
-    startPx: number;
-    startPy: number;
-    startX: number;
-    startY: number;
-  } | null>(null);
-
-
-  const onNodePointerDown = useCallback(
-    (e: ReactPointerEvent, n: NodeData) => {
-      if (!onNodeDrag) return;
-      e.stopPropagation();
-      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-      dragRef.current = {
-        active: true,
-        id: n.id,
-        startPx: e.clientX,
-        startPy: e.clientY,
-        startX: n.x,
-        startY: n.y,
-      };
-    },
-    [onNodeDrag]
-  );
-
-  const onNodePointerMove = useCallback(
-    (e: ReactPointerEvent) => {
-      const d = dragRef.current;
-      if (!d?.active || !onNodeDrag) return;
-      e.stopPropagation();
-      if ((e.buttons & 1) === 0) return;
-      const zoom = cameraRef.current.zoom || 1;
-      const dx = (e.clientX - d.startPx) / zoom;
-      const dy = (e.clientY - d.startPy) / zoom;
-      onNodeDrag(d.id, { x: d.startX + dx, y: d.startY + dy }, 'move');
-    },
-    [onNodeDrag, cameraRef]
-  );
-
-  const endDrag = useCallback(
-    (e: ReactPointerEvent) => {
-      const d = dragRef.current;
-      if (!d?.active || !onNodeDrag) return;
-      e.stopPropagation();
-      d.active = false;
-      const zoom = cameraRef.current.zoom || 1;
-      const dx = (e.clientX - d.startPx) / zoom;
-      const dy = (e.clientY - d.startPy) / zoom;
-      onNodeDrag(d.id, { x: d.startX + dx, y: d.startY + dy }, 'end');
-      dragRef.current = null;
-    },
-    [onNodeDrag, cameraRef]
-  );
-
-  // DOM 模式下：把节点 elements 记忆化，避免每次 camera 更新都创建/比对几百个子元素导致卡顿
-  const domNodeElements = useMemo(() => {
-    return visibleNodes.map((n) => (
-      <div
-        key={n.id}
-        style={{
-          position: 'absolute',
-          left: n.x,
-          top: n.y,
-          width: n.width,
-          height: n.height,
-          transformOrigin: '50% 50%',
-          transform:
-            n.rotation || n.rotationX || n.rotationY
-              ? `perspective(${VISUAL_CONST.perspectivePx}px) rotateX(${n.rotationX ?? 0}deg) rotateY(${n.rotationY ?? 0}deg) rotate(${n.rotation ?? 0}deg)`
-              : undefined,
-          // 隔离布局/样式，保留阴影等外溢绘制（避免 paint containment 裁剪 box-shadow）
-          contain: 'layout style',
-          touchAction: 'none',
-          cursor: onNodeDrag ? 'grab' : 'default',
-        }}
-        onPointerDown={onNodeDrag ? (e) => onNodePointerDown(e, n) : undefined}
-        onPointerMove={onNodeDrag ? onNodePointerMove : undefined}
-        onPointerUp={onNodeDrag ? endDrag : undefined}
-        onPointerCancel={onNodeDrag ? endDrag : undefined}
-      >
-        {renderNode ? (
-          renderNode(n)
-        ) : (
-          <DefaultNode
-            n={n}
-            className={getDefaultNodeProps?.(n)?.className}
-            style={getDefaultNodeProps?.(n)?.style}
-            showMeta={defaultNodeShowMeta}
-          >
-            {renderNodeContent ? renderNodeContent(n) : null}
-          </DefaultNode>
-        )}
-      </div>
-    ));
-  }, [
-    visibleNodes,
-    renderNode,
-    renderNodeContent,
-    getDefaultNodeProps,
-    defaultNodeShowMeta,
-    onNodeDrag,
-    onNodePointerDown,
-    onNodePointerMove,
-    endDrag,
-  ]);
-
-  const worldStyle: CSSProperties = useMemo(() => {
-    // translate(-camera.x * zoom, -camera.y * zoom) scale(zoom)
-    return {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      transformOrigin: '0 0',
-      transform: `translate3d(${-camera.x * camera.zoom}px, ${-camera.y * camera.zoom}px, 0) scale(${camera.zoom})`,
-      willChange: 'transform',
-      width: 0,
-      height: 0,
-    };
-  }, [camera.x, camera.y, camera.zoom]);
 
   return (
     <div
@@ -973,7 +770,17 @@ export function InfiniteMap({
       />
 
       {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
-      <div style={{ ...worldStyle, zIndex: 1 }}>{domNodeElements}</div>
+      <RenderDomNodes
+        camera={camera}
+        cameraRef={cameraRef}
+        visibleNodes={visibleNodes}
+        zIndex={1}
+        onNodeDrag={onNodeDrag}
+        renderNode={renderNode}
+        renderNodeContent={renderNodeContent}
+        getDefaultNodeProps={getDefaultNodeProps}
+        defaultNodeShowMeta={defaultNodeShowMeta}
+      />
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
       {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 2, onEditorError: onEditorErrorRef.current })}
