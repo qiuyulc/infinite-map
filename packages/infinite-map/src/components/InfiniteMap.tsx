@@ -9,7 +9,7 @@ import {
   type ReactNode,
   type MutableRefObject,
 } from 'react';
-import type { Camera, NodeData } from '../core/types';
+import type { Camera, NodeData, Rect } from '../core/types';
 import { rectIntersects } from '../core/types';
 import { buildSpatialIndex, querySpatialIndex } from '../core/spatialIndex';
 import { computeAdaptiveSteps } from '../core/steps';
@@ -17,6 +17,7 @@ import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { DefaultNode } from './DefaultNode';
 import { exportDoc, importDoc, type InfiniteMapDocV2 } from '../editor/document';
+import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS, VISUAL_CONST } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
@@ -218,13 +219,29 @@ export type InfiniteMapApi = {
    */
   getCommand: (id: string) => Command | undefined;
   /**
+   * 订阅事件总线（selection/camera/history/patches/hover 等）
+   */
+  subscribe: <K extends EventKey>(type: K, handler: (payload: EventMap[K]) => void) => () => void;
+  /**
    * 获取当前选中的节点 id 列表
    */
   getSelectionIds: () => string[];
   /**
+   * 设置 selection（需要启用 selection service）
+   */
+  setSelectionIds: (ids: string[]) => void;
+  /**
    * 订阅 selection 状态变化（用于 delete 按钮 enable/disable 等）
    */
   subscribeSelection: (listener: () => void) => () => void;
+  /**
+   * 获取节点矩形（axis-aligned，world 坐标；用于对齐/分布等）
+   */
+  getNodeRect: (id: string) => Rect | null;
+  /**
+   * 获取 selection 的包围盒（axis-aligned，world 坐标）
+   */
+  getSelectionRect: () => Rect | null;
   /**
    * 获取/设置相机
    */
@@ -714,6 +731,42 @@ export function InfiniteMap({
     bus.emit('camera:changed', { camera });
   }, [bus, camera]);
 
+  // 开发期提示：启用 plugins 但未提供受控出口时，编辑不会生效
+  useEffect(() => {
+    if (!plugins || plugins.length === 0) return;
+    if (onNodesChange || onPatches) return;
+    const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
+    const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
+    if (!isDev) return;
+    console.warn('[InfiniteMap] plugins 已启用，但未提供 onNodesChange/onPatches：编辑产生的变更将不会被宿主持久化（看起来像“编辑无效”）。');
+  }, [plugins, onNodesChange, onPatches]);
+
+  const getNodeRect = useCallback((id: string): Rect | null => {
+    const n = nodesRef.current.find((x) => x.id === id);
+    if (!n) return null;
+    return { x: n.x, y: n.y, w: n.width, h: n.height };
+  }, []);
+
+  const unionRect = (a: Rect, b: Rect): Rect => {
+    const x1 = Math.min(a.x, b.x);
+    const y1 = Math.min(a.y, b.y);
+    const x2 = Math.max(a.x + a.w, b.x + b.w);
+    const y2 = Math.max(a.y + a.h, b.y + b.h);
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  };
+
+  const getSelectionRect = useCallback((): Rect | null => {
+    const ids = ctx.getService<{ getIds: () => string[] }>('selection')?.getIds?.() ?? [];
+    if (ids.length === 0) return null;
+    let out: Rect | null = null;
+    for (const id of ids) {
+      const r = getNodeRect(id);
+      if (!r) continue;
+      out = out ? unionRect(out, r) : r;
+    }
+    return out;
+  }, [ctx, getNodeRect]);
+
   // 对外 API（供工具栏使用）
   useEffect(() => {
     if (!apiRef) return;
@@ -734,8 +787,16 @@ export function InfiniteMap({
       },
       getCommands: () => Object.values(ctx.store.get<Record<string, Command>>('commands:registry') ?? {}),
       getCommand: (id) => (ctx.store.get<Record<string, Command>>('commands:registry') ?? {})[id],
+      subscribe: (type, handler) => ctx.bus.on(type, handler as any),
       getSelectionIds: () => ctx.getService<{ getIds: () => string[] }>('selection')?.getIds?.() ?? [],
+      setSelectionIds: (ids) => {
+        const sel = ctx.getService<{ setIds?: (ids: string[]) => void; clear?: () => void }>('selection');
+        if (!sel?.setIds) throw new Error('[InfiniteMapApi.setSelectionIds] selection service is not available (did you enable selection plugin?)');
+        sel.setIds(ids);
+      },
       subscribeSelection: (listener) => ctx.bus.on('selection:change', listener),
+      getNodeRect,
+      getSelectionRect,
       getCamera: () => ctx.getCamera(),
       setCamera: (next, opts) => commitCamera(next, Boolean(opts?.immediate)),
       subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
@@ -754,7 +815,7 @@ export function InfiniteMap({
     return () => {
       apiRef.current = null;
     };
-  }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks]);
+  }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect]);
 
   // 插件 setup/teardown（Milestone 1：只提供生命周期，不引入任何默认插件）
   useEffect(() => {

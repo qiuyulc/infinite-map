@@ -42,6 +42,8 @@ export type {
   Point,
   Command,
   HandlerResult,
+  EventMap,
+  EventKey,
   // Scheme C：input pipeline
   HitTestTarget,
   HitTestContributor,
