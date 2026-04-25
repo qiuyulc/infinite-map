@@ -18,7 +18,7 @@ import { RenderDomNodes } from './RenderDomNodes';
 import type { InfiniteMapDocV2 } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS } from '../editor/keys';
-import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
+import type { InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
 import { useCamera } from '../hooks/useCamera';
 // pan 已纳入 Scheme C gestures（不再使用独立 hook）
@@ -34,6 +34,7 @@ import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
 import { useSelectionGeometry } from '../hooks/useSelectionGeometry';
+import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
 import type {
   ChangeMeta,
   Command,
@@ -331,14 +332,7 @@ export function InfiniteMap({
   const requestRender = useCallback(() => bumpOverlay((v) => v + 1), []);
 
   // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
-  const themeVars = useMemo(() => {
-    // 若宿主没有显式传入，则不注入，交给外部 CSS vars / Provider 控制
-    // 新策略：
-    // - base(light/dark) 由 theme-base.css 提供，通过 data-im-theme 切换
-    // - 这里只注入 override（大幅减少 inline vars 数量）
-    if (!theme) return undefined;
-    return themeOverrideToCSSVars(theme) as unknown as CSSProperties;
-  }, [theme]);
+  const themeVars = useInjectedThemeVars(theme);
 
   // visibleNodes ref（给插件读取）
   const visibleNodesRef = useRef<NodeData[]>([]);
