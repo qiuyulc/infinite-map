@@ -38,8 +38,6 @@ function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginO
     const unsubs: Array<() => void> = [];
     unsubs.push(ctx.bus.on('camera:changed', () => bump((v) => v + 1)));
     unsubs.push(ctx.store.subscribe(STORE_KEYS.viewConfig, () => bump((v) => v + 1)));
-    unsubs.push(ctx.store.subscribe(STORE_KEYS.minimapConfig, () => bump((v) => v + 1)));
-    unsubs.push(ctx.store.subscribe(STORE_KEYS.minimapEnabled, () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
 
@@ -73,12 +71,9 @@ function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginO
     else ctx.bus.emit('camera:change', { camera: next, immediate: true });
   };
 
-  const minimapCfg = (ctx.store.get<{ width?: number; height?: number }>(STORE_KEYS.minimapConfig) ?? {}) as {
-    width?: number;
-    height?: number;
-  };
-  const minimapEnabled = (ctx.store.get<boolean>(STORE_KEYS.minimapEnabled) ?? false) === true;
-  const minimapW = minimapCfg.width ?? 260;
+  const minimap = ctx.getService<{ enabled: () => boolean; getConfig: () => { width: number } }>('minimap');
+  const minimapEnabled = minimap?.enabled?.() === true;
+  const minimapW = minimapEnabled ? minimap?.getConfig?.().width ?? 260 : 0;
 
   const dock: CSSProperties = {
     position: 'absolute',
