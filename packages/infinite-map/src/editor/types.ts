@@ -117,8 +117,9 @@ export type PointerDownProcessor = {
   /**
    * 在 hitTest 之后、gesture 启动之前执行（可用于 selection 等非互斥逻辑）
    * - 返回 {stop:true} 可阻止后续 gesture 启动（例如锁定节点：允许选中但阻断拖拽）
+   * - 返回 {hit} 可修改本次 pointer down 的“有效命中”（供后续 gesture 使用）
    */
-  onPointerDown: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => void | { stop?: boolean };
+  onPointerDown: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => void | { stop?: boolean; hit?: HitTestTarget };
 };
 
 export type MapPointerEvent = {

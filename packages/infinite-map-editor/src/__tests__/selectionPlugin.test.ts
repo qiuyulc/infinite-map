@@ -113,7 +113,7 @@ describe('createSelectionPlugin', () => {
     store.set(STORE_KEYS.selectionIds, ['c']);
 
     const res1 = runDown(plugin, pe({ world: { x: 10, y: 10 } }), ctx);
-    expect(res1).toEqual({ stop: true });
+    expect(res1).toEqual({ stop: true, hit: { kind: 'node', id: 'a', cursor: 'grab' } });
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
 
     const res2 = runDown(plugin, pe({ world: { x: 210, y: 10 } }), ctx);

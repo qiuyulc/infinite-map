@@ -116,7 +116,12 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
       }
 
       // locked 节点允许被选中（用于解锁等），但阻断后续 gesture（drag/resize/rotate/marquee）
-      if (isLockedEffective(ctx.getNodes(), hitId)) return { stop: true };
+      if (isLockedEffective(ctx.getNodes(), hitId)) return { stop: true, hit: { kind: 'node', id: hitId, cursor: 'grab' } };
+
+      // 关键：把“有效命中”传递给后续 gesture（drag 等），避免出现：
+      // - 点击到已选中 group 的子节点时 selection 逻辑认为命中 group
+      // - 但 drag gesture 仍然按子节点启动
+      if (hitId !== hit.id) return { hit: { kind: 'node', id: hitId, cursor: 'grab' } };
     },
   };
 

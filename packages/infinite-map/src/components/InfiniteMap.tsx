@@ -961,7 +961,7 @@ export function InfiniteMap({
       };
 
       if (type === 'down') {
-        const hit = runHitTest({ kind: 'pointer' });
+        let hit = runHitTest({ kind: 'pointer' });
 
         // pointer down processors（selection 等）
         let blockGesture = false;
@@ -969,6 +969,7 @@ export function InfiniteMap({
           try {
             const r = pr.onPointerDown(m, ctx, hit);
             if (r && (r as any).stop === true) blockGesture = true;
+            if (r && (r as any).hit) hit = (r as any).hit as HitTestTarget;
           } catch (err) {
             onEditorErrorRef.current?.(err, { kind: 'hook', name: `processor.onPointerDown:${pr.id}` });
           }
