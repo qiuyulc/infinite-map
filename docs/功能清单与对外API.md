@@ -69,7 +69,7 @@
 
 #### 锁定/隐藏（Lock/Hide）
 - `locked?: boolean`
-  - **锁定不可选、不可框选、不可拖拽/缩放/旋转**
+  - **锁定可以被“点击选中”（用于解锁），但不可拖拽/缩放/旋转、不可框选**
   - **锁定传递**：祖先 locked => 后代“有效锁定”
 - `hidden?: boolean`
   - **隐藏不渲染/不命中/不参与选择与编辑**
@@ -80,7 +80,7 @@
 #### HUD（可选启用的 UI）
 - ZoomDock（默认启用）：右下角缩放滑杆
 - Toolbar（默认关闭）：顶部工具条
-- ContextMenu（默认关闭）：右键菜单
+- ContextMenu（默认关闭）：右键菜单（右键命中节点时会先把该节点设为选中；若命中组内节点则选中最外层 group）
 - Rulers（默认启用）：标尺
 - Minimap（默认启用）：小地图
 
@@ -105,7 +105,9 @@
   - `InfiniteMapApi`（通过 `apiRef` 暴露）
 
 #### Theme API
-> 已移动到 UI 子入口：`@qiuyulc/infinite-map/ui`
+从主入口与 UI 子入口都可用：
+- `InfiniteMapThemeProvider` / `BackgroundDots` / `BackgroundGrid` / `DefaultNode`
+- `InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars` / `themeOverrideToCSSVars`
 
 #### Core 类型/工具
 - `type Camera`
@@ -119,7 +121,7 @@
 - `type LayoutOptions`
 
 #### Demo 数据
-> 已移动到 demo 子入口：`@qiuyulc/infinite-map/demo`
+从主入口与 demo 子入口都可用：`makeDemoNodes()`
 
 #### Plugin Contract（供 editor 包/社区插件复用）
 - `type InfiniteMapPlugin`
@@ -134,19 +136,21 @@
 
 ### 2.1.1 UI 子入口导出（`@qiuyulc/infinite-map/ui`）
 - UI 组件（渲染层）：`BackgroundDots` / `BackgroundGrid` / `DefaultNode` / `InfiniteMapThemeProvider`
-- Theme：`InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars`
+- Theme：`InfiniteMapTheme` / `lightTheme` / `darkTheme` / `mergeTheme` / `themeToCSSVars` / `themeOverrideToCSSVars`
 
-> HUD/UI（minimap / rulers / toolbar / context menu / zoom dock）已统一由：`@qiuyulc/infinite-map-editor` 导出
+> HUD 插件（minimap / rulers / toolbar / context menu / zoom dock）由 `@qiuyulc/infinite-map-editor` 导出（插件 + overlay 逻辑在 editor 包里）。
 
 ### 2.1.2 Editor 包入口导出（`@qiuyulc/infinite-map-editor`）
 - `composePlugins(plugins)`
 - `createDefaultEditorPlugins(opts?)` / `type DefaultEditorOptions`
+- `createDefaultEditorPluginsWithUI(opts?)` / `type DefaultEditorWithUIOptions`
 - `EditorPlugins`（命名空间导出内置插件工厂）
+- editor utils：`groupUtils` / `snapUtils`
+- 便于只安装一个包：再导出 core 合同类型 `InfiniteMapPlugin/MapContext/NodePatch/ChangeMeta`
 
 > 备注：`DefaultEditorOptions` 现在按“插件名分组”提供配置（例如 `snap/view/shortcuts/drag/resize/...`），便于透传到对应插件工厂。
 
 ### 2.1.3 Editor UI（仍从包根入口导出）
-- `createDefaultEditorPluginsWithUI(opts?)` / `DefaultEditorWithUIOptions`
 - HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
 
 > 备注：`DefaultEditorWithUIOptions` 同样按插件名分组提供 `toolbar/minimap/rulers/zoomDock/contextMenu` 等配置对象，并可通过 `enabled` 字段控制是否挂载对应 HUD 插件。
@@ -171,6 +175,11 @@
 - `commandConflictPolicy?: 'keep-first' | 'override' | 'error'`
 - `warnOnCommandConflict?: boolean`
 - `editorHooks?: { onBeforeCommand/onAfterCommand/onBeforeApplyPatches/onAfterApplyPatches }`
+- `hookMode?: 'observe' | 'intercept'`
+  - `observe`（默认）：hooks 只观察/记录，不影响执行流程
+  - `intercept`：允许 `onBeforeCommand` 返回 false 阻止执行；允许 `onBeforeApplyPatches` 返回 patches 覆盖
+- `onEditorError?: (err, info) => void`
+  - 用于收集 hooks/command 执行异常（默认不会 throw 中断编辑器）
 - `apiRef?: MutableRefObject<InfiniteMapApi | null>`（对外暴露 API）
 
 #### 相机与交互
@@ -194,8 +203,10 @@
 - `cellSize?: number`（空间索引网格大小）
 
 #### Minimap
-- `minimapWidth?` / `minimapHeight?` / `minimapCachePadding?`
-- `minimapNeedsRedraw?: unknown`（外部触发重新渲染的信号）
+- `minimapWidth?` / `minimapHeight?` / `minimapCachePadding?` / `minimapNeedsRedraw?: unknown`
+  - 这些字段会写入 store（`STORE_KEYS.minimapConfig/minimapNeedsRedraw`），用于“自定义 minimap overlay/插件”场景
+  - editor 包内置的 `createMinimapPlugin` 已改为以插件 options 为准（`MinimapPluginOptions`），不再依赖组件写入的 store 值
+  - `createMinimapPlugin` 额外提供 `needsRedraw?: unknown`（插件参数）用于外部强制刷新 minimap（任意值变化即可）
 
 #### 主题
 - `themeBase?: 'light' | 'dark'`
@@ -289,12 +300,18 @@
 
 #### hud
 - `createContextMenuPlugin`
-> HUD UI 插件已移至：`@qiuyulc/infinite-map/ui`
+- `createToolbarPlugin`
+- `createDefaultContextMenuPlugin`
+- `createMinimapPlugin`
+- `createRulersPlugin`
+- `createZoomDockPlugin`
 
 ---
 
-## 3. 默认编辑器（`createDefaultEditorPlugins`）包含哪些插件
-默认顺序（简化描述）：
+## 3. 默认编辑器包含哪些插件
+
+### 3.1 `createDefaultEditorPlugins(opts?)`（不含 HUD）
+默认顺序（简化描述，实际可通过 `createDefaultEditorPlugins()` 源码确认）：
 1. keyboard-state
 2. core-services
 3. command-runner
@@ -311,11 +328,19 @@
 14. rotate
 15. resize
 16. drag
-17. zoomDock（默认开）
-18. contextMenu（默认关）
-19. rulers（默认开）
-20. minimap（默认开）
-21. marquee（默认开）
+17. marquee（默认开，且始终追加到最后）
+
+> 备注：
+> - snap 默认值已回归到 `createSnapGuidesPlugin` 内部默认（gridSize='auto' 等），默认组装不再写死 gridSize=48
+> - view 的默认值（minZoom/maxZoom/zoomStep/paddingPx）已统一由 `createViewCommandsPlugin` 写入 `STORE_KEYS.viewConfig`
+
+### 3.2 `createDefaultEditorPluginsWithUI(opts?)`（在 3.1 基础上追加 HUD）
+- `createToolbarPlugin`（默认关）
+- `createZoomDockPlugin`（默认开）
+- `createDefaultContextMenuPlugin`（默认关）
+- `createRulersPlugin`（默认开）
+- `createMinimapPlugin`（默认开）
+- `createMarqueeSelectPlugin`（最后追加，避免与其它交互抢事件）
 
 ---
 
