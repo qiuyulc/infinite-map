@@ -33,6 +33,7 @@ import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
+import { useSelectionGeometry } from '../hooks/useSelectionGeometry';
 import type {
   ChangeMeta,
   Command,
@@ -453,31 +454,7 @@ export function InfiniteMap({
     console.warn('[InfiniteMap] plugins 已启用，但未提供 onNodesChange/onPatches：编辑产生的变更将不会被宿主持久化（看起来像“编辑无效”）。');
   }, [plugins, onNodesChange, onPatches]);
 
-  const getNodeRect = useCallback((id: string): Rect | null => {
-    const n = nodesRef.current.find((x) => x.id === id);
-    if (!n) return null;
-    return { x: n.x, y: n.y, w: n.width, h: n.height };
-  }, []);
-
-  const unionRect = (a: Rect, b: Rect): Rect => {
-    const x1 = Math.min(a.x, b.x);
-    const y1 = Math.min(a.y, b.y);
-    const x2 = Math.max(a.x + a.w, b.x + b.w);
-    const y2 = Math.max(a.y + a.h, b.y + b.h);
-    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
-  };
-
-  const getSelectionRect = useCallback((): Rect | null => {
-    const ids = ctx.getService<{ getIds: () => string[] }>('selection')?.getIds?.() ?? [];
-    if (ids.length === 0) return null;
-    let out: Rect | null = null;
-    for (const id of ids) {
-      const r = getNodeRect(id);
-      if (!r) continue;
-      out = out ? unionRect(out, r) : r;
-    }
-    return out;
-  }, [ctx, getNodeRect]);
+  const { getNodeRect, getSelectionRect } = useSelectionGeometry({ nodesRef, ctx });
 
   useAttachApiRef({
     apiRef,
