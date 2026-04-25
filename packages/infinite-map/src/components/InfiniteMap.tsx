@@ -11,7 +11,6 @@ import {
 } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
 import { buildSpatialIndex, querySpatialIndex } from '../core/spatialIndex';
-import { computeAdaptiveSteps } from '../core/steps';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
@@ -22,16 +21,15 @@ import { STORE_KEYS } from '../editor/keys';
 import { themeOverrideToCSSVars, type InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
 import { useCamera } from '../hooks/useCamera';
-import { useHighlightLayer } from '../hooks/useHighlightLayer';
 // pan 已纳入 Scheme C gestures（不再使用独立 hook）
 import { useViewportSize } from '../hooks/useViewportSize';
-import { useWheelControls } from '../hooks/useWheelControls';
 import { useCommandRegistry } from '../hooks/useCommandRegistry';
 import { usePatchEngine } from '../hooks/usePatchEngine';
 import { usePluginInputDispatch } from '../hooks/usePluginInputDispatch';
 import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
 import { useAttachApiRef } from '../hooks/useAttachApiRef';
 import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes';
+import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import type {
   ChangeMeta,
   Command,
@@ -39,7 +37,6 @@ import type {
   HitTestTarget,
   InfiniteMapPlugin,
   MapContext,
-  MapWheelEvent,
   NodePatch,
   Point,
 } from '../editor/types';
@@ -577,55 +574,6 @@ export function InfiniteMap({
     };
   }, [plugins, ctx]);
 
-  useWheelControls({
-    containerRef,
-    mouseRef,
-    pulseRef,
-    cameraRef,
-    commitCamera,
-    minZoom,
-    maxZoom,
-    zoomSpeed,
-    pinchZoomFactor,
-    onWheelIntercept: (e, info) => {
-      if (!plugins || plugins.length === 0) return undefined;
-      const m: MapWheelEvent = {
-        screen: { x: info.sx, y: info.sy },
-        world: screenToWorld({ x: info.sx, y: info.sy }),
-        deltaX: e.deltaX,
-        deltaY: e.deltaY,
-        ctrlKey: e.ctrlKey === true,
-        modifiers: { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey },
-        originalEvent: e,
-      };
-      let sawContinue = false;
-      for (const p of plugins) {
-        if (p.enabled === false) continue;
-        const res = p.input?.onWheel?.(m, ctx);
-        if (!res || res.handled === false) continue;
-        if (res.mode === 'continue') {
-          sawContinue = true;
-          continue;
-        }
-        return 'stop';
-      }
-      return sawContinue ? 'continue' : undefined;
-    },
-  });
-
-  useHighlightLayer({
-    canvasRef: highlightCanvasRef,
-    viewport,
-    viewportRef,
-    cameraRef,
-    mouseRef,
-    pulseRef,
-    dotSpacing: dotSpacing === 'auto' ? computeAdaptiveSteps(camera.zoom).minorStepWorld : dotSpacing,
-    dotRadiusPx,
-    highlightRadiusPx,
-    wheelPulseStrength,
-  });
-
   const { visibleNodes, pan } = useVirtualizedVisibleNodes({
     nodes,
     cellSize,
@@ -638,18 +586,34 @@ export function InfiniteMap({
     visibleNodesRef,
   });
 
-  // minimap config（供 minimap plugin 读取）
-  useEffect(() => {
-    store.set(STORE_KEYS.minimapConfig, { width: minimapWidth, height: minimapHeight, cachePadding: minimapCachePadding });
-    store.set(STORE_KEYS.minimapNeedsRedraw, minimapNeedsRedraw);
-  }, [minimapCachePadding, minimapHeight, minimapNeedsRedraw, minimapWidth, store]);
-
-  // camera 变更事件：允许插件（如 minimap）驱动相机
-  useEffect(() => {
-    return bus.on('camera:change', ({ camera: next, immediate }) => {
-      commitCamera(next, immediate);
-    });
-  }, [bus, commitCamera]);
+  useMapRuntimeEffects({
+    plugins,
+    ctx,
+    containerRef,
+    highlightCanvasRef,
+    viewport,
+    viewportRef,
+    camera,
+    cameraRef,
+    commitCamera,
+    mouseRef,
+    pulseRef,
+    minZoom,
+    maxZoom,
+    zoomSpeed,
+    pinchZoomFactor,
+    dotSpacing,
+    dotRadiusPx,
+    highlightRadiusPx,
+    wheelPulseStrength,
+    screenToWorld,
+    store,
+    bus,
+    minimapWidth,
+    minimapHeight,
+    minimapCachePadding,
+    minimapNeedsRedraw,
+  });
 
   const { dispatchPointer, dispatchContextMenu } = usePluginInputDispatch({
     plugins,
