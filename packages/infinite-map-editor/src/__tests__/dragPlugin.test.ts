@@ -79,4 +79,44 @@ describe('createDragPlugin', () => {
     expect(patchesApplied.some((x) => x.meta.phase === 'move')).toBe(true);
     expect(patchesApplied.some((x) => x.meta.phase === 'end')).toBe(true);
   });
+
+  it('does not start drag on locked/hidden nodes', () => {
+    const bus = createEventBus();
+    const store = createStore();
+    store.set(STORE_KEYS.keyboardSpace, false);
+
+    const nodes: NodeData[] = [
+      { id: 'locked', x: 0, y: 0, width: 80, height: 40, locked: true },
+      { id: 'hidden', x: 200, y: 0, width: 80, height: 40, hidden: true },
+      { id: 'ok', x: 400, y: 0, width: 80, height: 40 },
+    ];
+
+    const ctx: MapContext = {
+      getCamera: () => ({ x: 0, y: 0, zoom: 1 } satisfies Camera),
+      getViewport: () => ({ w: 800, h: 600 }),
+      getNodes: () => nodes,
+      getVisibleNodes: () => nodes.filter((n) => !n.hidden),
+      queryNodesInWorldRect: () => nodes,
+      screenToWorld: (p) => p,
+      worldToScreen: (p) => p,
+      rectScreenToWorld: (r) => r,
+      rectWorldToScreen: (r) => r,
+      bus,
+      store,
+      services: {},
+      registerService: () => void 0,
+      getService: () => undefined,
+      requestRender: () => void 0,
+      applyPatches: () => void 0,
+    } as MapContext;
+
+    const drag = createDragPlugin();
+    const g = drag.gestures![0];
+    store.set(STORE_KEYS.selectionIds, ['locked', 'hidden', 'ok']);
+
+    const down = makePointerEvent('down', { x: 10, y: 10 }, 1);
+    expect(g.canStart(down, ctx, { kind: 'node', id: 'locked' })).toBe(false);
+    expect(g.canStart(down, ctx, { kind: 'node', id: 'hidden' })).toBe(false);
+    expect(g.canStart(down, ctx, { kind: 'node', id: 'ok' })).toBe(true);
+  });
 });

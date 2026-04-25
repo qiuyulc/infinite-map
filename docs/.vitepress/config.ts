@@ -6,7 +6,11 @@ export default defineConfig({
   description: '面向零基础：从0重写一遍（带里程碑与代码注释）',
 
   themeConfig: {
-    nav: [{ text: '从0重写', link: '/rewrite/00-blueprint' }],
+    nav: [
+      { text: '从0重写', link: '/rewrite/00-blueprint' },
+      { text: '库使用', link: '/library/api' },
+      { text: '功能与API（全量）', link: '/功能清单与对外API' },
+    ],
     sidebar: {
       '/rewrite/': [
         {
@@ -26,7 +30,17 @@ export default defineConfig({
             { text: '07. 如何把它讲成面试亮点', link: '/rewrite/07-interview-story' }
           ]
         }
-      ]
+      ],
+      '/library/': [
+        {
+          text: '作为三方库使用',
+          items: [
+            { text: 'API 总览（入门）', link: '/library/api' },
+            { text: '插件开发指南', link: '/library/plugin-dev' },
+            { text: 'Doc schema 与迁移', link: '/library/doc-schema' },
+          ],
+        },
+      ],
     },
     search: { provider: 'local' }
   }

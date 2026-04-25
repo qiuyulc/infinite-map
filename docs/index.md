@@ -8,6 +8,13 @@
 
 - [00. 总蓝图（你要做什么）](/rewrite/00-blueprint)
 
+作为三方库使用（接入/保存/扩展）：
+
+- [API 总览（入门）](/library/api)
+- [插件开发指南](/library/plugin-dev)
+- [Doc schema 与迁移](/library/doc-schema)
+- [功能清单与对外 API（全量）](/功能清单与对外API)
+
 本地启动文档：
 
 ```bash
