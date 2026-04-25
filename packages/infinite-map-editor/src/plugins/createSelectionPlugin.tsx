@@ -8,7 +8,8 @@ import {
   type PointerDownProcessor,
 } from '@qiuyulc/infinite-map';
 import { SelectionOverlay } from './SelectionOverlay';
-import { buildById, getAncestorChain, getOutermostGroupId, isGroupNode, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
+import { getOutermostGroupId, isHiddenEffective, isLockedEffective } from '../editor/groupUtils';
+import { normalizeHitIdForSelectedGroups } from '../editor/hitNormalize';
 
 export type SelectionPluginOptions = {
   /**
@@ -84,18 +85,13 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
       // 目的：让用户可以直接拖动整组（不需要精确点到外框）
       // - 按住 Alt：允许“钻取”选择子节点
       let hitId = hit.id;
-      if (!e.modifiers.shift && !e.modifiers.alt && prev.length > 0) {
-        const byId = buildById(ctx.getNodes());
-        const chain = getAncestorChain(byId, hit.id);
-        for (const gid of chain) {
-          if (prev.includes(gid)) {
-            const gn = byId.get(gid);
-            if (gn && isGroupNode(gn)) {
-              hitId = gid;
-              break;
-            }
-          }
-        }
+      if (!e.modifiers.shift) {
+        hitId = normalizeHitIdForSelectedGroups({
+          nodes: ctx.getNodes(),
+          hitId: hit.id,
+          selectedIds: prev,
+          modifiers: { alt: e.modifiers.alt },
+        });
       }
 
       // hidden：不可选（不改变 selection），但不阻断（避免影响 pan/右键等）

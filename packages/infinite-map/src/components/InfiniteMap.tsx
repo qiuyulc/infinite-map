@@ -1065,7 +1065,7 @@ export function InfiniteMap({
           if (!sameHit(prev, hit)) {
             hoverRef.current = hit;
             store.set(STORE_KEYS.hoverHit, hit);
-            (ctx.bus as any).emit?.('hover:change', { prev, next: hit });
+            ctx.bus.emit('hover:change', { prev, next: hit });
             for (const h of hooks) {
               const fn = h?.onHoverChange;
               if (!fn) continue;

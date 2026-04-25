@@ -25,15 +25,20 @@ Runtime 的任务就是一句话：
 
 ## 2) Plugin 最小协议（从 0 设计）
 
-最小版本你可以只支持：
+最小版本（Scheme C 风格）你可以只支持：
 
 ```ts
 type Plugin = {
   id: string
-  handlers?: {
-    onPointerDown?: (ctx, e) => void
-    onPointerMove?: (ctx, e) => void
-    onPointerUp?: (ctx, e) => void
+  // pointer：统一走 hitTest + gesture（互斥）
+  hitTests?: HitTestContributor[]
+  gestures?: Gesture[]
+  // 非指针输入：wheel / key / contextmenu
+  input?: {
+    onWheel?: ...
+    onKeyDown?: ...
+    onKeyUp?: ...
+    onContextMenu?: ...
   }
   overlay?: (ctx) => ReactNode
   slot?: 'overlay' | 'hud'
@@ -52,10 +57,13 @@ type Plugin = {
 
 ```txt
 createRuntime(plugins, ctx):
-  1. 把 plugins 排序（顺序决定谁先处理事件）
-  2. 统一注册事件监听（pointer/wheel/keyboard）
-  3. 每来一个事件，按顺序调用 plugins[i].handlers?.onXxx(ctx, e)
-  4. 收集 overlays：按 slot 分组渲染到不同层
+  1. 把 plugins 排序（生命周期/依赖顺序；pointer 不再靠顺序抢事件）
+  2. 统一注册事件监听（pointer/wheel/keyboard/contextmenu）
+  3. pointer：
+     - hitTest：计算命中 target
+     - 选择一个 gesture 启动，并在 move/up/cancel 只派发给 active gesture
+  4. wheel/key/contextmenu：交给 plugins[i].input?.onXxx
+  5. 收集 overlays：按 slot 分组渲染到不同层
 ```
 
 你现在的项目已经有更完整的版本（store/commands/services），你从 0 写时可以先写最小版，再逐步补。
@@ -71,5 +79,8 @@ createRuntime(plugins, ctx):
 
 所以插件要有顺序（优先级），否则用户体验会乱。
 
-下一章我们会写清楚：插件协议如何逐步扩展成可扩展的“库级能力”（commands/store/bus/services）。
+Scheme C 的关键变化是：
+- pointer 的“抢事件”主要由 gesture.priority 决定（互斥）
+- 插件排序更多用于 setup/teardown/commands/service 依赖顺序
 
+下一章我们会写清楚：插件协议如何逐步扩展成可扩展的“库级能力”（commands/store/bus/services）。

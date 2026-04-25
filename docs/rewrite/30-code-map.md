@@ -54,7 +54,7 @@ src/
 | `hooks/useCamera.ts` | camera 状态 + ref + commitCamera（给 minimap/commands 复用） |
 | `hooks/useViewportSize.ts` | 容器 viewport（w/h）追踪 |
 | `hooks/useWheelControls.ts` | 滚轮/触控板缩放与相关手感（含 pinch） |
-| `hooks/usePointerPan.tsx` | 指针平移（Space 拖拽）与鼠标位置 ref |
+| （已移除）`hooks/usePointerPan.tsx` | 旧版指针平移逻辑；已在 Scheme C 中并入 `InfiniteMap` 的内置 `pan` gesture |
 | `hooks/useVisibleNodes.ts` | 可见节点虚拟化（camera/viewport/overscan） |
 | `hooks/useHighlightLayer.ts` | 高亮 canvas（鼠标附近光晕/脉冲） |
 | `hooks/useThemeVersion.ts` | 主题版本号（用于触发 canvas 重绘） |

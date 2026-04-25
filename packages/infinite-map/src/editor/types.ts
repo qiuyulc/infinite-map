@@ -185,6 +185,9 @@ export type EventMap = {
   // selection
   'selection:change': { ids: string[] };
 
+  // hover（Scheme C）
+  'hover:change': { prev: HitTestTarget; next: HitTestTarget };
+
   // history / command
   'history:undo': { source: 'keyboard' | 'toolbar' | 'menu' | 'api' };
   'history:redo': { source: 'keyboard' | 'toolbar' | 'menu' | 'api' };

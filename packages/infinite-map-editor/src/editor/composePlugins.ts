@@ -29,7 +29,15 @@ export function composePlugins(input: InfiniteMapPlugin[]): InfiniteMapPlugin[] 
   for (const p of plugins) {
     const caps = uniq([p.id, ...(p.provides ?? [])]);
     for (const c of caps) {
-      if (!provides.has(c)) provides.set(c, p.id);
+      const prev = provides.get(c);
+      if (!prev) {
+        provides.set(c, p.id);
+        continue;
+      }
+      // 同一个 capability 多 provider：默认视为配置错误（会导致 requires 解析不确定）
+      if (prev !== p.id) {
+        throw new Error(`[composePlugins] capability "${c}" has multiple providers: "${prev}" and "${p.id}"`);
+      }
     }
   }
 

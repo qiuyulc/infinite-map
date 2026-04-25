@@ -152,13 +152,17 @@ const ctx: MapContext = useMemo(() => {
 
 ---
 
-## 8）关键段落 F：事件分发（plugins handlers）
+## 8）关键段落 F：事件分发（Scheme C：hitTest → processors → gestures）
 
 你会看到它把 React 的事件包装成 `MapPointerEvent/MapWheelEvent/...`：
 
 - 把 `clientX/clientY` 转成画布内 `screen` 坐标
 - 再算出 `world` 坐标
-- 然后按插件顺序调用 handlers
+- pointer 事件不再“按插件顺序遍历 handlers”，而是统一走一条输入管线：
+  1) `hitTests`：决定命中的是 blank/node/handle（并可附带 cursor）
+  2) `pointerDownProcessors`：做 selection 等“非互斥逻辑”（可 stop 阻断手势，也可覆盖本次 hit）
+  3) `gestures`：从高优先级到低优先级选择一个手势启动（drag/resize/rotate/marquee/pan…），并在后续 move/up/cancel 只派发给 active gesture
+  4) hover/cursor：当没有 active gesture 时，move 会做 hitTest 并更新 hover 与 cursor
 
 为什么要包装成 MapPointerEvent？
 
@@ -172,5 +176,4 @@ const ctx: MapContext = useMemo(() => {
 
 1) 为什么 nodes/camera/viewport 都要用 ref？  
 2) 为什么要有 screenToWorld/worldToScreen？  
-3) plugins 的 handlers 是怎么被调用的？顺序为什么重要？
-
+3) Scheme C 下 pointer 事件是怎么走（hitTest/processors/gestures）？它如何解决“互相抢事件”的问题？

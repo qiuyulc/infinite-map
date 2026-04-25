@@ -258,13 +258,21 @@
 - `requestRender()`
 
 #### `InfiniteMapPlugin`
-- `id/enabled/provides/requires/order`
+- `id/enabled/provides/requires/order/priority`
 - `setup/teardown`
-- `handlers`（指针/键盘/滚轮/右键）
+- `input`（wheel/key/contextmenu 等非指针输入）
+- `hitTests`（命中贡献者；统一 node/handle 命中）
+- `pointerDownProcessors`（hitTest 之后、gesture 之前；用于 selection 等“非互斥逻辑”，可返回 `{stop}` 阻断后续手势，或返回 `{hit}` 覆盖本次有效命中）
+- `gestures`（互斥手势：drag/resize/rotate/marquee/pan…；pointer 统一走 hitTest→processors→gestures）
+- `inputHooks`（`onBefore/AfterHitTest`、`onHoverChange`、`onBefore/AfterGesture`）
 - `overlay`（React 组件）
 - `slot: 'background' | 'overlay' | 'hud'`
 - `overlayPointerEvents: 'none' | 'auto'`
 - `commands?: Record<string, Command>`
+
+补充（Scheme C）：
+- hover 命中会写入 `STORE_KEYS.hoverHit`，并注册 `hover` service（`ctx.getService('hover')`）供 overlay 读取
+- pan 已作为内置 gesture（空白拖动/Space 平移）纳入手势互斥体系，不再使用独立 hook
 
 ---
 
