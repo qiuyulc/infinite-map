@@ -30,6 +30,7 @@ import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
 import { useAttachApiRef } from '../hooks/useAttachApiRef';
 import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes';
 import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
+import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import type {
   ChangeMeta,
   Command,
@@ -552,27 +553,7 @@ export function InfiniteMap({
   });
 
   // 插件 setup/teardown（Milestone 1：只提供生命周期，不引入任何默认插件）
-  useEffect(() => {
-    if (!plugins || plugins.length === 0) return;
-    plugins.forEach((p) => {
-      if (p.enabled === false) return;
-      try {
-        p.setup?.(ctx);
-      } catch (err) {
-        onEditorErrorRef.current?.(err, { kind: 'lifecycle', name: 'setup', pluginId: p.id });
-      }
-    });
-    return () => {
-      plugins.forEach((p) => {
-        if (p.enabled === false) return;
-        try {
-          p.teardown?.();
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'lifecycle', name: 'teardown', pluginId: p.id });
-        }
-      });
-    };
-  }, [plugins, ctx]);
+  usePluginLifecycle({ plugins, ctx, onEditorErrorRef });
 
   const { visibleNodes, pan } = useVirtualizedVisibleNodes({
     nodes,
