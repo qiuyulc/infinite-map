@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -29,23 +29,21 @@ import { useViewportSize } from '../hooks/useViewportSize';
 import { useVisibleNodes } from '../hooks/useVisibleNodes';
 import { useWheelControls } from '../hooks/useWheelControls';
 import { useCommandRegistry } from '../hooks/useCommandRegistry';
+import { usePatchEngine } from '../hooks/usePatchEngine';
+import { usePluginInputDispatch } from '../hooks/usePluginInputDispatch';
+import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
 import type {
   ChangeMeta,
   Command,
   EditorErrorInfo,
-  Gesture,
-  HandlerResult,
   HitTestTarget,
   InfiniteMapPlugin,
   MapContext,
-  MapContextMenuEvent,
-  MapKeyEvent,
-  MapPointerEvent,
   MapWheelEvent,
   NodePatch,
   Point,
 } from '../editor/types';
-import { applyPatchesToNodes, createEventBus, createStore } from '../editor/runtime';
+import { createEventBus, createStore } from '../editor/runtime';
 
 export type InfiniteMapProps = {
   nodes: NodeData[];
@@ -425,219 +423,20 @@ export function InfiniteMap({
   // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
   const ctxRef = useRef<MapContext | null>(null);
 
-  // move-phase patches 节流：拖拽/缩放/旋转期间把高频 patch 合并到 rAF，避免频繁 setState 导致卡顿/闪烁
-  const pendingMoveRafRef = useRef<number | null>(null);
-  const pendingMovePatchesRef = useRef<NodePatch[] | null>(null);
-  const pendingMoveMetaRef = useRef<ChangeMeta | null>(null);
-
-  // Scheme C：指针手势状态（全局互斥）
-  const gestureStateRef = useRef<{
-    active: null | { pointerId: number; gesture: Gesture; hit: HitTestTarget };
-  }>({ active: null });
-
   // Scheme C：hover 命中（仅当没有 active gesture 时更新）
   const hoverRef = useRef<HitTestTarget>({ kind: 'blank' });
 
-  const sameHit = (a: HitTestTarget, b: HitTestTarget) => {
-    if (a.kind !== b.kind) return false;
-    if (a.kind === 'blank') return true;
-    if (a.kind === 'node') return a.id === (b as any).id;
-    return a.owner === (b as any).owner && a.id === (b as any).id && a.handle === (b as any).handle;
-  };
+  const { applyPatches } = usePatchEngine({
+    bus,
+    nodesRef,
+    onNodesChangeRef,
+    onPatchesRef,
+    hooksRef,
+    hookModeRef,
+    onEditorErrorRef,
+  });
 
-  const cursorFromHit = (hit: HitTestTarget) => {
-    // Space 平移模式优先
-    if (store.get<boolean>(STORE_KEYS.keyboardSpace)) return 'grab';
-    if (typeof hit.cursor === 'string' && hit.cursor) return hit.cursor;
-    if (hit.kind === 'node') return 'grab';
-    if (hit.kind === 'handle' && hit.owner === 'resize') {
-      const h = hit.handle;
-      if (h === 'n' || h === 's') return 'ns-resize';
-      if (h === 'e' || h === 'w') return 'ew-resize';
-      if (h === 'ne' || h === 'sw') return 'nesw-resize';
-      if (h === 'nw' || h === 'se') return 'nwse-resize';
-      return 'nwse-resize';
-    }
-    if (hit.kind === 'handle' && hit.owner === 'rotate') return 'grab';
-    return 'default';
-  };
-
-  const flushPendingMovePatches = useCallback(() => {
-    const patches = pendingMovePatchesRef.current;
-    const meta = pendingMoveMetaRef.current;
-    pendingMovePatchesRef.current = null;
-    pendingMoveMetaRef.current = null;
-    if (pendingMoveRafRef.current != null) {
-      cancelAnimationFrame(pendingMoveRafRef.current);
-      pendingMoveRafRef.current = null;
-    }
-    if (!patches || patches.length === 0 || !meta) return;
-
-    // history：采样本次变更涉及到的节点“变更前”快照
-    const beforeById: Record<string, NodeData | undefined> = {};
-    const byId = new Map(nodesRef.current.map((n) => [n.id, n]));
-    for (const p of patches) {
-      if (p.type === 'add') {
-        const id = p.node.id;
-        if (!(id in beforeById)) beforeById[id] = byId.get(id);
-      } else {
-        const id = p.id;
-        if (!(id in beforeById)) beforeById[id] = byId.get(id);
-      }
-    }
-    bus.emit('patches:applied', { patches, meta, beforeById });
-    onPatchesRef.current?.(patches, meta);
-    if (onNodesChangeRef.current) {
-      const next = applyPatchesToNodes(nodesRef.current, patches);
-      nodesRef.current = next;
-      onNodesChangeRef.current(next, meta);
-    }
-    try {
-      hooksRef.current?.onAfterApplyPatches?.(patches, meta);
-    } catch (err) {
-      onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterApplyPatches' });
-    }
-  }, [bus]);
-
-  const mergeMovePatches = (base: NodePatch[] | null, next: NodePatch[]) => {
-    // 目标：同一帧内对同一节点的 move/set 取“最后一次”，减少 patch 数量与重渲染
-    const moveById = new Map<string, NodePatch & { type: 'move' }>();
-    const setById = new Map<string, NodePatch & { type: 'set' }>();
-    const others: NodePatch[] = [];
-
-    const consume = (arr: NodePatch[]) => {
-      for (const p of arr) {
-        if (p.type === 'move') {
-          moveById.set(p.id, p);
-        } else if (p.type === 'set') {
-          const prev = setById.get(p.id);
-          setById.set(p.id, prev ? ({ ...p, data: { ...(prev.data ?? {}), ...(p.data ?? {}) } } as any) : p);
-        } else {
-          others.push(p);
-        }
-      }
-    };
-    if (base && base.length) consume(base);
-    if (next && next.length) consume(next);
-
-    return [...others, ...setById.values(), ...moveById.values()];
-  };
-
-  const applyPatches = useCallback(
-    (patches: NodePatch[], meta: ChangeMeta) => {
-      if (!patches || patches.length === 0) return;
-
-      // 若有 move-phase 队列，而当前不是 move，则先 flush，保证顺序正确
-      if (pendingMovePatchesRef.current && meta.phase !== 'move') {
-        flushPendingMovePatches();
-      }
-
-      let usePatches = patches;
-      const hook = hooksRef.current?.onBeforeApplyPatches;
-      if (hook) {
-        try {
-          const nextPatches = hook(patches, meta);
-          if (hookModeRef.current === 'intercept' && Array.isArray(nextPatches)) {
-            usePatches = nextPatches;
-          }
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onBeforeApplyPatches' });
-        }
-      }
-      if (!usePatches || usePatches.length === 0) return;
-
-      // move-phase：rAF 合并后再提交，避免高频 setState/重渲染导致卡顿和“闪烁”
-      if (meta.phase === 'move') {
-        pendingMovePatchesRef.current = mergeMovePatches(pendingMovePatchesRef.current, usePatches);
-        pendingMoveMetaRef.current = pendingMoveMetaRef.current
-          ? { ...meta, ids: Array.from(new Set([...(pendingMoveMetaRef.current.ids ?? []), ...(meta.ids ?? [])])) }
-          : meta;
-        if (pendingMoveRafRef.current == null) {
-          pendingMoveRafRef.current = requestAnimationFrame(() => {
-            pendingMoveRafRef.current = null;
-            flushPendingMovePatches();
-          });
-        }
-        return;
-      }
-
-      // history：采样本次变更涉及到的节点“变更前”快照
-      const beforeById: Record<string, NodeData | undefined> = {};
-      const byId = new Map(nodesRef.current.map((n) => [n.id, n]));
-      for (const p of usePatches) {
-        if (p.type === 'add') {
-          const id = p.node.id;
-          if (!(id in beforeById)) beforeById[id] = byId.get(id);
-        } else {
-          const id = p.id;
-          if (!(id in beforeById)) beforeById[id] = byId.get(id);
-        }
-      }
-      bus.emit('patches:applied', { patches: usePatches, meta, beforeById });
-      onPatchesRef.current?.(usePatches, meta);
-      if (onNodesChangeRef.current) {
-        // 关键：同步更新 nodesRef，避免短时间内连续 applyPatches（例如快速 undo/redo）
-        // 仍然基于旧 nodesRef 计算，导致后续操作一直在“旧快照”上叠加从而界面不更新。
-        const next = applyPatchesToNodes(nodesRef.current, usePatches);
-        nodesRef.current = next;
-        onNodesChangeRef.current(next, meta);
-      }
-      try {
-        hooksRef.current?.onAfterApplyPatches?.(usePatches, meta);
-      } catch (err) {
-        onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterApplyPatches' });
-      }
-    },
-    [bus, flushPendingMovePatches]
-  );
-
-  const runCommandWithHooks = useCallback(
-    (id: string, payload?: { source: 'keyboard' | 'toolbar' | 'menu' | 'api'; [k: string]: unknown }) => {
-      const ctx0 = ctxRef.current;
-      if (!ctx0) return false;
-      const source = (payload?.source ?? 'api') as 'keyboard' | 'toolbar' | 'menu' | 'api';
-
-      const before = hooksRef.current?.onBeforeCommand;
-      if (before) {
-        try {
-          const ok = before(id, { source, payload });
-          if (hookModeRef.current === 'intercept' && ok === false) return false;
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onBeforeCommand', commandId: id, source });
-        }
-      }
-
-      const reg = ctx0.store.get<Record<string, Command>>('commands:registry') ?? {};
-      const cmdFrom = ctx0.store.get<Record<string, string>>('commands:from') ?? {};
-      const cmd = reg[id];
-      if (!cmd) {
-        try {
-          hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
-        }
-        return false;
-      }
-      try {
-        cmd.run(ctx0, { source });
-        try {
-          hooksRef.current?.onAfterCommand?.(id, { ok: true, source, payload });
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
-        }
-        return true;
-      } catch (err) {
-        onEditorErrorRef.current?.(err, { kind: 'command', name: 'run', commandId: id, source, pluginId: cmdFrom[id] });
-        try {
-          hooksRef.current?.onAfterCommand?.(id, { ok: false, source, payload });
-        } catch (e2) {
-          onEditorErrorRef.current?.(e2, { kind: 'hook', name: 'onAfterCommand', commandId: id, source });
-        }
-        return false;
-      }
-    },
-    []
-  );
+  const runCommandWithHooks = useRunCommandWithHooks({ ctxRef, hooksRef, hookModeRef, onEditorErrorRef });
 
   // 插件 ctx（稳定对象，但内部方法会读取 ref 以获得最新状态）
   const ctx: MapContext = useMemo(() => {
@@ -817,9 +616,6 @@ export function InfiniteMap({
     };
   }, [plugins, ctx]);
 
-  // Scheme C：pan 手势状态
-  const panRef = useRef<null | { pointerId: number; startScreen: { x: number; y: number }; startCam: { x: number; y: number } }>(null);
-
   useWheelControls({
     containerRef,
     mouseRef,
@@ -966,330 +762,27 @@ export function InfiniteMap({
     });
   }, [bus, commitCamera]);
 
-  const dispatchPointer = useCallback(
-    (type: MapPointerEvent['type'], e: ReactPointerEvent): HandlerResult => {
-      if (!plugins || plugins.length === 0) return { handled: false };
-      const el = containerRef.current;
-      if (!el) return { handled: false };
-      const r = el.getBoundingClientRect();
-      const sx = e.clientX - r.left;
-      const sy = e.clientY - r.top;
-      // 无论是否被手势接管，都更新鼠标位置（highlight layer 会用）
-      mouseRef.current = { x: sx, y: sy };
-      const m: MapPointerEvent = {
-        type,
-        pointerId: e.pointerId,
-        button: e.button,
-        buttons: e.buttons,
-        screen: { x: sx, y: sy },
-        world: screenToWorld({ x: sx, y: sy }),
-        modifiers: { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey },
-        originalEvent: e,
-      };
-
-      // ---- Scheme C: hitTest + gesture manager ----
-      const enabledPlugins = plugins.filter((p) => p.enabled !== false);
-      const hooks = enabledPlugins.map((p) => p.inputHooks).filter(Boolean) as Array<NonNullable<InfiniteMapPlugin['inputHooks']>>;
-      const hitTests = enabledPlugins
-        .flatMap((p) => p.hitTests ?? [])
-        .slice()
-        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-      const processors = enabledPlugins
-        .flatMap((p) => p.pointerDownProcessors ?? [])
-        .slice()
-        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-      const gestures = enabledPlugins
-        .flatMap((p) => p.gestures ?? [])
-        .slice()
-        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-
-      // 内置 pan gesture（最低优先级兜底）
-      gestures.push({
-        id: 'pan',
-        priority: -9999,
-        canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
-          if (e.button !== 0) return false;
-          // Space：全局平移模式（无视命中）
-          if (ctx.store.get<boolean>(STORE_KEYS.keyboardSpace)) return true;
-          // 空白拖动平移
-          return hit.kind === 'blank';
-        },
-        onStart: (e: MapPointerEvent, ctx: MapContext) => {
-          panRef.current = {
-            pointerId: e.pointerId,
-            startScreen: { ...e.screen },
-            startCam: { x: ctx.getCamera().x, y: ctx.getCamera().y },
-          };
-          if (!panActive && panKeepAliveEnabled) {
-            // seed：把手势开始时可见的节点加入 keepAlive
-            panKeepAliveIdSetRef.current.clear();
-            panKeepAliveLRURef.current.clear();
-            panKeepAliveAdd(visibleNodesRef.current.map((n) => n.id));
-          }
-          if (!panActive) setPanActive(true);
-        },
-        onMove: (e: MapPointerEvent, ctx: MapContext) => {
-          const st = panRef.current;
-          if (!st || st.pointerId !== e.pointerId) return;
-          const cam = ctx.getCamera();
-          const dx = e.screen.x - st.startScreen.x;
-          const dy = e.screen.y - st.startScreen.y;
-          commitCamera({ x: st.startCam.x - dx / cam.zoom, y: st.startCam.y - dy / cam.zoom, zoom: cam.zoom }, false);
-        },
-        onEnd: (e: MapPointerEvent) => {
-          const st = panRef.current;
-          if (st?.pointerId === e.pointerId) panRef.current = null;
-          if (panActive) {
-            setPanActive(false);
-            panKeepAliveIdSetRef.current.clear();
-            panKeepAliveLRURef.current.clear();
-          }
-        },
-        onCancel: (e: MapPointerEvent) => {
-          const st = panRef.current;
-          if (st?.pointerId === e.pointerId) panRef.current = null;
-          if (panActive) {
-            setPanActive(false);
-            panKeepAliveIdSetRef.current.clear();
-            panKeepAliveLRURef.current.clear();
-          }
-        },
-      } satisfies Gesture);
-
-      // active gesture state
-      const st = (gestureStateRef.current ??= { active: null });
-
-      const callHooks = <K extends keyof NonNullable<InfiniteMapPlugin['inputHooks']>>(
-        key: K,
-        ...args: Parameters<NonNullable<NonNullable<InfiniteMapPlugin['inputHooks']>[K]>>
-      ) => {
-        for (const h of hooks) {
-          const fn = h?.[key] as any;
-          if (!fn) continue;
-          try {
-            fn(...args);
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'hook', name: String(key) });
-          }
-        }
-      };
-
-      const runHitTest = (info: { kind: 'pointer' | 'contextmenu' }) => {
-        callHooks('onBeforeHitTest', m, ctx, info);
-        const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
-        const t0 = debugRef.current ? now() : 0;
-        let hit: HitTestTarget = { kind: 'blank' };
-        for (const ht of hitTests) {
-          try {
-            const r = ht.hitTest(m, ctx, info);
-            if (r) {
-              hit = r;
-              break;
-            }
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'hitTest', name: 'hitTest', hitTestId: ht.id });
-          }
-        }
-        if (debugRef.current) store.set('debug:lastHitTestMs', now() - t0);
-        callHooks('onAfterHitTest', hit, m, ctx, info);
-        return hit;
-      };
-
-      if (type === 'down') {
-        let hit = runHitTest({ kind: 'pointer' });
-
-        // pointer down processors（selection 等）
-        let blockGesture = false;
-        for (const pr of processors) {
-          try {
-            const r = pr.onPointerDown(m, ctx, hit);
-            if (r && (r as any).stop === true) blockGesture = true;
-            if (r && (r as any).hit) hit = (r as any).hit as HitTestTarget;
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'processor', name: 'onPointerDown', processorId: pr.id });
-          }
-        }
-        if (blockGesture) return { handled: true, mode: 'stop' };
-
-        // 选择一个 gesture 启动
-        for (const g of gestures) {
-          let ok = false;
-          try {
-            ok = g.canStart(m, ctx, hit);
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'gesture', name: 'canStart', gestureId: g.id });
-          }
-          if (!ok) continue;
-          st.active = { pointerId: m.pointerId, gesture: g, hit };
-          callHooks('onBeforeGesture', { phase: 'start', gestureId: g.id, hit, e: m }, ctx);
-          try {
-            g.onStart(m, ctx, hit);
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'gesture', name: 'onStart', gestureId: g.id });
-          }
-          callHooks('onAfterGesture', { phase: 'start', gestureId: g.id, hit, e: m }, ctx);
-          return { handled: true, mode: 'stop' };
-        }
-        return { handled: false };
-      }
-
-      // move/up/cancel：仅派发给 active gesture
-      const active = st.active;
-      if (!active || active.pointerId !== m.pointerId) {
-        // hover/cursor：仅在 move 且没有 active gesture 时运行
-        if (type === 'move') {
-          const hit = runHitTest({ kind: 'pointer' });
-          const prev = hoverRef.current;
-          if (!sameHit(prev, hit)) {
-            hoverRef.current = hit;
-            store.set(STORE_KEYS.hoverHit, hit);
-            ctx.bus.emit('hover:change', { prev, next: hit });
-            for (const h of hooks) {
-              const fn = h?.onHoverChange;
-              if (!fn) continue;
-              try {
-                fn({ prev, next: hit, e: m }, ctx);
-              } catch (err) {
-                onEditorErrorRef.current?.(err, { kind: 'hook', name: 'onHoverChange' });
-              }
-            }
-          }
-          const c = cursorFromHit(hit);
-          if (containerRef.current && containerRef.current.style.cursor !== c) containerRef.current.style.cursor = c;
-        }
-        return { handled: false };
-      }
-      const g = active.gesture;
-      const phase = type === 'move' ? 'move' : type === 'up' ? 'end' : 'cancel';
-      callHooks('onBeforeGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
-      try {
-        const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
-        const t0 = debugRef.current ? now() : 0;
-        if (phase === 'move') g.onMove(m, ctx);
-        else if (phase === 'end') g.onEnd(m, ctx);
-        else g.onCancel(m, ctx);
-        if (debugRef.current) {
-          store.set('debug:lastGestureId', g.id);
-          store.set('debug:lastGesturePhase', phase);
-          store.set('debug:lastGestureMs', now() - t0);
-        }
-      } catch (err) {
-        onEditorErrorRef.current?.(err, {
-          kind: 'gesture',
-          name: phase === 'move' ? 'onMove' : phase === 'end' ? 'onEnd' : 'onCancel',
-          gestureId: g.id,
-        });
-      }
-      callHooks('onAfterGesture', { phase, gestureId: g.id, hit: active.hit, e: m }, ctx);
-      if (phase !== 'move') st.active = null;
-      return { handled: true, mode: 'stop' };
+  const { dispatchPointer, dispatchContextMenu } = usePluginInputDispatch({
+    plugins,
+    ctx,
+    containerRef,
+    store,
+    screenToWorld,
+    commitCamera,
+    mouseRef,
+    hoverRef,
+    onEditorErrorRef,
+    debugRef,
+    pan: {
+      panActive,
+      setPanActive,
+      panKeepAliveEnabled,
+      panKeepAliveAdd,
+      panKeepAliveIdSetRef,
+      panKeepAliveLRURef,
+      visibleNodesRef,
     },
-    [plugins, ctx, screenToWorld, panActive, panKeepAliveEnabled, panKeepAliveAdd, commitCamera]
-  );
-
-  const dispatchContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      if (!plugins || plugins.length === 0) return { handled: false } as HandlerResult;
-      const el = containerRef.current;
-      if (!el) return { handled: false } as HandlerResult;
-      const r = el.getBoundingClientRect();
-      const m: MapContextMenuEvent = {
-        screen: { x: e.clientX, y: e.clientY },
-        // world 需要使用相对画布的 screen 坐标
-        world: screenToWorld({ x: e.clientX - r.left, y: e.clientY - r.top }),
-        modifiers: { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey },
-        originalEvent: e.nativeEvent,
-      };
-      const enabledPlugins = plugins.filter((p) => p.enabled !== false);
-      const hooks = enabledPlugins.map((p) => p.inputHooks).filter(Boolean) as Array<NonNullable<InfiniteMapPlugin['inputHooks']>>;
-      const hitTests = enabledPlugins
-        .flatMap((p) => p.hitTests ?? [])
-        .slice()
-        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-      const callHooks = <K extends keyof NonNullable<InfiniteMapPlugin['inputHooks']>>(
-        key: K,
-        ...args: Parameters<NonNullable<NonNullable<InfiniteMapPlugin['inputHooks']>[K]>>
-      ) => {
-        for (const h of hooks) {
-          const fn = h?.[key] as any;
-          if (!fn) continue;
-          try {
-            fn(...args);
-          } catch (err) {
-            onEditorErrorRef.current?.(err, { kind: 'hook', name: String(key) });
-          }
-        }
-      };
-      callHooks('onBeforeHitTest', m, ctx, { kind: 'contextmenu' });
-      let hit: HitTestTarget = { kind: 'blank' };
-      for (const ht of hitTests) {
-        try {
-          const r = ht.hitTest(m, ctx, { kind: 'contextmenu' });
-          if (r) {
-            hit = r;
-            break;
-          }
-        } catch (err) {
-          onEditorErrorRef.current?.(err, { kind: 'hitTest', name: 'hitTest', hitTestId: ht.id });
-        }
-      }
-      callHooks('onAfterHitTest', hit, m, ctx, { kind: 'contextmenu' });
-
-      let sawContinue = false;
-      for (const p of enabledPlugins) {
-        const res = p.input?.onContextMenu?.(m, ctx, hit);
-        if (!res || res.handled === false) continue;
-        if (res.mode === 'continue') {
-          sawContinue = true;
-          continue;
-        }
-        return { handled: true, mode: 'stop' } as HandlerResult;
-      }
-      return sawContinue ? ({ handled: true, mode: 'continue' } as HandlerResult) : ({ handled: false } as HandlerResult);
-    },
-    [plugins, ctx, screenToWorld]
-  );
-
-  // key 事件（仅当插件存在时监听）
-  useEffect(() => {
-    if (!plugins || plugins.length === 0) return;
-
-    const toModifiers = (e: KeyboardEvent) => ({ shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey });
-    const dispatchKey = (type: MapKeyEvent['type'], e: KeyboardEvent) => {
-      const m: MapKeyEvent = {
-        type,
-        key: e.key,
-        code: e.code,
-        modifiers: toModifiers(e),
-        originalEvent: e,
-      };
-      let sawContinue = false;
-      for (const p of plugins) {
-        if (p.enabled === false) continue;
-        const res =
-          type === 'down' ? p.input?.onKeyDown?.(m, ctx) : p.input?.onKeyUp?.(m, ctx);
-        if (!res || res.handled === false) continue;
-        if (res.mode === 'continue') {
-          sawContinue = true;
-          continue;
-        }
-        e.preventDefault();
-        return;
-      }
-      if (sawContinue) {
-        // 默认不 preventDefault
-      }
-    };
-
-    const onDown = (e: KeyboardEvent) => dispatchKey('down', e);
-    const onUp = (e: KeyboardEvent) => dispatchKey('up', e);
-    window.addEventListener('keydown', onDown);
-    window.addEventListener('keyup', onUp);
-    return () => {
-      window.removeEventListener('keydown', onDown);
-      window.removeEventListener('keyup', onUp);
-    };
-  }, [plugins, ctx]);
+  });
 
   const dragRef = useRef<{
     active: boolean;
