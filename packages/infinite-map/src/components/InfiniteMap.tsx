@@ -32,6 +32,7 @@ import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes'
 import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
+import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
 import type {
   ChangeMeta,
   Command,
@@ -40,7 +41,6 @@ import type {
   InfiniteMapPlugin,
   MapContext,
   NodePatch,
-  Point,
 } from '../editor/types';
 import { createEventBus, createStore } from '../editor/runtime';
 
@@ -349,40 +349,7 @@ export function InfiniteMap({
     spatialIndexRef.current = spatialIndex;
   }, [spatialIndex]);
 
-  const screenToWorld = useCallback(
-    (p: Point) => {
-      const z = cameraRef.current.zoom || 1;
-      return { x: cameraRef.current.x + p.x / z, y: cameraRef.current.y + p.y / z };
-    },
-    [cameraRef]
-  );
-
-  const worldToScreen = useCallback(
-    (p: Point) => {
-      const cam = cameraRef.current;
-      const z = cam.zoom || 1;
-      return { x: (p.x - cam.x) * z, y: (p.y - cam.y) * z };
-    },
-    [cameraRef]
-  );
-
-  const rectScreenToWorld = useCallback(
-    (r: { x: number; y: number; w: number; h: number }) => {
-      const p0 = screenToWorld({ x: r.x, y: r.y });
-      const p1 = screenToWorld({ x: r.x + r.w, y: r.y + r.h });
-      return { x: p0.x, y: p0.y, w: p1.x - p0.x, h: p1.y - p0.y };
-    },
-    [screenToWorld]
-  );
-
-  const rectWorldToScreen = useCallback(
-    (r: { x: number; y: number; w: number; h: number }) => {
-      const p0 = worldToScreen({ x: r.x, y: r.y });
-      const p1 = worldToScreen({ x: r.x + r.w, y: r.y + r.h });
-      return { x: p0.x, y: p0.y, w: p1.x - p0.x, h: p1.y - p0.y };
-    },
-    [worldToScreen]
-  );
+  const { screenToWorld, worldToScreen, rectScreenToWorld, rectWorldToScreen } = useCoordinateTransforms(cameraRef);
 
   // 插件 bus/store（稳定引用）
   const bus = useMemo(() => createEventBus(), []);
