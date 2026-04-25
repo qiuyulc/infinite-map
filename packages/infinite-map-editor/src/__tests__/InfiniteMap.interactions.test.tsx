@@ -57,11 +57,12 @@ describe('InfiniteMap integrations (jsdom)', () => {
   });
 
   it('hover updates cursor via hitTest pipeline', async () => {
+    let ctxRef: MapContext | null = null;
     const nodes: NodeData[] = [
       { id: 'a', x: 0, y: 0, width: 80, height: 40, label: 'A' },
       { id: 'b', x: 200, y: 0, width: 80, height: 40, label: 'B' },
     ];
-    const plugins = createDefaultEditorPlugins();
+    const plugins = [...createDefaultEditorPlugins(), createCapturePlugin((c) => (ctxRef = c))];
     const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
@@ -76,10 +77,27 @@ describe('InfiniteMap integrations (jsdom)', () => {
     // move mouse over node A area
     fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 410, clientY: 260 });
     await waitFor(() => expect(root.style.cursor).toBe('grab'));
+    await waitFor(() => {
+      expect(ctxRef).toBeTruthy();
+      const hit = ctxRef!.store.get<any>(STORE_KEYS.hoverHit);
+      expect(hit?.kind).toBe('node');
+      expect(hit?.id).toBe('a');
+    });
 
     // move mouse to blank area
     fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 10, clientY: 10 });
     await waitFor(() => expect(root.style.cursor).toBe('default'));
+    await waitFor(() => {
+      const hit = ctxRef!.store.get<any>(STORE_KEYS.hoverHit);
+      expect(hit?.kind).toBe('blank');
+    });
+
+    // leave => hover cleared
+    fireEvent.pointerLeave(root, { pointerId: 1, buttons: 0, clientX: 10, clientY: 10 });
+    await waitFor(() => {
+      const hit = ctxRef!.store.get<any>(STORE_KEYS.hoverHit);
+      expect(hit?.kind).toBe('blank');
+    });
   });
 
   it('minimap click changes camera (minimap plugin)', async () => {
