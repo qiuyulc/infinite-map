@@ -11,6 +11,7 @@ import {
 import { composePlugins, InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
 import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
+import './App.css';
 
 type ResourceStore<T> = {
   get: (id: string) => T | undefined;
@@ -145,110 +146,109 @@ export default function App() {
 
   return (
     <InfiniteMapThemeProvider base={themeBase}>
-      <div style={{ height: '100vh', display: 'flex' }}>
-        <aside
-          style={{
-            width: 280,
-            padding: 14,
-            borderRight: '1px solid rgba(15,23,42,0.12)',
-            background: themeBase === 'dark' ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.78)',
-            color: themeBase === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(15,23,42,0.9)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: 10 }}>本地测试面板</div>
+      <div className="pg-shell" data-theme={themeBase}>
+        <aside className="pg-sidebar">
+          <div className="pg-title">
+            <div className="pg-title__main">本地测试面板</div>
+            <div className="pg-title__sub">Playground controls</div>
+          </div>
 
-          <div style={{ display: 'grid', gap: 10, fontSize: 13 }}>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>主题</span>
-              <select value={themeBase} onChange={(e) => setThemeBase(e.target.value as any)}>
+          <div className="pg-section">
+            <div className="pg-section__title">外观</div>
+            <label className="pg-row">
+              <span className="pg-row__label">主题</span>
+              <select className="pg-control" value={themeBase} onChange={(e) => setThemeBase(e.target.value as any)}>
                 <option value="light">亮色</option>
                 <option value="dark">暗色</option>
               </select>
             </label>
 
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>背景</span>
-              <select value={backgroundMode} onChange={(e) => setBackgroundMode(e.target.value as any)}>
+            <label className="pg-row">
+              <span className="pg-row__label">背景</span>
+              <select className="pg-control" value={backgroundMode} onChange={(e) => setBackgroundMode(e.target.value as any)}>
                 <option value="grid">网格</option>
                 <option value="dots">点阵</option>
               </select>
             </label>
+          </div>
 
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>标尺</span>
-              <input type="checkbox" checked={rulersEnabled} onChange={(e) => setRulersEnabled(e.target.checked)} />
+          <div className="pg-section">
+            <div className="pg-section__title">HUD / 功能</div>
+            <label className="pg-row">
+              <span className="pg-row__label">标尺</span>
+              <input className="pg-check" type="checkbox" checked={rulersEnabled} onChange={(e) => setRulersEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>Minimap</span>
-              <input type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} />
+            <label className="pg-row">
+              <span className="pg-row__label">Minimap</span>
+              <input className="pg-check" type="checkbox" checked={minimapEnabled} onChange={(e) => setMinimapEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>缩放条</span>
-              <input type="checkbox" checked={zoomDockEnabled} onChange={(e) => setZoomDockEnabled(e.target.checked)} />
+            <label className="pg-row">
+              <span className="pg-row__label">缩放条</span>
+              <input className="pg-check" type="checkbox" checked={zoomDockEnabled} onChange={(e) => setZoomDockEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>工具栏</span>
-              <input type="checkbox" checked={toolbarEnabled} onChange={(e) => setToolbarEnabled(e.target.checked)} />
+            <label className="pg-row">
+              <span className="pg-row__label">工具栏</span>
+              <input className="pg-check" type="checkbox" checked={toolbarEnabled} onChange={(e) => setToolbarEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>右键菜单</span>
-              <input
-                type="checkbox"
-                checked={contextMenuEnabled}
-                onChange={(e) => setContextMenuEnabled(e.target.checked)}
-              />
+            <label className="pg-row">
+              <span className="pg-row__label">右键菜单</span>
+              <input className="pg-check" type="checkbox" checked={contextMenuEnabled} onChange={(e) => setContextMenuEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>虚拟化</span>
-              <input type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
+            <label className="pg-row">
+              <span className="pg-row__label">虚拟化</span>
+              <input className="pg-check" type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>keepAlive(图表)</span>
-              <input type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
+            <label className="pg-row">
+              <span className="pg-row__label">keepAlive(图表)</span>
+              <input className="pg-check" type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
+          </div>
 
-            <div style={{ marginTop: 6, fontWeight: 700, opacity: 0.9 }}>编辑模式</div>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>editMode</span>
-              <select value={editMode} onChange={(e) => setEditMode(e.target.value as any)} style={{ minWidth: 120 }}>
+          <div className="pg-section">
+            <div className="pg-section__title">编辑模式</div>
+            <label className="pg-row">
+              <span className="pg-row__label">editMode</span>
+              <select className="pg-control" value={editMode} onChange={(e) => setEditMode(e.target.value as any)}>
                 <option value="unset">不传</option>
                 <option value="auto">auto</option>
                 <option value="readonly">readonly</option>
                 <option value="controlled">controlled</option>
               </select>
             </label>
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>editable</span>
-              <select value={editable} onChange={(e) => setEditable(e.target.value as any)} style={{ minWidth: 120 }}>
+            <label className="pg-row">
+              <span className="pg-row__label">editable</span>
+              <select className="pg-control" value={editable} onChange={(e) => setEditable(e.target.value as any)}>
                 <option value="unset">不传</option>
                 <option value="true">true</option>
                 <option value="false">false</option>
               </select>
             </label>
-            <div style={{ fontSize: 12, opacity: 0.72 }}>resolved: {resolvedEditModeText}</div>
+            <div className="pg-hint">resolved: {resolvedEditModeText}</div>
 
-            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
-              <span>变更出口</span>
-              <select value={changeOutput} onChange={(e) => setChangeOutput(e.target.value as any)} style={{ minWidth: 120 }}>
+            <label className="pg-row">
+              <span className="pg-row__label">变更出口</span>
+              <select className="pg-control" value={changeOutput} onChange={(e) => setChangeOutput(e.target.value as any)}>
                 <option value="nodes">onNodesChange</option>
                 <option value="patches">onPatches</option>
                 <option value="both">两者都要</option>
                 <option value="none">都不传</option>
               </select>
             </label>
-            {lastPatchesInfo ? (
-              <div style={{ fontSize: 12, opacity: 0.72 }}>
-                last patches: {lastPatchesInfo.count}（source: {String((lastPatchesInfo.meta as any).source ?? '-')}, phase:{' '}
-                {String((lastPatchesInfo.meta as any).phase ?? '-')})
-              </div>
-            ) : (
-              <div style={{ fontSize: 12, opacity: 0.5 }}>last patches: -</div>
-            )}
+            <div className={lastPatchesInfo ? 'pg-hint' : 'pg-hint pg-hint--muted'}>
+              last patches:{' '}
+              {lastPatchesInfo
+                ? `${lastPatchesInfo.count}（source: ${String((lastPatchesInfo.meta as any).source ?? '-')}, phase: ${String(
+                    (lastPatchesInfo.meta as any).phase ?? '-'
+                  )}）`
+                : '-'}
+            </div>
+          </div>
 
-            <div style={{ marginTop: 6, fontWeight: 700, opacity: 0.9 }}>Doc 导入/导出</div>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <div className="pg-section">
+            <div className="pg-section__title">Doc 导入/导出</div>
+            <div className="pg-actions">
               <button
+                className="pg-btn"
                 type="button"
                 onClick={() => {
                   const doc = apiRef.current?.exportDoc();
@@ -259,6 +259,7 @@ export default function App() {
                 导出到文本框
               </button>
               <button
+                className="pg-btn"
                 type="button"
                 onClick={() => {
                   if (!apiRef.current) return;
@@ -275,40 +276,45 @@ export default function App() {
               </button>
             </div>
             <textarea
+              className="pg-textarea"
               value={docText}
               onChange={(e) => setDocText(e.target.value)}
               rows={6}
               placeholder="导出的 doc JSON 会出现在这里；也可以粘贴 JSON 后点击导入。"
-              style={{ width: '100%', resize: 'vertical', fontSize: 11, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
             />
+          </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                // 更新外置数据：只会影响对应 dataRefId 的节点内容
-                const id = chartNodeIds[0];
-                if (!id) return;
-                const next = (chartStore.get(id) ?? 0) + 5;
-                chartStore.set(id, next);
-              }}
-            >
-              更新第一个图表节点数据
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                const base = makeDemoNodes(30);
-                const laid = computeLayout(base, 'random', { seed: Math.floor(Math.random() * 10000) });
-                setNodes(laid.map((n, i) => (i < 3 ? { ...n, label: `Chart ${i}`, color: '#60a5fa' } : n)));
-              }}
-            >
-              随机重排
-            </button>
+          <div className="pg-section">
+            <div className="pg-section__title">操作</div>
+            <div className="pg-actions">
+              <button
+                className="pg-btn"
+                type="button"
+                onClick={() => {
+                  const id = chartNodeIds[0];
+                  if (!id) return;
+                  const next = (chartStore.get(id) ?? 0) + 5;
+                  chartStore.set(id, next);
+                }}
+              >
+                更新第一个图表节点数据
+              </button>
+              <button
+                className="pg-btn"
+                type="button"
+                onClick={() => {
+                  const base = makeDemoNodes(30);
+                  const laid = computeLayout(base, 'random', { seed: Math.floor(Math.random() * 10000) });
+                  setNodes(laid.map((n, i) => (i < 3 ? { ...n, label: `Chart ${i}`, color: '#60a5fa' } : n)));
+                }}
+              >
+                随机重排
+              </button>
+            </div>
           </div>
         </aside>
 
-        <main style={{ flex: 1, minWidth: 0 }}>
+        <main className="pg-main">
           <InfiniteMap
             nodes={nodes}
             onNodesChange={onNodesChange}
