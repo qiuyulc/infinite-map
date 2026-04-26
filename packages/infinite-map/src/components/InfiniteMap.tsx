@@ -56,6 +56,20 @@ export type InfiniteMapProps = {
   plugins?: InfiniteMapPlugin[];
 
   /**
+   * 是否允许编辑（语法糖）
+   * - false：强制只读（阻止 applyPatches）
+   * - true：允许编辑（等价于 editMode='controlled'）
+   */
+  editable?: boolean;
+  /**
+   * 编辑模式（推荐：显式设置，避免“看起来编辑无效”的隐式依赖）
+   * - auto（默认，向后兼容）：允许插件产生 patches；若未提供 onNodesChange/onPatches，则仅在 DEV 下 warn
+   * - readonly：强制只读（丢弃所有 patches）
+   * - controlled：受控编辑，必须提供 onNodesChange 或 onPatches 作为变更出口（否则在 DEV 下抛错）
+   */
+  editMode?: 'auto' | 'readonly' | 'controlled';
+
+  /**
    * 变更出口（糖）：返回 nextNodes（内部由 patches 应用得到）
    * - 不传则不允许编辑类插件生效（建议）
    */
@@ -273,6 +287,8 @@ export type InfiniteMapApi = {
 export function InfiniteMap({
   nodes,
   plugins,
+  editable,
+  editMode,
   onNodesChange,
   onPatches,
   renderNode,
@@ -382,13 +398,20 @@ export function InfiniteMap({
     onPatchesRef.current = onPatches;
   }, [onPatches]);
 
+  const resolvedEditMode = useMemo<'auto' | 'readonly' | 'controlled'>(() => {
+    if (editMode) return editMode;
+    if (editable === false) return 'readonly';
+    if (editable === true) return 'controlled';
+    return 'auto';
+  }, [editMode, editable]);
+
   // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
   const ctxRef = useRef<MapContext | null>(null);
 
   // Scheme C：hover 命中（仅当没有 active gesture 时更新）
   const hoverRef = useRef<HitTestTarget>({ kind: 'blank' });
 
-  const { applyPatches } = usePatchEngine({
+  const { applyPatches: applyPatchesRaw } = usePatchEngine({
     bus,
     nodesRef,
     onNodesChangeRef,
@@ -399,6 +422,27 @@ export function InfiniteMap({
   });
 
   const runCommandWithHooks = useRunCommandWithHooks({ ctxRef, hooksRef, hookModeRef, onEditorErrorRef });
+
+  // 显式编辑模式：对 patches 生效做统一“闸门”
+  const applyPatches = useCallback(
+    (patches: NodePatch[], meta: ChangeMeta) => {
+      if (resolvedEditMode === 'readonly') return;
+      if (resolvedEditMode === 'controlled') {
+        if (!onNodesChangeRef.current && !onPatchesRef.current) {
+          const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
+          const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
+          if (isDev) {
+            throw new Error(
+              '[InfiniteMap] editMode="controlled" 需要提供 onNodesChange 或 onPatches 作为变更出口，否则编辑变更无法被宿主持久化。'
+            );
+          }
+          return;
+        }
+      }
+      applyPatchesRaw(patches, meta);
+    },
+    [applyPatchesRaw, resolvedEditMode]
+  );
 
   const { ctx } = useMapContext({
     ctxRef,
@@ -441,12 +485,13 @@ export function InfiniteMap({
   // 开发期提示：启用 plugins 但未提供受控出口时，编辑不会生效
   useEffect(() => {
     if (!plugins || plugins.length === 0) return;
+    if (resolvedEditMode !== 'auto') return;
     if (onNodesChange || onPatches) return;
     const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
     const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
     if (!isDev) return;
     console.warn('[InfiniteMap] plugins 已启用，但未提供 onNodesChange/onPatches：编辑产生的变更将不会被宿主持久化（看起来像“编辑无效”）。');
-  }, [plugins, onNodesChange, onPatches]);
+  }, [plugins, onNodesChange, onPatches, resolvedEditMode]);
 
   const { getNodeRect, getSelectionRect } = useSelectionGeometry({ nodesRef, ctx });
 
