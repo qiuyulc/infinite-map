@@ -15,6 +15,9 @@ importers:
         specifier: ^19.2.5
         version: 19.2.5(react@19.2.5)
     devDependencies:
+      '@rolldown/binding-linux-arm64-gnu':
+        specifier: 1.0.0-rc.16
+        version: 1.0.0-rc.16
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
@@ -27,6 +30,9 @@ importers:
       eslint:
         specifier: ^9.39.4
         version: 9.39.4
+      lightningcss-linux-arm64-gnu:
+        specifier: 1.32.0
+        version: 1.32.0
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(postcss@8.5.10)(typescript@5.9.3)
@@ -37,9 +43,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
     optionalDependencies:
-      '@rolldown/binding-linux-arm64-gnu':
-        specifier: 1.0.0-rc.16
-        version: 1.0.0-rc.16
       '@rolldown/binding-linux-x64-gnu':
         specifier: 1.0.0-rc.16
         version: 1.0.0-rc.16
@@ -829,7 +832,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rolldown/binding-linux-arm64-musl@1.0.0-rc.16':
     resolution: {integrity: sha512-3fPzdREH806oRLxpTWW1Gt4tQHs0TitZFOECB2xzCFLPKnSOy90gwA7P29cksYilFO6XVRY1kzga0cL2nRjKPg==}
@@ -3261,8 +3263,7 @@ snapshots:
   '@rolldown/binding-linux-arm-gnueabihf@1.0.0-rc.16':
     optional: true
 
-  '@rolldown/binding-linux-arm64-gnu@1.0.0-rc.16':
-    optional: true
+  '@rolldown/binding-linux-arm64-gnu@1.0.0-rc.16': {}
 
   '@rolldown/binding-linux-arm64-musl@1.0.0-rc.16':
     optional: true
@@ -4377,8 +4378,7 @@ snapshots:
   lightningcss-linux-arm-gnueabihf@1.32.0:
     optional: true
 
-  lightningcss-linux-arm64-gnu@1.32.0:
-    optional: true
+  lightningcss-linux-arm64-gnu@1.32.0: {}
 
   lightningcss-linux-arm64-musl@1.32.0:
     optional: true

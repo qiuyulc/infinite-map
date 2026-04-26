@@ -1,7 +1,11 @@
 import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   InfiniteMap,
+  applyPatchesToNodes,
   computeLayout,
+  type InfiniteMapApi,
+  type NodePatch,
+  type ChangeMeta,
   type NodeData,
 } from '@qiuyulc/infinite-map';
 import { composePlugins, InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
@@ -71,6 +75,14 @@ export default function App() {
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(true);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
 
+  // 编辑模式（用于验证 editable/editMode 与变更出口）
+  const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
+  const [editable, setEditable] = useState<'unset' | 'true' | 'false'>('unset');
+  const [changeOutput, setChangeOutput] = useState<'nodes' | 'patches' | 'both' | 'none'>('nodes');
+
+  const [docText, setDocText] = useState<string>('');
+  const [lastPatchesInfo, setLastPatchesInfo] = useState<{ count: number; meta: ChangeMeta } | null>(null);
+
   const [nodes, setNodes] = useState<NodeData[]>(() => {
     const base = makeDemoNodes(30);
     const laid = computeLayout(base, 'grid', { seed: 1 });
@@ -104,6 +116,32 @@ export default function App() {
       createHudContributionExamplePlugin(),
     ]);
   }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled, zoomDockEnabled]);
+
+  const apiRef = useRef<InfiniteMapApi | null>(null);
+
+  const resolvedEditModeText = useMemo(() => {
+    const em = editMode === 'unset' ? undefined : editMode;
+    const ed = editable === 'unset' ? undefined : editable === 'true';
+    if (em) return em;
+    if (ed === false) return 'readonly';
+    if (ed === true) return 'controlled';
+    return 'auto';
+  }, [editMode, editable]);
+
+  const onNodesChange =
+    changeOutput === 'nodes' || changeOutput === 'both'
+      ? (next: NodeData[]) => {
+          setNodes(next);
+        }
+      : undefined;
+
+  const onPatches =
+    changeOutput === 'patches' || changeOutput === 'both'
+      ? (patches: NodePatch[], meta: ChangeMeta) => {
+          setLastPatchesInfo({ count: patches.length, meta });
+          setNodes((prev) => applyPatchesToNodes(prev, patches));
+        }
+      : undefined;
 
   return (
     <InfiniteMapThemeProvider base={themeBase}>
@@ -170,6 +208,80 @@ export default function App() {
               <input type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
 
+            <div style={{ marginTop: 6, fontWeight: 700, opacity: 0.9 }}>编辑模式</div>
+            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+              <span>editMode</span>
+              <select value={editMode} onChange={(e) => setEditMode(e.target.value as any)} style={{ minWidth: 120 }}>
+                <option value="unset">不传</option>
+                <option value="auto">auto</option>
+                <option value="readonly">readonly</option>
+                <option value="controlled">controlled</option>
+              </select>
+            </label>
+            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+              <span>editable</span>
+              <select value={editable} onChange={(e) => setEditable(e.target.value as any)} style={{ minWidth: 120 }}>
+                <option value="unset">不传</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </label>
+            <div style={{ fontSize: 12, opacity: 0.72 }}>resolved: {resolvedEditModeText}</div>
+
+            <label style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+              <span>变更出口</span>
+              <select value={changeOutput} onChange={(e) => setChangeOutput(e.target.value as any)} style={{ minWidth: 120 }}>
+                <option value="nodes">onNodesChange</option>
+                <option value="patches">onPatches</option>
+                <option value="both">两者都要</option>
+                <option value="none">都不传</option>
+              </select>
+            </label>
+            {lastPatchesInfo ? (
+              <div style={{ fontSize: 12, opacity: 0.72 }}>
+                last patches: {lastPatchesInfo.count}（source: {String((lastPatchesInfo.meta as any).source ?? '-')}, phase:{' '}
+                {String((lastPatchesInfo.meta as any).phase ?? '-')})
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, opacity: 0.5 }}>last patches: -</div>
+            )}
+
+            <div style={{ marginTop: 6, fontWeight: 700, opacity: 0.9 }}>Doc 导入/导出</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const doc = apiRef.current?.exportDoc();
+                  if (!doc) return;
+                  setDocText(JSON.stringify(doc, null, 2));
+                }}
+              >
+                导出到文本框
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!apiRef.current) return;
+                  try {
+                    const parsed = JSON.parse(docText);
+                    apiRef.current.importDoc(parsed, { immediate: true });
+                  } catch (err) {
+                    console.error(err);
+                    alert('导入失败：JSON 解析错误（详情见 console）');
+                  }
+                }}
+              >
+                从文本框导入
+              </button>
+            </div>
+            <textarea
+              value={docText}
+              onChange={(e) => setDocText(e.target.value)}
+              rows={6}
+              placeholder="导出的 doc JSON 会出现在这里；也可以粘贴 JSON 后点击导入。"
+              style={{ width: '100%', resize: 'vertical', fontSize: 11, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
+            />
+
             <button
               type="button"
               onClick={() => {
@@ -199,12 +311,16 @@ export default function App() {
         <main style={{ flex: 1, minWidth: 0 }}>
           <InfiniteMap
             nodes={nodes}
-            onNodesChange={(next: NodeData[]) => setNodes(next)}
+            onNodesChange={onNodesChange}
+            onPatches={onPatches}
             plugins={plugins}
             themeBase={themeBase}
             backgroundMode={backgroundMode}
             gridSpacing="auto"
             dotSpacing="auto"
+            apiRef={apiRef}
+            editMode={editMode === 'unset' ? undefined : editMode}
+            editable={editable === 'unset' ? undefined : editable === 'true'}
             virtualization={{
               enabled: virtualizationEnabled,
               // 图表节点：即使被虚拟化裁掉，也不卸载（避免图表重建）
