@@ -24,13 +24,37 @@
 .pg-shell {
   height: 100svh;
   display: flex;
+  /* 重要：playground 面板要以“面板内的主题选择”为准，而不是跟随系统 prefers-color-scheme。
+   * 因此在 .pg-shell 上做一层 CSS 变量覆盖（仅作用于 playground 容器内部）。 */
   background: var(--bg);
 }
 
 .pg-shell[data-theme='dark'] {
+  /* 覆盖一套“暗色”变量（避免系统浅色/深色与面板选择不一致导致对比度错误） */
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #16171d;
+  --border: #2e303a;
+  --code-bg: #1f2028;
+  --accent: #c084fc;
+  --accent-bg: rgba(192, 132, 252, 0.15);
+  --accent-border: rgba(192, 132, 252, 0.5);
+  --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
   color: rgba(255, 255, 255, 0.92);
 }
 .pg-shell[data-theme='light'] {
+  /* 覆盖一套“亮色”变量 */
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #ffffff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
   color: rgba(15, 23, 42, 0.92);
 }
 
