@@ -7,6 +7,22 @@
 - 或：`ctx.runCommand(id, { source })` / `ctx.bus.emit('command:run', { id, source })`
 
 > 快捷键默认由 `createShortcutsPlugin()` 提供（可通过 `commandShortcuts` 覆盖/禁用）。
+>
+> 说明：`Mod` 表示 `Ctrl`（Windows/Linux）或 `⌘`（macOS）。
+
+---
+
+## 交互快捷键（非命令）
+
+这类快捷键不是 “command”，但属于默认编辑器交互的一部分：
+
+| 操作 | 快捷键 | 说明 |
+|---|---|---|
+| 画布平移模式 | `Space`（按住） | 按住空格时拖拽=平移画布（selection/drag 等不会抢输入） |
+| 多选 | `Shift` | 点击切换选中；框选可配 `requireShift` |
+| 3D 旋转 | `Alt/Option + 拖拽` | 单选命中节点后，拖拽改变 `rotationX/rotationY` |
+| 键盘微调（nudge） | `↑ ↓ ← →` | 对选中节点做像素级移动（默认 1px） |
+| 大步微调 | `Shift + ↑ ↓ ← →` | 更大步长移动（默认 10px） |
 
 ---
 
@@ -27,7 +43,7 @@
 | `edit.cut` | 剪切 | `Mod+X` |
 | `edit.paste` | 粘贴（保持 group 结构：remap id + parentId） | `Mod+V` |
 | `edit.duplicate` | 创建副本（保持 group 结构） | `Mod+D` |
-| `edit.delete` | 删除（会展开 group 后代） | `Delete / Backspace` |
+| `edit.delete` | 删除（会展开 group 后代） | `Delete` / `Backspace` |
 | `edit.group` | 编组 | `Mod+G` |
 | `edit.ungroup` | 解组 | `Shift+Mod+G` |
 | `edit.lock` | 锁定（locked 仍可被选中） | — |
@@ -85,4 +101,3 @@
 | Command ID | 功能 |
 |---|---|
 | `file.exportPng` | 触发 `export:png` 事件（骨架，宿主自行实现截图） |
-

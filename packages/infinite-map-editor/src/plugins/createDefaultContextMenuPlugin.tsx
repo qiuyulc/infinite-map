@@ -11,6 +11,11 @@ export type ContextMenuItem =
       id: string;
       label: string;
       icon?: ReactNode;
+      /**
+       * 快捷键提示（仅用于 UI 展示）
+       * - 例：Mod+C、Shift+Mod+G、Delete
+       */
+      shortcut?: string;
       enabled?: (ctx: MapContext, s: ContextMenuPayload) => boolean;
     }
   | { type: 'divider' };
@@ -148,10 +153,10 @@ function defaultItems(): ContextMenuItem[] {
     ),
   } as const;
   return [
-    { type: 'command', id: 'edit.copy', label: '复制', icon: Icons.copy },
-    { type: 'command', id: 'edit.cut', label: '剪切', icon: Icons.cut },
-    { type: 'command', id: 'edit.paste', label: '粘贴', icon: Icons.paste },
-    { type: 'command', id: 'edit.duplicate', label: '创建副本', icon: Icons.duplicate },
+    { type: 'command', id: 'edit.copy', label: '复制', icon: Icons.copy, shortcut: 'Mod+C' },
+    { type: 'command', id: 'edit.cut', label: '剪切', icon: Icons.cut, shortcut: 'Mod+X' },
+    { type: 'command', id: 'edit.paste', label: '粘贴', icon: Icons.paste, shortcut: 'Mod+V' },
+    { type: 'command', id: 'edit.duplicate', label: '创建副本', icon: Icons.duplicate, shortcut: 'Mod+D' },
     { type: 'divider' },
     { type: 'command', id: 'z.bringToFront', label: '置于顶层', icon: Icons.front, enabled: (_c, s) => s.selectionIds.length > 0 },
     { type: 'command', id: 'z.bringForward', label: '上移一层', icon: Icons.upOne, enabled: (_c, s) => s.selectionIds.length > 0 },
@@ -168,6 +173,7 @@ function defaultItems(): ContextMenuItem[] {
       id: 'edit.delete',
       label: '删除',
       icon: Icons.trash,
+      shortcut: 'Delete / Backspace',
       enabled: (_ctx, s) => s.selectionIds.length > 0,
     },
   ];
@@ -363,6 +369,19 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
               {it.icon ?? null}
             </span>
             <span style={{ flex: 1, minWidth: 0 }}>{it.label}</span>
+            {it.shortcut ? (
+              <span
+                style={{
+                  marginLeft: 12,
+                  fontSize: 12,
+                  opacity: 0.7,
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {it.shortcut}
+              </span>
+            ) : null}
           </button>
         );
       })}
