@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import './toolbar.css';
@@ -216,7 +216,7 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
   return normalized;
 }
 
-function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
+const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
   const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
   const extraItems = ctx.store.get<ToolbarItem[]>(STORE_KEYS.toolbarItems) ?? [];
@@ -311,7 +311,7 @@ function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOpt
       })}
     </div>
   );
-}
+});
 
 /**
  * 默认工具栏（可选加载）

@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import type { ContextMenuPayload } from './createContextMenuPlugin';
@@ -219,7 +219,7 @@ function mergeMenuItems(base: ContextMenuItem[], extra: ContextMenuItem[]) {
   return normalized;
 }
 
-function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuOptions }) {
+const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuOptions }) {
   const editEnabled = ctx.store.get<boolean>(STORE_KEYS.editEnabled);
   const payload = ctx.store.get<ContextMenuPayload>(STORE_KEYS.contextMenuState) ?? null;
   const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
@@ -390,7 +390,7 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
       })}
     </div>
   );
-}
+});
 
 /**
  * 默认右键菜单（可选加载）
