@@ -23,6 +23,7 @@ export default defineConfig({
             { text: '保存/加载（Doc & Resources）', link: '/library/persistence' },
             { text: '多人协作接入（业务侧）', link: '/library/collaboration' },
             { text: 'Demo 与本地测试面板', link: '/library/demos' },
+            { text: '项目目录结构与职责', link: '/library/project-structure' },
             { text: '命令速查表', link: '/library/commands' },
             { text: '常见问题', link: '/library/faq' },
           ],
