@@ -28,10 +28,7 @@ export type PluginInputDispatchOptions = {
   containerRef: { current: HTMLElement | null };
   store: { get: <T>(key: string) => T | undefined; set: (key: string, v: any) => void };
   screenToWorld: (p: { x: number; y: number }) => { x: number; y: number };
-  commitCamera: (
-    next: { x: number; y: number; zoom: number },
-    opts?: boolean | { immediate?: boolean; throttleMs?: number }
-  ) => void;
+  commitCamera: (next: { x: number; y: number; zoom: number }, immediate: boolean) => void;
   mouseRef: React.MutableRefObject<{ x: number; y: number } | null>;
   hoverRef: React.MutableRefObject<HitTestTarget>;
   onEditorErrorRef: React.MutableRefObject<((err: unknown, info: EditorErrorInfo) => void) | undefined>;
@@ -172,11 +169,9 @@ export function usePluginInputDispatch({
           const cam = ctx0.getCamera();
           const dx = e0.screen.x - st0.startScreen.x;
           const dy = e0.screen.y - st0.startScreen.y;
-          // pan（拖地图）会非常高频。这里降低 React state 的更新频率（仅用于触发可见节点更新等），
-          // 但 cameraRef 会在每次调用里同步更新，用于命中测试/坐标换算/imperative transform。
-          commitCamera({ x: st0.startCam.x - dx / cam.zoom, y: st0.startCam.y - dy / cam.zoom, zoom: cam.zoom }, { throttleMs: 33 });
+          commitCamera({ x: st0.startCam.x - dx / cam.zoom, y: st0.startCam.y - dy / cam.zoom, zoom: cam.zoom }, false);
         },
-        onEnd: (e0: MapPointerEvent, ctx0: MapContext) => {
+        onEnd: (e0: MapPointerEvent) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
           if (pan.panActive) {
@@ -184,10 +179,8 @@ export function usePluginInputDispatch({
             pan.panKeepAliveIdSetRef.current.clear();
             pan.panKeepAliveLRURef.current.clear();
           }
-          // flush：手势结束时同步一次，确保 React state 与 ref 一致
-          commitCamera(ctx0.getCamera(), { immediate: true });
         },
-        onCancel: (e0: MapPointerEvent, ctx0: MapContext) => {
+        onCancel: (e0: MapPointerEvent) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
           if (pan.panActive) {
@@ -195,7 +188,6 @@ export function usePluginInputDispatch({
             pan.panKeepAliveIdSetRef.current.clear();
             pan.panKeepAliveLRURef.current.clear();
           }
-          commitCamera(ctx0.getCamera(), { immediate: true });
         },
       } satisfies Gesture);
 

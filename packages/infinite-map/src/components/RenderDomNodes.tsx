@@ -4,9 +4,9 @@ import { VISUAL_CONST } from '../editor/keys';
 import { DefaultNode } from './DefaultNode';
 
 export function RenderDomNodes({
+  camera,
   cameraRef,
   visibleNodes,
-  worldRef,
   zIndex = 1,
   onNodeDrag,
   renderNode,
@@ -14,9 +14,9 @@ export function RenderDomNodes({
   getDefaultNodeProps,
   defaultNodeShowMeta,
 }: {
+  camera: Camera;
   cameraRef: React.MutableRefObject<Camera>;
   visibleNodes: NodeData[];
-  worldRef?: React.RefObject<HTMLDivElement | null>;
   zIndex?: number;
   onNodeDrag?: (id: string, pos: { x: number; y: number }, phase: 'move' | 'end') => void;
   renderNode?: (node: NodeData) => ReactNode;
@@ -122,21 +122,20 @@ export function RenderDomNodes({
   }, [visibleNodes, renderNode, renderNodeContent, getDefaultNodeProps, defaultNodeShowMeta, onNodeDrag, onNodePointerDown, onNodePointerMove, endDrag]);
 
   const worldStyle: CSSProperties = useMemo(() => {
+    // translate(-camera.x * zoom, -camera.y * zoom) scale(zoom)
     return {
       position: 'absolute',
       left: 0,
       top: 0,
       transformOrigin: '0 0',
+      transform: `translate3d(${-camera.x * camera.zoom}px, ${-camera.y * camera.zoom}px, 0) scale(${camera.zoom})`,
       willChange: 'transform',
       width: 0,
       height: 0,
       zIndex,
     };
-  }, [zIndex]);
+  }, [camera.x, camera.y, camera.zoom, zIndex]);
 
-  return (
-    <div ref={worldRef as any} style={worldStyle}>
-      {domNodeElements}
-    </div>
-  );
+  return <div style={worldStyle}>{domNodeElements}</div>;
 }
+
