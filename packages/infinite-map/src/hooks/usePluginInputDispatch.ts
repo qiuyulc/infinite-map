@@ -80,6 +80,9 @@ export function usePluginInputDispatch({
   debugRef,
   pan,
 }: PluginInputDispatchOptions) {
+  // 缓存容器 rect（避免在高频 pointermove 中反复 getBoundingClientRect 引发布局抖动）
+  const containerRectRef = useRef<{ left: number; top: number } | null>(null);
+
   // Scheme C：指针手势状态（全局互斥）
   const gestureStateRef = useRef<{
     active: null | { pointerId: number; gesture: Gesture; hit: HitTestTarget };
@@ -95,9 +98,15 @@ export function usePluginInputDispatch({
       if (!plugins || plugins.length === 0) return { handled: false };
       const el = containerRef.current;
       if (!el) return { handled: false };
-      const r = el.getBoundingClientRect();
-      const sx = e.clientX - r.left;
-      const sy = e.clientY - r.top;
+      // 仅在 pointerdown（或首次）采样 rect，其余 move/up/cancel 复用
+      // DevTools 打开时，频繁 getBoundingClientRect 可能导致 layout thrash，从而出现拖动卡顿。
+      if (!containerRectRef.current || type === 'down') {
+        const r0 = el.getBoundingClientRect();
+        containerRectRef.current = { left: r0.left, top: r0.top };
+      }
+      const r = containerRectRef.current;
+      const sx = e.clientX - (r?.left ?? 0);
+      const sy = e.clientY - (r?.top ?? 0);
       // 无论是否被手势接管，都更新鼠标位置（highlight layer 会用）
       mouseRef.current = { x: sx, y: sy };
       const m: MapPointerEvent = {
