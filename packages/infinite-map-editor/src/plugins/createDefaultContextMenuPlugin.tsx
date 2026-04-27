@@ -237,10 +237,11 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     }
   }, [ctx, editEnabled]);
 
-  if (editEnabled === false) return null;
-
   // 当 menu 打开/selection 变化时刷新 enabled 状态
   useEffect(() => {
+    // 注意：这里不能因为 editEnabled=false 而提前 return 组件，否则会触发
+    // “Rendered fewer hooks than expected”。
+    // hooks 必须在每次渲染中保持调用顺序一致，因此只在 effect 内部做条件判断即可。
     const unsubs: Array<() => void> = [];
     unsubs.push(ctx.store.subscribe(STORE_KEYS.contextMenuState, () => bump((v) => v + 1)));
     // items registry 变化时刷新（便于插件在运行时动态注入/热更新）
@@ -292,7 +293,9 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
     setPos({ left, top });
   }, [payload?.screen.x, payload?.screen.y, items.length]);
 
-  if (!payload) return null;
+  // 只读/无变更出口：不渲染菜单 UI
+  // 注意：该判断必须放在所有 hooks 之后（否则 hooks 数量在不同渲染间不一致）
+  if (editEnabled === false || !payload) return null;
 
   const panel: CSSProperties = {
     position: 'absolute',
