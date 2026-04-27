@@ -8,6 +8,11 @@ type Params = {
   pulseRef: MutableRefObject<{ value: number; lastTs: number }>;
   cameraRef: MutableRefObject<Camera>;
   commitCamera: (next: Camera, immediate?: boolean) => void;
+  /**
+   * 是否允许平移（trackpad 两指平移 / 触控板滚动的 pan 分支）
+   * - false：不处理“pan wheel”，并允许浏览器默认滚动（若存在）
+   */
+  panEnabled?: boolean;
   minZoom: number;
   maxZoom: number;
   zoomSpeed: number;
@@ -32,6 +37,7 @@ export function useWheelControls({
   pulseRef,
   cameraRef,
   commitCamera,
+  panEnabled = true,
   minZoom,
   maxZoom,
   zoomSpeed,
@@ -43,13 +49,15 @@ export function useWheelControls({
     if (!el) return;
 
     const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
       const r = el.getBoundingClientRect();
       const sx = e.clientX - r.left;
       const sy = e.clientY - r.top;
 
       const intercept = onWheelIntercept?.(e, { sx, sy });
-      if (intercept === 'stop') return;
+      if (intercept === 'stop') {
+        e.preventDefault();
+        return;
+      }
 
       const dx = e.deltaX;
       const dy = e.deltaY;
@@ -62,6 +70,7 @@ export function useWheelControls({
 
       const cam = cameraRef.current;
       if (shouldZoom) {
+        e.preventDefault();
         const pinchFactor = isPinch ? pinchZoomFactor : 1;
         const limitedDy = clamp(dy, -240, 240);
 
@@ -74,6 +83,9 @@ export function useWheelControls({
         const nextY = wy - sy / nextZoom;
         commitCamera({ x: nextX, y: nextY, zoom: nextZoom }, true);
       } else {
+        // 视图拖动锁：不处理 trackpad 两指平移，并允许浏览器默认滚动
+        if (!panEnabled) return;
+        e.preventDefault();
         const nextX = cam.x + dx / cam.zoom;
         const nextY = cam.y + dy / cam.zoom;
         // 关键：触摸板两指平移的 wheel 频率可能远高于屏幕刷新率。
@@ -106,6 +118,7 @@ export function useWheelControls({
     containerRef,
     cameraRef,
     commitCamera,
+    panEnabled,
     maxZoom,
     minZoom,
     mouseRef,

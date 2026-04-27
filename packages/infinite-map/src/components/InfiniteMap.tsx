@@ -558,6 +558,7 @@ export function InfiniteMap({
     commitCamera,
     mouseRef,
     pulseRef,
+    panEnabled: panEnabled !== false,
     minZoom,
     maxZoom,
     zoomSpeed,

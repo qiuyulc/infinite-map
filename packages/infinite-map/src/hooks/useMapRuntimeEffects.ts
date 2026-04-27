@@ -18,6 +18,7 @@ export function useMapRuntimeEffects({
   commitCamera,
   mouseRef,
   pulseRef,
+  panEnabled,
   minZoom,
   maxZoom,
   zoomSpeed,
@@ -45,6 +46,7 @@ export function useMapRuntimeEffects({
   commitCamera: (next: Camera, immediate?: boolean) => void;
   mouseRef: React.MutableRefObject<{ x: number; y: number } | null>;
   pulseRef: React.MutableRefObject<{ value: number; lastTs: number }>;
+  panEnabled: boolean;
   minZoom: number;
   maxZoom: number;
   zoomSpeed: number;
@@ -67,6 +69,7 @@ export function useMapRuntimeEffects({
     pulseRef,
     cameraRef,
     commitCamera,
+    panEnabled,
     minZoom,
     maxZoom,
     zoomSpeed,

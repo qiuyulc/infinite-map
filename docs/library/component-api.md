@@ -86,6 +86,7 @@ panEnabled?: boolean
 ```
 
 - `false`：禁止“拖动平移画布”（包括空白拖拽平移、Space 平移模式）
+- 同时会禁用触控板两指平移（wheel pan）
 - 默认 `true`
 
 ### 背景与缩放配置
