@@ -82,6 +82,11 @@ export function useVirtualizedVisibleNodes({
     panKeepAliveAdd(visibleNodes.map((n) => n.id));
   }, [panActive, panKeepAliveAdd, panKeepAliveEnabled, visibleNodes]);
 
+  // 对外暴露 panActive（HUD 可用于降低重绘频率）
+  useEffect(() => {
+    store.set(STORE_KEYS.viewPanActive, panActive);
+  }, [panActive, store]);
+
   useEffect(() => {
     visibleNodesRef.current = visibleNodes;
   }, [visibleNodes, visibleNodesRef]);

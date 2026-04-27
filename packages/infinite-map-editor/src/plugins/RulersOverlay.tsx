@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { clamp, computeAdaptiveSteps, type MapContext } from '@qiuyulc/infinite-map';
+import { clamp, computeAdaptiveSteps, STORE_KEYS, type MapContext } from '@qiuyulc/infinite-map';
 
 type Tick = { posPx: number; major: boolean; label?: string };
 
@@ -55,7 +55,27 @@ export type RulersOverlayProps = {
   thickness?: number; // px
 };
 
-export function RulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
+export const RulersOverlay = memo(function RulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
+  // 性能：在 DevTools 打开时，camera 更新会导致父组件高频 re-render，
+  // SVG 标尺每次重算 ticks + 重建大量 DOM 会很卡。
+  // 这里用 “事件驱动 + 节流” 来刷新：父组件重渲染时尽量不跟着更新，改为低频主动刷新。
+  const [, bump] = useState(0);
+  const lastRef = useRef(0);
+  useEffect(() => {
+    const now = () => ((globalThis as any).performance?.now ? (globalThis as any).performance.now() : Date.now());
+    const onCam = () => {
+      const t = now();
+      // 平移中：降低刷新频率（约 20fps）
+      const panActive = ctx.store.get<boolean>(STORE_KEYS.viewPanActive) === true;
+      const minGap = panActive ? 50 : 16; // ms
+      if (t - lastRef.current < minGap) return;
+      lastRef.current = t;
+      bump((v) => v + 1);
+    };
+    const un = ctx.bus.on('camera:changed', onCam);
+    return () => un();
+  }, [ctx]);
+
   const cam = ctx.getCamera();
   const vp = ctx.getViewport();
   const z = cam.zoom || 1;
@@ -210,4 +230,4 @@ export function RulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
       </svg>
     </>
   );
-}
+});

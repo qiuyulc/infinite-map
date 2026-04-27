@@ -10,6 +10,8 @@ export const STORE_KEYS = {
   // view interaction
   // - false：禁止画布平移（拖动平移 / Space 平移模式）
   viewPanEnabled: 'view:panEnabled',
+  // 当前是否处于“视图平移手势”中（用于 HUD 性能优化等）
+  viewPanActive: 'view:panActive',
 
   // selection / marquee / input
   selectionIds: 'selection:ids',

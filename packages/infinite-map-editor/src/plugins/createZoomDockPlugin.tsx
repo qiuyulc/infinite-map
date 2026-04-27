@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useEffect, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Slider } from '../components/Slider';
 import { STORE_KEYS, type Camera, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import { getViewLimits } from './createViewCommandsPlugin';
@@ -27,16 +27,27 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
 
-function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginOptions }) {
+const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginOptions }) {
   const enabled = opts.enabled ?? true;
   const sliderWidth = opts.sliderWidth ?? 140;
   const gapPx = opts.gapPx ?? 10;
   const heightPx = opts.heightPx ?? 36;
 
   const [, bump] = useState(0);
+  const lastRef = useRef(0);
   useEffect(() => {
     const unsubs: Array<() => void> = [];
-    unsubs.push(ctx.bus.on('camera:changed', () => bump((v) => v + 1)));
+    const now = () => ((globalThis as any).performance?.now ? (globalThis as any).performance.now() : Date.now());
+    unsubs.push(
+      ctx.bus.on('camera:changed', () => {
+        const t = now();
+        const panActive = ctx.store.get<boolean>(STORE_KEYS.viewPanActive) === true;
+        const minGap = panActive ? 80 : 33; // 平移时更低频更新（仅用于 HUD 显示）
+        if (t - lastRef.current < minGap) return;
+        lastRef.current = t;
+        bump((v) => v + 1);
+      })
+    );
     unsubs.push(ctx.store.subscribe(STORE_KEYS.viewConfig, () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
@@ -124,7 +135,7 @@ function ZoomDockOverlay({ ctx, opts }: { ctx: MapContext; opts: ZoomDockPluginO
       <div style={label}>{Math.round((cam.zoom || 1) * 100)}%</div>
     </div>
   );
-}
+});
 
 export function createZoomDockPlugin(opts: ZoomDockPluginOptions = {}): InfiniteMapPlugin {
   return {
