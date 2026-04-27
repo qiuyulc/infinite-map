@@ -15,7 +15,7 @@ import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
 import { RenderDomNodes } from './RenderDomNodes';
-import type { InfiniteMapDocV2 } from '../editor/document';
+import type { InfiniteMapDoc } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS } from '../editor/keys';
 import type { InfiniteMapTheme } from '../theme';
@@ -287,7 +287,7 @@ export type InfiniteMapApi = {
    * - exportDoc：返回最新版本结构
    * - importDoc：解析/迁移后，用 onNodesChange + setCamera 应用到宿主
    */
-  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDocV2;
+  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDoc;
   importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 

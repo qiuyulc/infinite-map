@@ -65,9 +65,6 @@ export {
   exportDoc,
   importDoc,
   type InfiniteMapDoc,
-  type InfiniteMapDocV2,
-  type InfiniteMapDocV1,
-  type InfiniteMapDocLegacyV0,
 } from './editor/document';
 
 // store keys/runtime utils（editor 包需要）
