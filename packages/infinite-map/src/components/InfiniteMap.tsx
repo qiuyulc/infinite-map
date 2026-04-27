@@ -353,7 +353,22 @@ export function InfiniteMap({
 
   // overlay 刷新（用于插件请求重绘 overlay）
   const [, bumpOverlay] = useState(0);
-  const requestRender = useCallback(() => bumpOverlay((v) => v + 1), []);
+  // 重要：高频交互（drag/resize/marquee/hover）会频繁调用 requestRender。
+  // 在 DevTools 打开/低帧率环境下，如果每次都 setState，会导致重复渲染与卡顿。
+  // 这里用 rAF 合并：每帧最多触发一次 overlay re-render。
+  const renderRafRef = useRef<number | null>(null);
+  const requestRender = useCallback(() => {
+    if (renderRafRef.current != null) return;
+    renderRafRef.current = requestAnimationFrame(() => {
+      renderRafRef.current = null;
+      bumpOverlay((v) => v + 1);
+    });
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (renderRafRef.current != null) cancelAnimationFrame(renderRafRef.current);
+    };
+  }, []);
 
   // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
   const themeVars = useInjectedThemeVars(theme);
