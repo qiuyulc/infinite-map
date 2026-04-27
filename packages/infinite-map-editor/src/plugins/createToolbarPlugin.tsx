@@ -324,6 +324,9 @@ export function createToolbarPlugin(opts: ToolbarPluginOptions = {}): InfiniteMa
     requires: ['commands'],
     slot: 'hud',
     overlayPointerEvents: 'auto',
-    overlay: ({ ctx }) => <ToolbarOverlay ctx={ctx} opts={opts} />,
+    overlay: ({ ctx }) => {
+      if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
+      return <ToolbarOverlay ctx={ctx} opts={opts} />;
+    },
   };
 }

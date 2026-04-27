@@ -79,6 +79,7 @@ export function createMarqueeSelectPlugin(opts: MarqueeSelectPluginOptions = {})
     // 尽量最后启动（避免与 drag/resize/rotate 抢占）
     priority: -1000,
     canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+      if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return false;
       if (e.button !== 0) return false;
       if (ctx.store.get<boolean>(SPACE_KEY)) return false;
       if (requireShift && !e.modifiers.shift) return false;

@@ -10,6 +10,7 @@ type MarqueeState = {
 };
 
 export function MarqueeOverlay({ ctx }: { ctx: MapContext }) {
+  if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
   const st = ctx.store.get<MarqueeState>(STORE_KEY);
   if (!st?.active) return null;
 

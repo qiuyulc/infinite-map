@@ -18,6 +18,7 @@ export function createContextMenuPlugin(opts: ContextMenuPluginOptions = {}): In
     requires: ['selection'],
     input: {
       onContextMenu: (e: MapContextMenuEvent, ctx: MapContext, hit: HitTestTarget) => {
+        if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return { handled: false };
         const sel = ctx.getService<{ getIds: () => string[]; setIds?: (ids: string[]) => void }>('selection');
         const prevSelection = sel?.getIds?.() ?? [];
 

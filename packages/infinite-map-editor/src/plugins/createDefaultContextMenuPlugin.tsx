@@ -214,6 +214,7 @@ function mergeMenuItems(base: ContextMenuItem[], extra: ContextMenuItem[]) {
 }
 
 function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuOptions }) {
+  const editEnabled = ctx.store.get<boolean>(STORE_KEYS.editEnabled);
   const payload = ctx.store.get<ContextMenuPayload>(STORE_KEYS.contextMenuState) ?? null;
   const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
   const extraItems = ctx.store.get<ContextMenuItem[]>(STORE_KEYS.contextMenuItems) ?? [];
@@ -222,6 +223,15 @@ function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuO
   const [, bump] = useState(0);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  // 只读/无变更出口：禁用右键菜单（并确保关闭已打开的菜单）
+  useEffect(() => {
+    if (editEnabled === false) {
+      if (ctx.store.get(STORE_KEYS.contextMenuState) != null) ctx.store.set(STORE_KEYS.contextMenuState, null);
+    }
+  }, [ctx, editEnabled]);
+
+  if (editEnabled === false) return null;
 
   // 当 menu 打开/selection 变化时刷新 enabled 状态
   useEffect(() => {
