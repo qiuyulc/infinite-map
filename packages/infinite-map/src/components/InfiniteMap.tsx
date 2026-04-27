@@ -147,8 +147,9 @@ export type InfiniteMapProps = {
    * 背景样式
    * - dots：点阵（默认）
    * - grid：网格线
+   * - none：无背景（用于性能排查/纯内容渲染）
    */
-  backgroundMode?: 'dots' | 'grid';
+  backgroundMode?: 'dots' | 'grid' | 'none';
   /** 网格间距（世界坐标单位），默认跟随 dotSpacing */
   gridSpacing?: number | 'auto';
   /** 网格线基础透明度 */
@@ -697,9 +698,9 @@ export function InfiniteMap({
           gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
           gridAlpha={gridAlpha}
         />
-      ) : (
+      ) : backgroundMode === 'dots' ? (
         <BackgroundDots camera={camera} dotSpacing={dotSpacing} dotRadiusPx={dotRadiusPx} dotAlpha={dotAlpha} />
-      )}
+      ) : null}
 
       {/* 高亮点层（Canvas，只画鼠标附近） */}
       <canvas

@@ -67,7 +67,7 @@ function ChartLikeNode({ store, nodeId }: { store: ResourceStore<number>; nodeId
 
 export default function App() {
   const [themeBase, setThemeBase] = useState<'light' | 'dark'>('light');
-  const [backgroundMode, setBackgroundMode] = useState<'dots' | 'grid'>('grid');
+  const [backgroundMode, setBackgroundMode] = useState<'none' | 'dots' | 'grid'>('grid');
   const [panEnabled, setPanEnabled] = useState(true);
   const [rulersEnabled, setRulersEnabled] = useState(true);
   const [minimapEnabled, setMinimapEnabled] = useState(true);
@@ -167,6 +167,7 @@ export default function App() {
             <label className="pg-row">
               <span className="pg-row__label">背景</span>
               <select className="pg-control" value={backgroundMode} onChange={(e) => setBackgroundMode(e.target.value as any)}>
+                <option value="none">无</option>
                 <option value="grid">网格</option>
                 <option value="dots">点阵</option>
               </select>
