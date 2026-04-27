@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
-import { exportDoc, importDoc } from '../editor/document';
+import { parseDoc, serializeDoc } from '../editor/document';
 import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext } from '../editor/types';
 import type { InfiniteMapApi } from '../components/InfiniteMap';
 import { STORE_KEYS } from '../editor/keys';
@@ -57,13 +57,13 @@ export function useAttachApiRef({
       setCamera: (next, opts) => commitCamera(next, Boolean(opts?.immediate)),
       subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
       getNodes: () => ctx.getNodes(),
-      exportDoc: (meta) => exportDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
-      importDoc: (doc, opts) => {
-        const next = importDoc(doc);
+      serializeDoc: (meta) => serializeDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
+      parseDoc: (doc, opts) => {
+        const next = parseDoc(doc);
         // 相机先应用（immediate 可用于“无动画跳转”）
         commitCamera(next.camera, Boolean(opts?.immediate));
         if (!onNodesChange) {
-          throw new Error('[InfiniteMapApi.importDoc] onNodesChange is required to apply imported nodes');
+          throw new Error('[InfiniteMapApi.parseDoc] onNodesChange is required to apply imported nodes');
         }
         onNodesChange(next.nodes, { source: 'plugin', plugin: 'api', reason: 'import' });
       },
@@ -73,4 +73,3 @@ export function useAttachApiRef({
     };
   }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect, onNodesChange]);
 }
-

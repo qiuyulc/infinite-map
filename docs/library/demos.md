@@ -15,7 +15,7 @@ pnpm -C playground dev
 - 虚拟化与 keepAlive（重组件节点）
 - `editMode` / `editable` 的行为（readonly/controlled/auto）
 - 变更出口（onNodesChange / onPatches / both / none）
-- Doc 导入/导出（通过 apiRef.exportDoc/importDoc）
+- Doc 解析/序列化（通过 apiRef.serializeDoc/parseDoc）
 
 ## 建议的手动测试用例
 
@@ -23,4 +23,3 @@ pnpm -C playground dev
 2. `editMode="auto" + 变更出口=none`：表现为预览（无 selection/框选/右键/工具栏/对齐线）
 3. `editMode="readonly"`：同上，但 pan/zoom 仍可用
 4. 导出 doc → 清空 nodes → 导入 doc，应恢复节点与相机
-

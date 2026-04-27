@@ -22,8 +22,8 @@
 ## 2）导出/导入（推荐：apiRef）
 
 ```ts
-const doc = apiRef.current?.exportDoc({ name: 'my-file' })
-apiRef.current?.importDoc(doc, { immediate: true })
+const doc = apiRef.current?.serializeDoc({ name: 'my-file' })
+apiRef.current?.parseDoc(doc, { immediate: true })
 ```
 
 `immediate` 控制相机更新是否“立即生效”（不合并到 rAF）。
@@ -34,15 +34,15 @@ apiRef.current?.importDoc(doc, { immediate: true })
 - **小字段**放 `node.data`
 - **大对象/可复用/需要懒加载**放 `resources`，node 里只放引用（如 `resourceId`）
 
-> 重要：`apiRef.exportDoc()` 默认只导出 `nodes/camera/meta`，不会自动携带你业务侧维护的 resources。
+> 重要：`apiRef.serializeDoc()` 默认只导出 `nodes/camera/meta`，不会自动携带你业务侧维护的 resources。
 
 业务侧常见做法是“拼装 doc”：
 
 ```ts
-import { exportDoc } from '@qiuyulc/infinite-map'
+import { serializeDoc } from '@qiuyulc/infinite-map'
 
 const resources = getResourcesSnapshot() // 你的 store/DB/内存快照
-const doc = exportDoc({
+const doc = serializeDoc({
   nodes,
   camera: apiRef.current!.getCamera(),
   resources,
@@ -56,5 +56,5 @@ const doc = exportDoc({
 
 ## 4）迁移与兼容
 
-`importDoc(any)` 会校验 doc 结构，并且 **仅接受当前 schemaVersion=1**（不做历史版本兼容）。
+`parseDoc(any)` 会校验 doc 结构，并且 **仅接受当前 schemaVersion=1**（不做历史版本兼容）。
 如果你需要自定义 schema 演进，建议业务侧把不稳定字段放入 `meta/resources`，避免频繁破坏 `nodes` 结构。

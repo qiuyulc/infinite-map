@@ -125,11 +125,11 @@ api.subscribe('camera:change', (camera) => {})
 ### doc（保存/加载）
 
 ```ts
-api.exportDoc(meta?)
-api.importDoc(doc, { immediate?: boolean })
+api.serializeDoc(meta?)
+api.parseDoc(doc, { immediate?: boolean })
 ```
 
-> 注意：`api.exportDoc()` 不会自动携带业务侧的 resources；resources 应由宿主自行拼装。见：[保存/加载](/library/persistence)。
+> 注意：`api.serializeDoc()` 不会自动携带业务侧的 resources；resources 应由宿主自行拼装。见：[保存/加载](/library/persistence)。
 
 ### commands
 

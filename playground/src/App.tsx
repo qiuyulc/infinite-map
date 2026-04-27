@@ -257,7 +257,7 @@ export default function App() {
                 className="pg-btn"
                 type="button"
                 onClick={() => {
-                  const doc = apiRef.current?.exportDoc();
+                  const doc = apiRef.current?.serializeDoc();
                   if (!doc) return;
                   setDocText(JSON.stringify(doc, null, 2));
                 }}
@@ -271,7 +271,7 @@ export default function App() {
                   if (!apiRef.current) return;
                   try {
                     const parsed = JSON.parse(docText);
-                    apiRef.current.importDoc(parsed, { immediate: true });
+                    apiRef.current.parseDoc(parsed, { immediate: true });
                   } catch (err) {
                     console.error(err);
                     alert('导入失败：JSON 解析错误（详情见 console）');

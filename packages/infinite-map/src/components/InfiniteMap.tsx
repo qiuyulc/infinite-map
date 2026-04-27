@@ -283,12 +283,12 @@ export type InfiniteMapApi = {
   getNodes: () => NodeData[];
 
   /**
-   * 导出/导入持久化文档（schemaVersion + migrations）
-   * - exportDoc：返回最新版本结构
-   * - importDoc：解析/迁移后，用 onNodesChange + setCamera 应用到宿主
+   * doc 快照（与“文件导入导出”解耦）
+   * - serializeDoc：把当前运行时状态序列化为 doc（纯数据）
+   * - parseDoc：校验/解析 doc，并用 onNodesChange + setCamera 应用到宿主
    */
-  exportDoc: (meta?: Record<string, unknown>) => InfiniteMapDoc;
-  importDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
+  serializeDoc: (meta?: Record<string, unknown>) => InfiniteMapDoc;
+  parseDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 
 export function InfiniteMap({

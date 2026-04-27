@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { exportDoc, importDoc, DOC_SCHEMA_VERSION } from '../editor/document';
+import { serializeDoc, parseDoc, DOC_SCHEMA_VERSION } from '../editor/document';
 
 describe('doc schema', () => {
-  it('exportDoc returns doc with schemaVersion', () => {
-    const doc = exportDoc({
+  it('serializeDoc returns doc with schemaVersion', () => {
+    const doc = serializeDoc({
       nodes: [{ id: 'a', x: 0, y: 0, width: 10, height: 10 }],
       camera: { x: 1, y: 2, zoom: 3 },
       meta: { foo: 'bar' },
@@ -14,8 +14,8 @@ describe('doc schema', () => {
     expect(doc.meta?.foo).toBe('bar');
   });
 
-  it('importDoc accepts current schema only', () => {
-    const doc = importDoc({
+  it('parseDoc accepts current schema only', () => {
+    const doc = parseDoc({
       schemaVersion: DOC_SCHEMA_VERSION,
       nodes: [{ id: 'a', x: 0, y: 0, width: 10, height: 10 }],
       camera: { x: 1, y: 2, zoom: 3 },
@@ -24,9 +24,9 @@ describe('doc schema', () => {
     expect(doc.schemaVersion).toBe(DOC_SCHEMA_VERSION);
   });
 
-  it('importDoc throws on invalid doc', () => {
-    expect(() => importDoc(null)).toThrow();
-    expect(() => importDoc({ schemaVersion: DOC_SCHEMA_VERSION, nodes: [], camera: { x: 0, y: 0 } })).toThrow();
-    expect(() => importDoc({ nodes: [], camera: { x: 0, y: 0, zoom: 1 } })).toThrow();
+  it('parseDoc throws on invalid doc', () => {
+    expect(() => parseDoc(null)).toThrow();
+    expect(() => parseDoc({ schemaVersion: DOC_SCHEMA_VERSION, nodes: [], camera: { x: 0, y: 0 } })).toThrow();
+    expect(() => parseDoc({ nodes: [], camera: { x: 0, y: 0, zoom: 1 } })).toThrow();
   });
 });

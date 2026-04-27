@@ -61,7 +61,7 @@ function validateNodes(v: unknown, path: string): asserts v is NodeData[] {
 /**
  * 解析输入为 doc（仅支持最新格式）
  */
-export function importDoc(input: unknown): InfiniteMapDoc {
+export function parseDoc(input: unknown): InfiniteMapDoc {
   assert(isObject(input), 'doc must be an object', 'doc');
 
   assert('schemaVersion' in input, 'schemaVersion is required', 'doc.schemaVersion');
@@ -79,7 +79,7 @@ export function importDoc(input: unknown): InfiniteMapDoc {
  * 将当前状态导出为 doc（最新版本）
  * - 默认不做深拷贝：由宿主决定是否在落盘前 clone（例如 structuredClone）
  */
-export function exportDoc(input: {
+export function serializeDoc(input: {
   nodes: NodeData[];
   camera: Camera;
   resources?: Record<string, unknown>;

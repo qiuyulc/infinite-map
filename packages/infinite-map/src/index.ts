@@ -62,8 +62,8 @@ export type {
 
 export {
   DOC_SCHEMA_VERSION,
-  exportDoc,
-  importDoc,
+  serializeDoc,
+  parseDoc,
   type InfiniteMapDoc,
 } from './editor/document';
 
