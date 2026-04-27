@@ -398,12 +398,19 @@ export function InfiniteMap({
     onPatchesRef.current = onPatches;
   }, [onPatches]);
 
+  const hasChangeSink = Boolean(onNodesChange) || Boolean(onPatches);
   const resolvedEditMode = useMemo<'auto' | 'readonly' | 'controlled'>(() => {
     if (editMode) return editMode;
     if (editable === false) return 'readonly';
     if (editable === true) return 'controlled';
     return 'auto';
   }, [editMode, editable]);
+
+  // 是否允许“修改 nodes”的编辑行为（给 editor 插件判断：是否渲染 handles / guides / 是否启用 drag/resize）
+  // - auto：向后兼容（没有变更出口时，编辑能力关闭）
+  // - readonly：强制关闭
+  // - controlled：要求宿主提供变更出口，否则关闭（并在 applyPatches 处 DEV 抛错）
+  const editEnabled = resolvedEditMode === 'readonly' ? false : hasChangeSink;
 
   // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
   const ctxRef = useRef<MapContext | null>(null);
@@ -473,6 +480,11 @@ export function InfiniteMap({
   useEffect(() => {
     ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
   }, [ctx, maxZoom, minZoom]);
+
+  // 暴露编辑能力开关给插件（让 overlay/gestures 在只读/无出口时自动收敛）
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.editEnabled, editEnabled);
+  }, [ctx, editEnabled]);
 
   // commands registry：将 plugins.commands 汇总到 store，供 CommandRunnerPlugin 使用
   useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });

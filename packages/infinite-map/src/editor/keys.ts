@@ -3,6 +3,10 @@
  * - 方便跨插件协作，减少散落的 string literal
  */
 export const STORE_KEYS = {
+  // edit capability（宿主是否允许“修改 nodes”的编辑行为）
+  // - readonly / 无变更出口时为 false：编辑类插件应隐藏 handles/对齐线等 UI，并禁止 drag/resize 等手势
+  editEnabled: 'edit:enabled',
+
   // selection / marquee / input
   selectionIds: 'selection:ids',
   marqueeState: 'marquee:state',

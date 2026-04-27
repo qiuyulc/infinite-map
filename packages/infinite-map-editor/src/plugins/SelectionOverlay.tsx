@@ -7,6 +7,9 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   const ids = ctx.store.get<string[]>(STORE_KEY) ?? [];
   if (ids.length === 0) return null;
 
+  // 只读/无变更出口：仍允许展示选中框，但不渲染 resize/rotate handles（避免“看起来能编辑但其实不会生效”）
+  const editEnabled = ctx.store.get<boolean>(STORE_KEYS.editEnabled);
+
   const nodes = ctx.getNodes();
   const selected = new Set(ids);
 
@@ -83,6 +86,7 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   };
 
   const groupRotateHandle =
+    editEnabled !== false &&
     ids.length > 1 &&
     (() => {
       const pts = selectedNodes.flatMap((n) => {
@@ -141,8 +145,8 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
         transform: `translate(-50%, -50%) perspective(${VISUAL_CONST.perspectivePx}px) rotateX(${rx}deg) rotateY(${ry}deg) rotate(${deg}deg)`,
         transformOrigin: '50% 50%',
         transformStyle: 'preserve-3d',
-        // 重要：需要让 resize/rotate handle 能被命中（否则点击会落到节点/空白，导致“旋转时变框选”）
-        pointerEvents: 'auto',
+        // editEnabled=false：handles 不可交互
+        pointerEvents: editEnabled === false ? 'none' : 'auto',
       };
 
       const borderStyle: CSSProperties = {
@@ -177,38 +181,41 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
       ] as const;
 
       // 旋转 handle：放在顶部中点上方（跟随旋转）
-      const rotateHandle = (
-        <div
-          data-rotate-handle="1"
-          data-nodeid={single.id}
-          style={{
-            ...rotateStyle,
-            left: '50%',
-            top: 0,
-            // 基于顶部中点向上偏移（不再叠加 -50% 的额外偏移）
-            transform: `translate(-50%, -22px)`,
-          }}
-          aria-hidden="true"
-        />
-      );
+      const rotateHandle =
+        editEnabled === false ? null : (
+          <div
+            data-rotate-handle="1"
+            data-nodeid={single.id}
+            style={{
+              ...rotateStyle,
+              left: '50%',
+              top: 0,
+              // 基于顶部中点向上偏移（不再叠加 -50% 的额外偏移）
+              transform: `translate(-50%, -22px)`,
+            }}
+            aria-hidden="true"
+          />
+        );
 
       return (
         <div style={wrapperStyle}>
           <div style={borderStyle} />
-          {handleDefs.map((hdef) => (
-            <div
-              key={hdef.k}
-              data-handle={hdef.k}
-              data-nodeid={single.id}
-              style={{
-                ...handleStyle,
-                left: hdef.left,
-                top: hdef.top,
-                cursor: cursorByKey[hdef.k],
-              }}
-              aria-hidden="true"
-            />
-          ))}
+          {editEnabled === false
+            ? null
+            : handleDefs.map((hdef) => (
+                <div
+                  key={hdef.k}
+                  data-handle={hdef.k}
+                  data-nodeid={single.id}
+                  style={{
+                    ...handleStyle,
+                    left: hdef.left,
+                    top: hdef.top,
+                    cursor: cursorByKey[hdef.k],
+                  }}
+                  aria-hidden="true"
+                />
+              ))}
           {rotateHandle}
         </div>
       );

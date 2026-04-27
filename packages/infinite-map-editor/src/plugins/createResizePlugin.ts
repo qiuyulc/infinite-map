@@ -134,6 +134,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
   const minSize = opts.minSize ?? 40;
 
   const start = (e: MapPointerEvent, ctx: MapContext, handleOverride?: Handle) => {
+    if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
     const ids = ctx.store.get<string[]>(selectionKey) ?? [];
     if (ids.length !== 1) return null;
 
@@ -349,6 +350,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     id: 'hit.resize-handle',
     priority: 1000,
     hitTest: (e, ctx) => {
+      if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
       // 仅 pointer 才有 screen/button；但 contextmenu 也无所谓，返回 null 即可
       if (!('button' in e)) return null;
       if (ctx.store.get<boolean>(spaceKey)) return null;
@@ -367,6 +369,7 @@ export function createResizePlugin(opts: ResizePluginOptions = {}): InfiniteMapP
     id: 'resize',
     priority: 900,
     canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+      if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return false;
       if (e.button !== 0) return false;
       if (ctx.store.get<boolean>(spaceKey)) return false;
       return hit.kind === 'handle' && hit.owner === 'resize';

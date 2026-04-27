@@ -51,6 +51,7 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
   const selectionKey = opts.selectionKey ?? DEFAULT_SELECTION_KEY;
  
   const startDrag = (e: MapPointerEvent, ctx: MapContext, hitId: string) => {
+    if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
     const hit = ctx.getNodes().find((n) => n.id === hitId) ?? null;
     if (!hit) return null;
     if (isHiddenEffective(ctx.getNodes(), hit.id) || isLockedEffective(ctx.getNodes(), hit.id)) return null;
@@ -277,6 +278,7 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
         id: 'drag',
         priority: 100,
         canStart: (e: MapPointerEvent, ctx: MapContext, hit: HitTestTarget) => {
+          if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return false;
           if (e.button !== 0) return false;
           if (ctx.store.get<boolean>(SPACE_KEY)) return false;
           if (hit.kind !== 'node') return false;

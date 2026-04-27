@@ -7,6 +7,7 @@ type SnapGuides = {
 };
 
 export function SnapGuidesOverlay({ ctx }: { ctx: MapContext }) {
+  if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
   const guides = ctx.store.get<SnapGuides>(STORE_KEYS.snapGuides);
   if (!guides || ((!guides.v || guides.v.length === 0) && (!guides.h || guides.h.length === 0))) return null;
 
