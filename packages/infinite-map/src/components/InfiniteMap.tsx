@@ -580,6 +580,7 @@ export function InfiniteMap({
     <div
       ref={containerRef}
       data-im-theme={themeBase ?? 'light'}
+      tabIndex={0}
       style={{
         position: 'relative',
         width: '100%',
@@ -592,6 +593,7 @@ export function InfiniteMap({
         border: 'none',
         transition: 'background-color 220ms ease, border-color 220ms ease',
         touchAction: 'none',
+        outline: 'none',
       }}
       /**
        * 重要：插件事件分发使用 capture 阶段，确保即使子元素（例如节点拖拽）stopPropagation，
@@ -601,6 +603,8 @@ export function InfiniteMap({
         // 组件库的 UI（toolbar/menu 等）不应被“画布插件”拦截
         const t = e.target as unknown as HTMLElement | null;
         if (t?.closest?.('[data-im-ui]')) return;
+        // 让键盘快捷键只在画布聚焦时生效（避免劫持页面级 Cmd/Ctrl+C）
+        (e.currentTarget as HTMLElement).focus?.();
         const res = dispatchPointer('down', e);
         if (res.handled === true && res.mode !== 'continue') {
           // 关键：在 overlay handle（resize）这种“很小的命中区域”下，

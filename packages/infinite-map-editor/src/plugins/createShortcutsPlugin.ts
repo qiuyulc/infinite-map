@@ -65,6 +65,16 @@ export function createShortcutsPlugin(opts: ShortcutsPluginOptions = {}): Infini
     requires: ['commands'],
     input: {
       onKeyDown: (e: MapKeyEvent, ctx: MapContext) => {
+        // 输入框/可编辑区域：不要抢默认行为（例如文本编辑器里的复制粘贴）
+        const oe = e.originalEvent as any;
+        const t = (oe?.target ?? null) as HTMLElement | null;
+        if (t) {
+          const tag = t.tagName;
+          if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t as any).isContentEditable) {
+            return { handled: false };
+          }
+        }
+
         const k = normalizeKey(e);
         const hit = keymap[k];
         if (!hit) return { handled: false };

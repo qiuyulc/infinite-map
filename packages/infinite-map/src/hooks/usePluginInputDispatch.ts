@@ -379,6 +379,16 @@ export function usePluginInputDispatch({
 
     const toModifiers = (e: KeyboardEvent) => ({ shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey });
     const dispatchKey = (type: MapKeyEvent['type'], e: KeyboardEvent) => {
+      // 重要：快捷键只在画布“聚焦”时生效，避免劫持整个页面（例如 Cmd/Ctrl+C）。
+      // 画布容器会在 pointerdown 时 focus（tabIndex=0），因此这里优先用 activeElement 判断。
+      const root = containerRef.current;
+      if (root) {
+        const ae = document.activeElement as HTMLElement | null;
+        const target = e.target as HTMLElement | null;
+        const inRoot = (ae && root.contains(ae)) || (target && root.contains(target));
+        if (!inRoot) return;
+      }
+
       const m: MapKeyEvent = {
         type,
         key: e.key,
