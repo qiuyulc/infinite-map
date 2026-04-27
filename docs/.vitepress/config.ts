@@ -2,14 +2,16 @@ import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'Infinite Map 文档',
-  description: '面向零基础：从0重写一遍（带里程碑与代码注释）',
+  title: 'Infinite Map',
+  description: '一个可扩展的无限画布组件库：渲染、编辑器插件、Patch 变更流与持久化。',
 
   themeConfig: {
     nav: [
-      { text: '从0重写', link: '/rewrite/00-blueprint' },
-      { text: '库使用', link: '/library/api' },
-      { text: '功能与API（全量）', link: '/功能清单与对外API' },
+      { text: '使用手册', link: '/library/quickstart' },
+      { text: '组件 API', link: '/library/component-api' },
+      { text: '插件开发', link: '/library/plugin-dev' },
+      { text: '全量功能清单', link: '/功能清单与对外API' },
+      { text: '从0重写（实现笔记）', link: '/rewrite/00-blueprint' },
     ],
     sidebar: {
       '/rewrite/': [
@@ -35,12 +37,17 @@ export default defineConfig({
         {
           text: '作为三方库使用',
           items: [
-            { text: 'API 总览（入门）', link: '/library/api' },
-            { text: '实现总览（总结）', link: '/library/implementation-summary' },
+            { text: '快速上手', link: '/library/quickstart' },
+            { text: '组件 API', link: '/library/component-api' },
+            { text: '编辑与变更流（onPatches）', link: '/library/editing' },
+            { text: '保存/加载（Doc & Resources）', link: '/library/persistence' },
+            { text: '多人协作接入（业务侧）', link: '/library/collaboration' },
+            { text: 'Demo 与本地测试面板', link: '/library/demos' },
             { text: '命令速查表', link: '/library/commands' },
             { text: '插件开发指南', link: '/library/plugin-dev' },
-            { text: 'Doc schema 与迁移', link: '/library/doc-schema' },
-            { text: '发布流程（最小闭环）', link: '/library/release' },
+            { text: 'Doc schema 与迁移（参考）', link: '/library/doc-schema' },
+            { text: '常见问题', link: '/library/faq' },
+            { text: '发布流程（维护者）', link: '/library/release' },
           ],
         },
       ],

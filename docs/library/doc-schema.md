@@ -48,6 +48,9 @@ Doc schema 用于“保存/加载”画布内容。它与 npm 包版本解耦，
 - `exportDoc({ nodes, camera, resources?, meta? })`
 - `importDoc(any)`：返回最新版本（会校验与迁移）
 
+> 注意：`api.exportDoc()` 默认只导出 `nodes/camera/meta`，不会自动携带你业务侧维护的 `resources`。
+> 若你需要导出完整 doc，请在业务侧获取 `resources` 快照并使用 `exportDoc(...)` 拼装。见：[保存/加载（Doc & Resources）](/library/persistence)。
+
 ---
 
 ## 4）迁移策略
@@ -61,4 +64,3 @@ Doc schema 用于“保存/加载”画布内容。它与 npm 包版本解耦，
 1. schema breaking change 才递增 `schemaVersion`
 2. 保持 migrations 可组合（v0→v1→v2→…）
 3. 对外文档里明确哪些字段稳定，哪些字段建议放到 `meta/resources`（避免频繁 breaking）
-

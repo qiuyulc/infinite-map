@@ -84,6 +84,11 @@
 - Rulers（默认启用）：标尺
 - Minimap（默认启用）：小地图
 
+#### 预览/只读模式（重要）
+当满足以下任一条件时，编辑器会自动退化为“预览/只读”（不会出现选中框、缩放点、对齐线、右键菜单、工具栏、框选等编辑 UI）：
+- `editMode="readonly"` 或 `editable={false}`
+- `editMode="auto"`（默认）且 **未提供变更出口**（`onNodesChange/onPatches` 都不传）
+
 #### View / Z-Index 命令
 - 视图命令：
   - `view.zoomIn` / `view.zoomOut` / `view.resetZoom`
@@ -170,6 +175,8 @@
 
 #### 编辑与插件系统
 - `plugins?: InfiniteMapPlugin[]`（不传=纯预览）
+- `editMode?: 'auto' | 'readonly' | 'controlled'`
+- `editable?: boolean`（语法糖；false=readonly，true=controlled）
 - `onNodesChange?: (nextNodes, meta) => void`（高层回调）
 - `onPatches?: (patches, meta) => void`（底层 patch 回调，适合协作/历史/性能）
 - `commandConflictPolicy?: 'keep-first' | 'override' | 'error'`

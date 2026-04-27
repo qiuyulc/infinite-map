@@ -1,24 +1,24 @@
-# Infinite Map（从0重写）
+# Infinite Map
 
-你说“看不懂”，我完全理解：代码量一上来，如果没有“按步骤的讲解”，会像一团线。
+Infinite Map 是一个 **可扩展的无限画布组件库**，用于构建：
+- 白板/画布/流程图/看板等“节点在二维平面编辑”的应用
+- 需要高性能渲染与虚拟化的大型节点集合
+- 需要把编辑行为抽象成“可重放的 Patch 变更流”的业务（便于持久化与多人协作）
 
-这套文档只做一件事：**从你能看到的页面开始，一步步把它对应回代码**。
+它主要解决的问题：
+- **渲染与交互底座**：世界坐标系 + 相机（pan/zoom）+ 背景（网格/点阵）+ 叠层（overlay）
+- **性能**：空间索引 + 可选虚拟化 + keepAlive（适合“重组件节点”）
+- **编辑器能力可组合**：通过插件系统组合 selection/drag/resize/history/clipboard/HUD 等能力
+- **变更流**：通过 `onPatches` 输出细粒度变更，业务侧可做协作/审计/落库
 
-从这里开始（重写路线）：
+## 从哪里开始
 
-- [00. 总蓝图（你要做什么）](/rewrite/00-blueprint)
+- [快速上手](/library/quickstart)
+- [组件 API](/library/component-api)
+- [Demo 与本地测试面板](/library/demos)
+- [全量功能清单](/功能清单与对外API)
 
-作为三方库使用（接入/保存/扩展）：
-
-- [API 总览（入门）](/library/api)
-- [实现总览（总结）](/library/implementation-summary)
-- [命令速查表](/library/commands)
-- [插件开发指南](/library/plugin-dev)
-- [Doc schema 与迁移](/library/doc-schema)
-- [发布流程（最小闭环）](/library/release)
-- [功能清单与对外 API（全量）](/功能清单与对外API)
-
-本地启动文档：
+## 本地启动文档
 
 ```bash
 pnpm -C docs dev
