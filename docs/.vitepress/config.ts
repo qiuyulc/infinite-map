@@ -19,6 +19,7 @@ export default defineConfig({
             { text: '快速上手', link: '/library/quickstart' },
             { text: '组件 API', link: '/library/component-api' },
             { text: '编辑与变更流（onPatches）', link: '/library/editing' },
+            { text: '视图控制（铺满/居中/锁定）', link: '/library/view' },
             { text: '保存/加载（Doc & Resources）', link: '/library/persistence' },
             { text: '多人协作接入（业务侧）', link: '/library/collaboration' },
             { text: 'Demo 与本地测试面板', link: '/library/demos' },

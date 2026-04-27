@@ -2,6 +2,8 @@
 
 一个 React 的无限画布/编辑器内核（`@qiuyulc/infinite-map`）+ 默认编辑器插件与 UI kit（`@qiuyulc/infinite-map-editor`）。
 
+> 使用手册见 `docs/`（VitePress）。
+
 ## 包说明
 
 - `@qiuyulc/infinite-map`
@@ -34,7 +36,8 @@ const nodes: NodeData[] = [
 ]
 
 export function App() {
-  return <InfiniteMap nodes={nodes} onNodesChange={() => {}} />
+  // 纯预览不需要变更出口
+  return <InfiniteMap nodes={nodes} />
 }
 ```
 
@@ -52,13 +55,14 @@ export function EditorApp() {
     <InfiniteMap
       nodes={nodes}
       plugins={plugins}
+      editMode="controlled"
       onNodesChange={(next) => setNodes(next)}
     />
   )
 }
 ```
 
-> 注意：启用 plugins 但未提供 `onNodesChange/onPatches` 时，编辑产生的变更不会被宿主持久化（看起来像“编辑无效”）。开发环境下会有 console.warn 提示。
+> 注意：启用 plugins 且希望编辑生效时，需要提供 `onNodesChange` 或 `onPatches` 作为变更出口；否则会退化为预览（编辑 UI/交互会被禁用）。
 
 ## 保存/加载（Doc schema）
 
@@ -82,12 +86,14 @@ if (raw) apiRef.current?.importDoc(JSON.parse(raw), { immediate: true })
 
 ## 文档（VitePress）
 
-库使用/对外 API：
-- `docs/library/api.md`（接入与 apiRef）
-- `docs/library/commands.md`（命令速查）
-- `docs/library/plugin-dev.md`（插件开发指南）
-- `docs/library/doc-schema.md`（Doc schema 与迁移）
-- `docs/library/release.md`（发布流程）
+推荐阅读路径：
+- `docs/library/quickstart.md`（快速上手）
+- `docs/library/component-api.md`（组件 API）
+- `docs/library/editing.md`（编辑与变更流：onPatches）
+- `docs/library/view.md`（视图控制：铺满/居中/锁定）
+- `docs/library/persistence.md`（保存/加载：Doc & Resources）
+- `docs/library/collaboration.md`（多人协作接入）
+- `docs/library/commands.md`（命令/快捷键速查）
 
 本地启动：
 

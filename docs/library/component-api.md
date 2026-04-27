@@ -79,6 +79,10 @@ initialCamera?: Camera
 
 > 更常见的方式是用 `apiRef.getCamera()/setCamera()` 控制。
 
+### 常用：让某个节点铺满屏幕
+
+见：[视图控制（铺满/居中/锁定）](/library/view)。
+
 ### panEnabled（锁定画布拖动）
 
 ```ts

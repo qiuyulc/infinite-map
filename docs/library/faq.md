@@ -30,3 +30,10 @@ const doc = exportDoc({ nodes, camera, resources, meta })
 Infinite Map 输出 `onPatches` 作为协作操作流，业务侧负责网络同步与顺序控制。
 见：[多人协作接入](/library/collaboration)。
 
+## 5）为什么 Cmd/Ctrl+C 会影响整个页面？
+
+画布的快捷键来自全局 `keydown` 监听。为避免“劫持整页复制”，目前的策略是：
+- 只有当画布容器处于 focus（点击过画布）时，快捷键才生效
+- 如果光标在输入框/可编辑区域（input/textarea/contenteditable），不拦截默认复制粘贴
+
+如果你希望“永远不处理快捷键”，可在插件层移除 `createShortcutsPlugin()`。
