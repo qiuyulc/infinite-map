@@ -337,6 +337,7 @@ export function InfiniteMap({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { camera, cameraRef, commitCamera } = useCamera(initialCamera);
+  const worldRef = useRef<HTMLDivElement | null>(null);
   const { viewport, viewportRef } = useViewportSize(containerRef);
 
   // nodes/visibleNodes refs：给插件 ctx 读取，避免闭包过期
@@ -369,6 +370,38 @@ export function InfiniteMap({
       if (renderRafRef.current != null) cancelAnimationFrame(renderRafRef.current);
     };
   }, []);
+
+  // camera DOM 同步：把“世界层 transform”从 React render 中拿出来（避免 pan 时高频 re-render）
+  // - cameraRef 会在每次 commitCamera 时同步更新；这里用 rAF 合并 DOM 写入
+  const cameraDomRafRef = useRef<number | null>(null);
+  const requestCameraDomSync = useCallback(() => {
+    if (cameraDomRafRef.current != null) return;
+    cameraDomRafRef.current = requestAnimationFrame(() => {
+      cameraDomRafRef.current = null;
+      const el = worldRef.current;
+      if (!el) return;
+      const cam0 = cameraRef.current;
+      const z = cam0.zoom || 1;
+      el.style.transform = `translate3d(${-cam0.x * z}px, ${-cam0.y * z}px, 0) scale(${z})`;
+    });
+  }, [cameraRef]);
+  useEffect(() => {
+    return () => {
+      if (cameraDomRafRef.current != null) cancelAnimationFrame(cameraDomRafRef.current);
+    };
+  }, []);
+
+  const commitCameraWithDomSync = useCallback(
+    (next: any, opts?: any) => {
+      commitCamera(next, opts);
+      requestCameraDomSync();
+    },
+    [commitCamera, requestCameraDomSync]
+  );
+  // 初始化/非手势变更时也同步一次（例如 props.initialCamera 变化导致的 setState）
+  useEffect(() => {
+    requestCameraDomSync();
+  }, [camera, requestCameraDomSync]);
 
   // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
   const themeVars = useInjectedThemeVars(theme);
@@ -539,7 +572,7 @@ export function InfiniteMap({
     apiRef,
     plugins,
     ctx,
-    commitCamera,
+    commitCamera: commitCameraWithDomSync,
     runCommandWithHooks,
     getNodeRect,
     getSelectionRect,
@@ -570,7 +603,7 @@ export function InfiniteMap({
     viewportRef,
     camera,
     cameraRef,
-    commitCamera,
+    commitCamera: commitCameraWithDomSync,
     mouseRef,
     pulseRef,
     panEnabled: panEnabled !== false,
@@ -597,7 +630,7 @@ export function InfiniteMap({
     containerRef,
     store,
     screenToWorld,
-    commitCamera,
+    commitCamera: commitCameraWithDomSync,
     mouseRef,
     hoverRef,
     onEditorErrorRef,
@@ -715,9 +748,9 @@ export function InfiniteMap({
 
       {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
       <RenderDomNodes
-        camera={camera}
         cameraRef={cameraRef}
         visibleNodes={visibleNodes}
+        worldRef={worldRef}
         zIndex={1}
         onNodeDrag={onNodeDrag}
         renderNode={renderNode}
