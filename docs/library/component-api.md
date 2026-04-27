@@ -79,6 +79,15 @@ initialCamera?: Camera
 
 > 更常见的方式是用 `apiRef.getCamera()/setCamera()` 控制。
 
+### panEnabled（锁定画布拖动）
+
+```ts
+panEnabled?: boolean
+```
+
+- `false`：禁止“拖动平移画布”（包括空白拖拽平移、Space 平移模式）
+- 默认 `true`
+
 ### 背景与缩放配置
 
 - `backgroundMode?: 'dots' | 'grid'`
@@ -125,4 +134,3 @@ api.getCommands?.()
 ```
 
 命令列表见：[命令速查表](/library/commands)。
-

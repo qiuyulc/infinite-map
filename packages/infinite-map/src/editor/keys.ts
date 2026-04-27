@@ -7,6 +7,10 @@ export const STORE_KEYS = {
   // - readonly / 无变更出口时为 false：编辑类插件应隐藏 handles/对齐线等 UI，并禁止 drag/resize 等手势
   editEnabled: 'edit:enabled',
 
+  // view interaction
+  // - false：禁止画布平移（拖动平移 / Space 平移模式）
+  viewPanEnabled: 'view:panEnabled',
+
   // selection / marquee / input
   selectionIds: 'selection:ids',
   marqueeState: 'marquee:state',

@@ -213,6 +213,13 @@ export type InfiniteMapProps = {
   theme?: Partial<InfiniteMapTheme>;
 
   /**
+   * 是否允许拖动平移画布（view pan）
+   * - false：禁止空白拖拽平移 & Space 平移模式（适合做“锁定视图”）
+   * - 默认 true
+   */
+  panEnabled?: boolean;
+
+  /**
    * 可选：对外暴露 editor API（用于自定义工具栏）
    * - 只在 plugins 存在时有效
    */
@@ -323,6 +330,7 @@ export function InfiniteMap({
   minimapNeedsRedraw,
   themeBase,
   theme,
+  panEnabled = true,
   apiRef,
   debug = false,
 }: InfiniteMapProps) {
@@ -480,6 +488,11 @@ export function InfiniteMap({
   useEffect(() => {
     ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
   }, [ctx, maxZoom, minZoom]);
+
+  // 视图交互：画布平移开关（用于“锁定视图”）
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.viewPanEnabled, panEnabled !== false);
+  }, [ctx, panEnabled]);
 
   // 暴露编辑能力开关给插件（让 overlay/gestures 在只读/无出口时自动收敛）
   useEffect(() => {

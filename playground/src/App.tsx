@@ -68,6 +68,7 @@ function ChartLikeNode({ store, nodeId }: { store: ResourceStore<number>; nodeId
 export default function App() {
   const [themeBase, setThemeBase] = useState<'light' | 'dark'>('light');
   const [backgroundMode, setBackgroundMode] = useState<'dots' | 'grid'>('grid');
+  const [panEnabled, setPanEnabled] = useState(true);
   const [rulersEnabled, setRulersEnabled] = useState(true);
   const [minimapEnabled, setMinimapEnabled] = useState(true);
   const [zoomDockEnabled, setZoomDockEnabled] = useState(true);
@@ -169,6 +170,11 @@ export default function App() {
                 <option value="grid">网格</option>
                 <option value="dots">点阵</option>
               </select>
+            </label>
+
+            <label className="pg-row">
+              <span className="pg-row__label">画布可拖动</span>
+              <input className="pg-check" type="checkbox" checked={panEnabled} onChange={(e) => setPanEnabled(e.target.checked)} />
             </label>
           </div>
 
@@ -321,6 +327,7 @@ export default function App() {
             onPatches={onPatches}
             plugins={plugins}
             themeBase={themeBase}
+            panEnabled={panEnabled}
             backgroundMode={backgroundMode}
             gridSpacing="auto"
             dotSpacing="auto"

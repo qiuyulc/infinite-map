@@ -45,7 +45,8 @@ const sameHit = (a: HitTestTarget, b: HitTestTarget) => {
 
 const cursorFromHit = (hit: HitTestTarget, store: { get: <T>(key: string) => T | undefined }) => {
   // Space 平移模式优先
-  if (store.get<boolean>(STORE_KEYS.keyboardSpace)) return 'grab';
+  const panEnabled = store.get<boolean>(STORE_KEYS.viewPanEnabled);
+  if (store.get<boolean>(STORE_KEYS.keyboardSpace) && panEnabled !== false) return 'grab';
   if (typeof (hit as any).cursor === 'string' && (hit as any).cursor) return (hit as any).cursor as string;
   if (hit.kind === 'node') return 'grab';
   if (hit.kind === 'handle' && hit.owner === 'resize') {
@@ -131,6 +132,8 @@ export function usePluginInputDispatch({
         id: 'pan',
         priority: -9999,
         canStart: (e0: MapPointerEvent, ctx0: MapContext, hit: HitTestTarget) => {
+          // 视图拖动锁：禁止画布平移（包括 Space 平移模式）
+          if (ctx0.store.get<boolean>(STORE_KEYS.viewPanEnabled) === false) return false;
           if (e0.button !== 0) return false;
           // Space：全局平移模式（无视命中）
           if (ctx0.store.get<boolean>(STORE_KEYS.keyboardSpace)) return true;
