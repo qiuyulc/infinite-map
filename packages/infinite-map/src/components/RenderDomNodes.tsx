@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { memo, useCallback, useMemo, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import type { Camera, NodeData } from '../core/types';
 import { VISUAL_CONST } from '../editor/keys';
 import { DefaultNode } from './DefaultNode';
 
-export function RenderDomNodes({
-  camera,
+export const RenderDomNodes = memo(function RenderDomNodes({
   cameraRef,
   visibleNodes,
   zIndex = 1,
@@ -14,7 +13,6 @@ export function RenderDomNodes({
   getDefaultNodeProps,
   defaultNodeShowMeta,
 }: {
-  camera: Camera;
   cameraRef: React.MutableRefObject<Camera>;
   visibleNodes: NodeData[];
   zIndex?: number;
@@ -122,20 +120,17 @@ export function RenderDomNodes({
   }, [visibleNodes, renderNode, renderNodeContent, getDefaultNodeProps, defaultNodeShowMeta, onNodeDrag, onNodePointerDown, onNodePointerMove, endDrag]);
 
   const worldStyle: CSSProperties = useMemo(() => {
-    // translate(-camera.x * zoom, -camera.y * zoom) scale(zoom)
     return {
       position: 'absolute',
       left: 0,
       top: 0,
       transformOrigin: '0 0',
-      transform: `translate3d(${-camera.x * camera.zoom}px, ${-camera.y * camera.zoom}px, 0) scale(${camera.zoom})`,
       willChange: 'transform',
       width: 0,
       height: 0,
       zIndex,
     };
-  }, [camera.x, camera.y, camera.zoom, zIndex]);
+  }, [zIndex]);
 
   return <div style={worldStyle}>{domNodeElements}</div>;
-}
-
+});

@@ -37,6 +37,8 @@ export const STORE_KEYS = {
 
   // view
   viewConfig: 'view:config',
+  // view transform（用于 ViewportLayer 订阅，避免 pan 时整棵 React 树重渲染）
+  viewTransform: 'view:transform',
 
   // context menu
   contextMenuState: 'contextmenu:state',
