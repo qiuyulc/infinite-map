@@ -56,5 +56,4 @@ const doc = exportDoc({
 
 ## 4）迁移与兼容
 
-`importDoc(any)` 会校验并做 schema migrations（legacy v0、v1→v2 等）。参考：[Doc schema 与迁移](/library/doc-schema)。
-
+`importDoc(any)` 会校验并做 schema migrations（legacy v0、v1→v2 等）。如果你需要自定义 schema 演进，建议业务侧把不稳定字段放入 `meta/resources`，避免频繁破坏 `nodes` 结构。
