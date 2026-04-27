@@ -9,7 +9,7 @@
 - `@qiuyulc/infinite-map`
   - `<InfiniteMap />`：渲染层 + 编辑器运行时（store/bus/patches）
   - 插件输入管线（Scheme C）：`hitTest → pointerDownProcessors → gestures`
-  - Doc 持久化：`exportDoc/importDoc`（schemaVersion=2）
+  - Doc 持久化：`exportDoc/importDoc`（schemaVersion=1）
 - `@qiuyulc/infinite-map-editor`
   - 内置插件工厂：selection/drag/resize/rotate/marquee/history/minimap/toolbar/…
   - `composePlugins()`：依赖校验 + 拓扑排序
@@ -80,7 +80,7 @@ const raw = localStorage.getItem('doc')
 if (raw) apiRef.current?.importDoc(JSON.parse(raw), { immediate: true })
 ```
 
-`importDoc` 仅接受当前 schemaVersion=2 的 doc（不做历史版本兼容）。
+`importDoc` 仅接受当前 schemaVersion=1 的 doc（不做历史版本兼容）。
 
 ## 文档（VitePress）
 

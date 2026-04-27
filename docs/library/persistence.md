@@ -2,11 +2,11 @@
 
 本页说明如何把画布保存成可持久化的 doc，以及如何处理业务侧的大对象（resources）。
 
-## 1）Doc 的最小结构（v2）
+## 1）Doc 的最小结构
 
 ```json
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "nodes": [],
   "camera": { "x": 0, "y": 0, "zoom": 1 },
   "resources": {},
@@ -56,5 +56,5 @@ const doc = exportDoc({
 
 ## 4）迁移与兼容
 
-`importDoc(any)` 会校验 doc 结构，并且 **仅接受当前 schemaVersion=2**（不做历史版本迁移）。
+`importDoc(any)` 会校验 doc 结构，并且 **仅接受当前 schemaVersion=1**（不做历史版本兼容）。
 如果你需要自定义 schema 演进，建议业务侧把不稳定字段放入 `meta/resources`，避免频繁破坏 `nodes` 结构。

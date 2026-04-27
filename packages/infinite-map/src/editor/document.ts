@@ -4,11 +4,11 @@ import type { Camera, NodeData } from '../core/types';
  * Doc schema version（对外持久化格式）
  * - 只要格式有 breaking change，就递增 schemaVersion，并在 migrations 中补迁移
  */
-export const DOC_SCHEMA_VERSION = 2 as const;
+export const DOC_SCHEMA_VERSION = 1 as const;
 
 /**
  * Doc（统一版本）
- * - 目前仓库只保留 schemaVersion=2 的格式，不再兼容 v0/v1（避免心智负担与维护成本）。
+ * - 目前仓库只保留 schemaVersion=1 的格式，不再做历史版本兼容（避免心智负担与维护成本）。
  * - resources：宿主可选择把“大对象业务数据”落盘到这里（key 通常为 node.resourceId）
  *   这样 nodes.data 可以保持轻量，便于协作/历史/演进。
  */
@@ -86,7 +86,7 @@ export function exportDoc(input: {
   meta?: Record<string, unknown>;
 }): InfiniteMapDoc {
   return {
-    schemaVersion: 2,
+    schemaVersion: DOC_SCHEMA_VERSION,
     nodes: input.nodes,
     camera: input.camera,
     resources: input.resources ?? {},

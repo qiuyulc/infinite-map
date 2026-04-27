@@ -26,7 +26,7 @@ describe('doc schema', () => {
 
   it('importDoc throws on invalid doc', () => {
     expect(() => importDoc(null)).toThrow();
-    expect(() => importDoc({ schemaVersion: 1, nodes: [], camera: { x: 0, y: 0 } })).toThrow();
+    expect(() => importDoc({ schemaVersion: DOC_SCHEMA_VERSION, nodes: [], camera: { x: 0, y: 0 } })).toThrow();
     expect(() => importDoc({ nodes: [], camera: { x: 0, y: 0, zoom: 1 } })).toThrow();
   });
 });
