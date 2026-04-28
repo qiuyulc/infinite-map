@@ -11,11 +11,8 @@ import {
 } from 'react';
 import { rectIntersects, type Camera, type NodeData, type Rect } from '../core/types';
 import { buildSpatialIndex } from '../core/spatialIndex';
-import { BackgroundDots } from './BackgroundDots';
-import { BackgroundGrid } from './BackgroundGrid';
 import { EngineBackgroundLayer } from './EngineBackgroundLayer';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
-import { RenderDomNodes } from './RenderDomNodes';
 import { EngineDomNodesLayer } from './EngineDomNodesLayer';
 import { createEngineStore } from '../engine';
 import type { InfiniteMapDoc } from '../editor/document';
@@ -23,7 +20,6 @@ import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS } from '../editor/keys';
 import type { InfiniteMapTheme } from '../theme';
 import '../theme-base.css';
-import { useCamera } from '../hooks/useCamera';
 // pan 已纳入 Scheme C gestures（不再使用独立 hook）
 import { useViewportSize } from '../hooks/useViewportSize';
 import { useCommandRegistry } from '../hooks/useCommandRegistry';
@@ -31,22 +27,12 @@ import { usePatchEngine } from '../hooks/usePatchEngine';
 import { usePluginInputDispatch } from '../hooks/usePluginInputDispatch';
 import { useRunCommandWithHooks } from '../hooks/useRunCommandWithHooks';
 import { useAttachApiRef } from '../hooks/useAttachApiRef';
-import { useVirtualizedVisibleNodes } from '../hooks/useVirtualizedVisibleNodes';
 import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
-import { useSelectionGeometry } from '../hooks/useSelectionGeometry';
 import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
-import type {
-  ChangeMeta,
-  Command,
-  EditorErrorInfo,
-  HitTestTarget,
-  InfiniteMapPlugin,
-  MapContext,
-  NodePatch,
-} from '../editor/types';
+import type { ChangeMeta, Command, EditorErrorInfo, HitTestTarget, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import { createEventBus, createStore } from '../editor/runtime';
 
 export type InfiniteMapProps = {
@@ -106,14 +92,7 @@ export type InfiniteMapProps = {
   /** 初始相机 */
   initialCamera?: Camera;
 
-  /**
-   * 高性能引擎（Zustand + 原生双轨）
-   * - 默认开启：拖拽/缩放/overlay 等高频交互不再驱动 React re-render
-   * - 如需回退旧实现：engine.enabled=false
-   */
-  engine?: {
-    enabled?: boolean;
-  };
+  // 说明：InfiniteMap 已切换为 engine-only 实现（不再提供旧的 React 相机驱动渲染路径）。
 
   /**
    * 命令冲突策略（当多个 plugin 提供同名 commandId）
@@ -127,9 +106,6 @@ export type InfiniteMapProps = {
    */
   warnOnCommandConflict?: boolean;
 
-  /**
-   * editor hooks：提供可扩展的钩子能力
-   */
   /**
    * hooks 模式
    * - observe（默认）：hooks 只观察/记录，不影响执行流程
@@ -303,450 +279,6 @@ export type InfiniteMapApi = {
   serializeDoc: (meta?: Record<string, unknown>) => InfiniteMapDoc;
   parseDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
-
-function InfiniteMapLegacy({
-  nodes,
-  plugins,
-  editable,
-  editMode,
-  onNodesChange,
-  onPatches,
-  renderNode,
-  renderNodeContent,
-  getDefaultNodeProps,
-  defaultNodeShowMeta = false,
-  onNodeDrag,
-  initialCamera = { x: -400, y: -250, zoom: 1 },
-  commandConflictPolicy = 'keep-first',
-  warnOnCommandConflict = true,
-  editorHooks,
-  hookMode = 'observe',
-  onEditorError,
-  dotSpacing = 48,
-  dotRadiusPx = 1.35,
-  dotAlpha = 0.18,
-  backgroundMode = 'dots',
-  gridSpacing = 'auto',
-  gridAlpha = 0.14,
-  highlightRadiusPx = 140,
-  wheelPulseStrength = 0.55,
-  minZoom = 0.25,
-  maxZoom = 2.5,
-  zoomSpeed = 0.0012,
-  pinchZoomFactor = 0.6,
-  virtualization,
-  overscanPx = 900,
-  cellSize = 900,
-  minimapWidth = 260,
-  minimapHeight = 160,
-  minimapCachePadding = 120,
-  minimapNeedsRedraw,
-  themeBase,
-  theme,
-  panEnabled = true,
-  apiRef,
-  debug = false,
-}: InfiniteMapProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const { camera, cameraRef, commitCamera } = useCamera(initialCamera);
-  const { viewport, viewportRef } = useViewportSize(containerRef);
-
-  // nodes/visibleNodes refs：给插件 ctx 读取，避免闭包过期
-  const nodesRef = useRef(nodes);
-  useEffect(() => {
-    nodesRef.current = nodes;
-  }, [nodes]);
-
-  // 鼠标位置不需要触发 React re-render，用 ref 可避免拖动时“闪烁/卡顿”
-  const mouseRef = useRef<{ x: number; y: number } | null>(null);
-
-  // wheel 高亮“脉冲”
-  const pulseRef = useRef({ value: 0, lastTs: 0 });
-
-  // overlay 刷新（用于插件请求重绘 overlay）
-  const [, bumpOverlay] = useState(0);
-  // 重要：高频交互（drag/resize/marquee/hover）会频繁调用 requestRender。
-  // 在 DevTools 打开/低帧率环境下，如果每次都 setState，会导致重复渲染与卡顿。
-  // 这里用 rAF 合并：每帧最多触发一次 overlay re-render。
-  const renderRafRef = useRef<number | null>(null);
-  const requestRender = useCallback(() => {
-    if (renderRafRef.current != null) return;
-    renderRafRef.current = requestAnimationFrame(() => {
-      renderRafRef.current = null;
-      bumpOverlay((v) => v + 1);
-    });
-  }, []);
-  useEffect(() => {
-    return () => {
-      if (renderRafRef.current != null) cancelAnimationFrame(renderRafRef.current);
-    };
-  }, []);
-
-  // 主题变量（允许通过 props 注入；也支持外部 ThemeProvider 注入同名 --im-* 变量）
-  const themeVars = useInjectedThemeVars(theme);
-
-  // visibleNodes ref（给插件读取）
-  const visibleNodesRef = useRef<NodeData[]>([]);
-
-  // 空间索引（给插件查询）
-  const spatialIndex = useMemo(() => buildSpatialIndex(nodes, cellSize), [nodes, cellSize]);
-  const spatialIndexRef = useRef(spatialIndex);
-  useEffect(() => {
-    spatialIndexRef.current = spatialIndex;
-  }, [spatialIndex]);
-
-  const { screenToWorld, worldToScreen, rectScreenToWorld, rectWorldToScreen } = useCoordinateTransforms(cameraRef);
-
-  // 插件 bus/store（稳定引用）
-  const bus = useMemo(() => createEventBus(), []);
-  const store = useMemo(() => createStore(), []);
-
-  const hooksRef = useRef(editorHooks);
-  useEffect(() => {
-    hooksRef.current = editorHooks;
-  }, [editorHooks]);
-
-  const hookModeRef = useRef(hookMode);
-  useEffect(() => {
-    hookModeRef.current = hookMode;
-  }, [hookMode]);
-
-  const onEditorErrorRef = useRef(onEditorError);
-  useEffect(() => {
-    onEditorErrorRef.current = onEditorError;
-  }, [onEditorError]);
-
-  const debugRef = useRef(debug);
-  useEffect(() => {
-    debugRef.current = debug;
-  }, [debug]);
-
-  // 重要：onNodesChange/onPatches 可能在宿主每次 render 时都是新函数引用
-  // 如果直接放在 applyPatches 的依赖里，会导致 ctx 变化，从而触发 plugins.setup 反复执行（例如 toolbar/menu registry 被重复注入）
-  const onNodesChangeRef = useRef(onNodesChange);
-  useEffect(() => {
-    onNodesChangeRef.current = onNodesChange;
-  }, [onNodesChange]);
-
-  const onPatchesRef = useRef(onPatches);
-  useEffect(() => {
-    onPatchesRef.current = onPatches;
-  }, [onPatches]);
-
-  const hasChangeSink = Boolean(onNodesChange) || Boolean(onPatches);
-  const resolvedEditMode = useMemo<'auto' | 'readonly' | 'controlled'>(() => {
-    if (editMode) return editMode;
-    if (editable === false) return 'readonly';
-    if (editable === true) return 'controlled';
-    return 'auto';
-  }, [editMode, editable]);
-
-  // 是否允许“修改 nodes”的编辑行为（给 editor 插件判断：是否渲染 handles / guides / 是否启用 drag/resize）
-  // - auto：向后兼容（没有变更出口时，编辑能力关闭）
-  // - readonly：强制关闭
-  // - controlled：要求宿主提供变更出口，否则关闭（并在 applyPatches 处 DEV 抛错）
-  const editEnabled = resolvedEditMode === 'readonly' ? false : hasChangeSink;
-
-  // ctx 引用：供 runCommandWithHooks 在任意时刻拿到最新 ctx
-  const ctxRef = useRef<MapContext | null>(null);
-
-  // Scheme C：hover 命中（仅当没有 active gesture 时更新）
-  const hoverRef = useRef<HitTestTarget>({ kind: 'blank' });
-
-  const { applyPatches: applyPatchesRaw } = usePatchEngine({
-    bus,
-    nodesRef,
-    onNodesChangeRef,
-    onPatchesRef,
-    hooksRef,
-    hookModeRef,
-    onEditorErrorRef,
-  });
-
-  const runCommandWithHooks = useRunCommandWithHooks({ ctxRef, hooksRef, hookModeRef, onEditorErrorRef });
-
-  // 显式编辑模式：对 patches 生效做统一“闸门”
-  const applyPatches = useCallback(
-    (patches: NodePatch[], meta: ChangeMeta) => {
-      if (resolvedEditMode === 'readonly') return;
-      if (resolvedEditMode === 'controlled') {
-        if (!onNodesChangeRef.current && !onPatchesRef.current) {
-          const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
-          const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
-          if (isDev) {
-            throw new Error(
-              '[InfiniteMap] editMode="controlled" 需要提供 onNodesChange 或 onPatches 作为变更出口，否则编辑变更无法被宿主持久化。'
-            );
-          }
-          return;
-        }
-      }
-      applyPatchesRaw(patches, meta);
-    },
-    [applyPatchesRaw, resolvedEditMode]
-  );
-
-  const { ctx } = useMapContext({
-    ctxRef,
-    cameraRef,
-    viewportRef,
-    nodesRef,
-    visibleNodesRef,
-    spatialIndexRef,
-    screenToWorld,
-    worldToScreen,
-    rectScreenToWorld,
-    rectWorldToScreen,
-    applyPatches,
-    bus,
-    store,
-    requestRender,
-    runCommandWithHooks,
-  });
-
-  // 对外暴露 hover service（overlay 可读取当前命中，用于 hover 高亮等）
-  useEffect(() => {
-    ctx.registerService('hover', {
-      get: () => hoverRef.current,
-    });
-  }, [ctx]);
-
-  // 把视图配置（min/max zoom）暴露给插件（如 ViewCommandsPlugin）
-  useEffect(() => {
-    ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
-  }, [ctx, maxZoom, minZoom]);
-
-  // 视图交互：画布平移开关（用于“锁定视图”）
-  useEffect(() => {
-    ctx.store.set(STORE_KEYS.viewPanEnabled, panEnabled !== false);
-  }, [ctx, panEnabled]);
-
-  // 暴露编辑能力开关给插件（让 overlay/gestures 在只读/无出口时自动收敛）
-  useEffect(() => {
-    ctx.store.set(STORE_KEYS.editEnabled, editEnabled);
-  }, [ctx, editEnabled]);
-
-  // commands registry：将 plugins.commands 汇总到 store，供 CommandRunnerPlugin 使用
-  useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });
-
-  // camera state 更新：广播 changed 事件（用于外部订阅）
-  useEffect(() => {
-    bus.emit('camera:changed', { camera });
-  }, [bus, camera]);
-
-  // 开发期提示：启用 plugins 但未提供受控出口时，编辑不会生效
-  useEffect(() => {
-    if (!plugins || plugins.length === 0) return;
-    if (resolvedEditMode !== 'auto') return;
-    if (onNodesChange || onPatches) return;
-    const nodeEnv = (globalThis as any)?.process?.env?.NODE_ENV as string | undefined;
-    const isDev = nodeEnv != null ? nodeEnv !== 'production' : false;
-    if (!isDev) return;
-    console.warn('[InfiniteMap] plugins 已启用，但未提供 onNodesChange/onPatches：编辑产生的变更将不会被宿主持久化（看起来像“编辑无效”）。');
-  }, [plugins, onNodesChange, onPatches, resolvedEditMode]);
-
-  const { getNodeRect, getSelectionRect } = useSelectionGeometry({ nodesRef, ctx });
-
-  useAttachApiRef({
-    apiRef,
-    plugins,
-    ctx,
-    commitCamera,
-    runCommandWithHooks,
-    getNodeRect,
-    getSelectionRect,
-    onNodesChange,
-  });
-
-  // 插件 setup/teardown（Milestone 1：只提供生命周期，不引入任何默认插件）
-  usePluginLifecycle({ plugins, ctx, onEditorErrorRef });
-
-  const { visibleNodes, pan } = useVirtualizedVisibleNodes({
-    nodes,
-    cellSize,
-    camera,
-    viewport,
-    overscanPx,
-    virtualization,
-    store,
-    debugRef,
-    visibleNodesRef,
-  });
-
-  useMapRuntimeEffects({
-    plugins,
-    ctx,
-    containerRef,
-    highlightCanvasRef,
-    viewport,
-    viewportRef,
-    cameraRef,
-    commitCamera,
-    mouseRef,
-    pulseRef,
-    panEnabled: panEnabled !== false,
-    minZoom,
-    maxZoom,
-    zoomSpeed,
-    pinchZoomFactor,
-    dotSpacing,
-    dotRadiusPx,
-    highlightRadiusPx,
-    wheelPulseStrength,
-    screenToWorld,
-    store,
-    bus,
-    minimapWidth,
-    minimapHeight,
-    minimapCachePadding,
-    minimapNeedsRedraw,
-  });
-
-  const { dispatchPointer, dispatchContextMenu } = usePluginInputDispatch({
-    plugins,
-    ctx,
-    containerRef,
-    store,
-    screenToWorld,
-    commitCamera,
-    mouseRef,
-    hoverRef,
-    onEditorErrorRef,
-    debugRef,
-    pan: { ...pan, visibleNodesRef },
-  });
-
-  return (
-    <div
-      ref={containerRef}
-      data-im-theme={themeBase ?? 'light'}
-      tabIndex={0}
-      style={{
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        // 注入 --im-* 主题变量（也支持外部 ThemeProvider 注入同名变量）
-        ...(themeVars ?? {}),
-        background: 'var(--im-map-bg, var(--map-bg))',
-        borderRadius: 0,
-        border: 'none',
-        transition: 'background-color 220ms ease, border-color 220ms ease',
-        touchAction: 'none',
-        outline: 'none',
-      }}
-      /**
-       * 重要：插件事件分发使用 capture 阶段，确保即使子元素（例如节点拖拽）stopPropagation，
-       * 也能收到点击/拖拽等事件（SelectionPlugin 需要）。
-       */
-      onPointerDownCapture={(e) => {
-        // 组件库的 UI（toolbar/menu 等）不应被“画布插件”拦截
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        // 让键盘快捷键只在画布聚焦时生效（避免劫持页面级 Cmd/Ctrl+C）
-        (e.currentTarget as HTMLElement).focus?.();
-        const res = dispatchPointer('down', e);
-        if (res.handled === true && res.mode !== 'continue') {
-          // 关键：在 overlay handle（resize）这种“很小的命中区域”下，
-          // 如果不 capture 指针，快速拖动时 move/up 可能丢给别的元素，导致缩放中断或变成框选。
-          (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-      onPointerMoveCapture={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        const res = dispatchPointer('move', e);
-        if (res.handled === true && res.mode !== 'continue') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-      onPointerUpCapture={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        const res = dispatchPointer('up', e);
-        if (res.handled === true && res.mode !== 'continue') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-      onPointerCancelCapture={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        const res = dispatchPointer('cancel', e);
-        if (res.handled === true && res.mode !== 'continue') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-      onContextMenuCapture={(e) => {
-        const t = e.target as unknown as HTMLElement | null;
-        if (t?.closest?.('[data-im-ui]')) return;
-        const res = dispatchContextMenu(e);
-        if (res.handled === true && res.mode !== 'continue') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-      onPointerLeave={(e: ReactPointerEvent) => {
-        // leave：清理 hover + 鼠标位置，并 cancel 当前 active gesture（包括 pan）
-        mouseRef.current = null;
-        hoverRef.current = { kind: 'blank' };
-        store.set(STORE_KEYS.hoverHit, { kind: 'blank' });
-        if (containerRef.current) containerRef.current.style.cursor = 'default';
-        dispatchPointer('cancel', e);
-      }}
-    >
-      {/* 插件 background 层（在节点层之下） */}
-      {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
-
-      {backgroundMode === 'grid' ? (
-        <BackgroundGrid
-          camera={camera}
-          gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
-          gridAlpha={gridAlpha}
-        />
-      ) : backgroundMode === 'dots' ? (
-        <BackgroundDots camera={camera} dotSpacing={dotSpacing} dotRadiusPx={dotRadiusPx} dotAlpha={dotAlpha} />
-      ) : null}
-
-      {/* 高亮点层（Canvas，只画鼠标附近） */}
-      <canvas
-        ref={highlightCanvasRef}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
-      <RenderDomNodes
-        camera={camera}
-        cameraRef={cameraRef}
-        visibleNodes={visibleNodes}
-        zIndex={1}
-        onNodeDrag={onNodeDrag}
-        renderNode={renderNode}
-        renderNodeContent={renderNodeContent}
-        getDefaultNodeProps={getDefaultNodeProps}
-        defaultNodeShowMeta={defaultNodeShowMeta}
-      />
-
-      {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
-      {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 2, onEditorError: onEditorErrorRef.current })}
-
-      {/* 插件 hud 层（minimap/标尺/面板等，通常最上层） */}
-      {RenderPluginOverlays({ plugins, slot: 'hud', ctx, zIndex: 3, onEditorError: onEditorErrorRef.current })}
-
-    </div>
-  );
-}
 
 // -----------------------------------------------------------------------------
 // Engine mode（Zustand + 原生双轨 + 非响应式订阅）
@@ -933,9 +465,11 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     runCommandWithHooks,
   });
 
-  // 将 engine store 暴露给插件（供未来插件直接 subscribe）
-  useEffect(() => {
+  // services：overlay 在 render 阶段就会读取，因此需要同步可用（不能放 useEffect）
+  if (!ctx.getService('engine')) {
     ctx.registerService('engine', { store: engineStore, cameraRef });
+  }
+  if (!ctx.getService('dom-nodes')) {
     ctx.registerService('dom-nodes', {
       getEl: (id: string) => {
         const root = containerRef.current;
@@ -943,7 +477,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
         return root.querySelector(`[data-im-node-id="${CSS.escape(id)}"]`) as HTMLElement | null;
       },
     });
-  }, [ctx, engineStore]);
+  }
 
   // view config / pan enabled / edit enabled
   useEffect(() => {
@@ -989,7 +523,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 
   // commitCamera：原生轨道（不 setState）
   const commitRafRef = useRef<number | null>(null);
-  const lastCommitRef = useRef<Camera>(initialCamera);
 
   const scheduleComputeVisible = useCallback(() => {
     if (commitRafRef.current != null) return;
@@ -1032,17 +565,21 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
       // 仅当 ids 变化时更新（避免无意义通知）
       const prev = engineStore.getState().visibleNodeIds;
       let same = prev.length === ids.length;
-      if (same) for (let i = 0; i < ids.length; i++) if (ids[i] !== prev[i]) { same = false; break; }
+      if (same)
+        for (let i = 0; i < ids.length; i++)
+          if (ids[i] !== prev[i]) {
+            same = false;
+            break;
+          }
       if (!same) engineStore.getState().setVisibleNodeIds(ids);
       visibleNodesRef.current = filtered;
       if (panActive && panKeepAliveEnabled) panKeepAliveAdd(ids);
     });
-  }, [ctx, engineStore, nodesById, nodesRef, overscanPx, panActive, panKeepAliveAdd, panKeepAliveEnabled, spatialIndexRef, viewportRef, virtualization]);
+  }, [ctx, engineStore, nodesById, nodesRef, overscanPx, panActive, panKeepAliveAdd, panKeepAliveEnabled, viewportRef, virtualization]);
 
   const commitCamera = useCallback(
     (next: Camera, _immediate?: boolean) => {
       cameraRef.current = next;
-      lastCommitRef.current = next;
       engineStore.getState().setView(next);
       bus.emit('camera:changed', { camera: next } as any);
       scheduleComputeVisible();
@@ -1064,8 +601,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     scheduleComputeVisible();
   }, [scheduleComputeVisible, nodes]);
 
-  // 容器尺寸变化时也需要重新计算一次（初次挂载时 viewport 可能为 0x0，
-  // 如果不在这里补一次，只有发生 camera 变更（例如拖拽）才会触发 visible 计算）
+  // 容器尺寸变化时也需要重新计算一次（初次挂载时 viewport 可能为 0x0）
   useEffect(() => {
     if (viewport.w <= 0 || viewport.h <= 0) return;
     scheduleComputeVisible();
@@ -1244,7 +780,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
       {/* 插件 background 层（屏幕空间） */}
       {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
 
-      {/* 背景（屏幕空间，但图案锚定世界坐标；由 store.subscribe 直接写 style，避免 pan 时空白） */}
+      {/* 背景（屏幕空间，但图案锚定世界坐标；由 store.subscribe 直接写 style） */}
       <EngineBackgroundLayer
         store={engineStore}
         backgroundMode={backgroundMode}
@@ -1301,6 +837,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 }
 
 export function InfiniteMap(props: InfiniteMapProps) {
-  // 迁移策略：engine 默认开启；如需回退旧实现，显式传 engine.enabled=false
-  return props.engine?.enabled === false ? <InfiniteMapLegacy {...props} /> : <InfiniteMapEngine {...props} />;
+  return <InfiniteMapEngine {...props} />;
 }
+

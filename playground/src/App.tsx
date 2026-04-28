@@ -76,8 +76,6 @@ export default function App() {
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
-  // 默认开启 engine；如需回退旧实现可关闭
-  const [engineEnabled, setEngineEnabled] = useState(true);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
   const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
@@ -208,10 +206,6 @@ export default function App() {
               <input className="pg-check" type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
             </label>
             <label className="pg-row">
-              <span className="pg-row__label">Engine(默认)</span>
-              <input className="pg-check" type="checkbox" checked={engineEnabled} onChange={(e) => setEngineEnabled(e.target.checked)} />
-            </label>
-            <label className="pg-row">
               <span className="pg-row__label">keepAlive(图表)</span>
               <input className="pg-check" type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
@@ -333,8 +327,6 @@ export default function App() {
             onNodesChange={onNodesChange}
             onPatches={onPatches}
             plugins={plugins}
-            // engine 默认开启；关闭则回退 legacy
-            engine={engineEnabled ? { enabled: true } : { enabled: false }}
             themeBase={themeBase}
             panEnabled={panEnabled}
             backgroundMode={backgroundMode}
