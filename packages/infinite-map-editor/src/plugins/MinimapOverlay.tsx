@@ -5,11 +5,13 @@ import { useThemeVersion } from '@qiuyulc/infinite-map';
 import type { MinimapPluginOptions } from './createMinimapPlugin';
 
 export const MinimapOverlay = memo(function MinimapOverlay({ ctx, opts }: { ctx: MapContext; opts: MinimapPluginOptions }) {
+  // 注意：不能在同一个组件里“条件调用 hooks”，否则会触发 React 内部错误（Static flag missing）。
+  // 这里用组件拆分：wrapper 无 hooks，按 service 选择不同实现。
   const engine = ctx.getService<{ store: any; cameraRef: React.MutableRefObject<Camera> }>('engine');
-  if (engine) {
-    return <EngineMinimapOverlay ctx={ctx} opts={opts} engine={engine} />;
-  }
+  return engine ? <EngineMinimapOverlay ctx={ctx} opts={opts} engine={engine} /> : <LegacyMinimapOverlay ctx={ctx} opts={opts} />;
+});
 
+const LegacyMinimapOverlay = memo(function LegacyMinimapOverlay({ ctx, opts }: { ctx: MapContext; opts: MinimapPluginOptions }) {
   const themeVersion = useThemeVersion();
   // 性能：InfiniteMap 在 pan 时会高频更新 camera，从而导致父组件 re-render。
   // minimap 内部包含 canvas 绘制与 nodes 遍历，若每次父组件 render 都执行，会非常卡。

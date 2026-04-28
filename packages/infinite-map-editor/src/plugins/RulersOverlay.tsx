@@ -56,11 +56,13 @@ export type RulersOverlayProps = {
 };
 
 export const RulersOverlay = memo(function RulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
+  // 注意：不能在同一个组件里“条件调用 hooks”，否则会触发 React 内部错误（Static flag missing）。
+  // 这里用组件拆分：wrapper 无 hooks，按 service 选择不同实现。
   const engine = ctx.getService<{ store: any; cameraRef: any }>('engine');
-  if (engine) {
-    return <EngineRulersOverlay ctx={ctx} thickness={thickness} engine={engine} />;
-  }
+  return engine ? <EngineRulersOverlay ctx={ctx} thickness={thickness} engine={engine} /> : <LegacyRulersOverlay ctx={ctx} thickness={thickness} />;
+});
 
+const LegacyRulersOverlay = memo(function LegacyRulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
   // 性能：在 DevTools 打开时，camera 更新会导致父组件高频 re-render，
   // SVG 标尺每次重算 ticks + 重建大量 DOM 会很卡。
   // 这里用 “事件驱动 + 节流” 来刷新：父组件重渲染时尽量不跟着更新，改为低频主动刷新。
