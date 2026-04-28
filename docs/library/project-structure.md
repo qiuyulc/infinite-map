@@ -88,7 +88,6 @@ packages/infinite-map-editor/
    │  ├─ createNudgePlugin.ts            # 键盘方向键微调
    │  └─ ...                             # minimap/rulers/zoomDock/rotate/lockHide/exportPng...
    ├─ components/
-   │  ├─ Minimap.tsx                     # UI 组件
    │  └─ Slider.tsx                      # UI 组件
    └─ __tests__/                          # 插件交互回归测试（vitest + jsdom）
 ```
@@ -96,4 +95,3 @@ packages/infinite-map-editor/
 核心关系：
 - **内核包**定义“协议与运行时”（types/runtime/hooks）
 - **editor 包**实现“具体插件与 UI overlays”，并通过 `composePlugins()` 装配到 `<InfiniteMap />`
-
