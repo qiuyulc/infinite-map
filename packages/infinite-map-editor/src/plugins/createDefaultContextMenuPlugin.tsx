@@ -355,7 +355,15 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
   };
 
   return (
-    <div ref={ref} style={panel} data-im-ui>
+    <div
+      ref={ref}
+      style={{ ...panel, overscrollBehavior: 'contain' }}
+      data-im-ui
+      onWheelCapture={(e) => {
+        // menu 面板内部需要滚动；阻止 wheel 冒泡到 InfiniteMap 容器，避免触发画布缩放/平移
+        e.stopPropagation();
+      }}
+    >
       {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
         const enabled = it.enabled ? it.enabled(ctx, payload) : true;

@@ -269,13 +269,15 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
   };
 
   const btn: CSSProperties = {
-    height: 30,
+    height: 32,
+    minWidth: 32,
     padding: '0 10px',
     borderRadius: 10,
     border: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
     background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
     color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
     fontSize: 12,
+    lineHeight: '32px',
     cursor: 'pointer',
   };
   const btnIcon: CSSProperties = {
@@ -299,7 +301,14 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
   };
 
   return (
-    <div style={base} data-im-ui>
+    <div
+      style={base}
+      data-im-ui
+      onWheelCapture={(e) => {
+        // toolbar 自身可滚动（overflow:auto），避免 wheel 冒泡导致地图缩放/平移
+        e.stopPropagation();
+      }}
+    >
       {items.map((it, i) => {
         if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
         const enabled = it.enabled ? it.enabled(ctx) : true;
