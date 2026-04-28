@@ -26,6 +26,14 @@ export type DefaultContextMenuOptions = {
    * - 插件贡献的 items（STORE_KEYS.contextMenuItems）会在 base 后合并
    */
   items?: ContextMenuItem[];
+  /**
+   * 最大宽度（像素），超出时内容省略/滚动（默认 320）
+   */
+  maxWidthPx?: number;
+  /**
+   * 最大高度（像素），超出时纵向滚动（默认 420）
+   */
+  maxHeightPx?: number;
 };
 
 function run(ctx: MapContext, id: string) {
@@ -297,11 +305,16 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
   // 注意：该判断必须放在所有 hooks 之后（否则 hooks 数量在不同渲染间不一致）
   if (editEnabled === false || !payload) return null;
 
+  const maxWidthPx = opts.maxWidthPx ?? 320;
+  const maxHeightPx = opts.maxHeightPx ?? 420;
+
   const panel: CSSProperties = {
     position: 'absolute',
     left: pos?.left ?? 0,
     top: pos?.top ?? 0,
     minWidth: 170,
+    maxWidth: maxWidthPx,
+    maxHeight: maxHeightPx,
     padding: 4,
     borderRadius: 10,
     // 与 toolbar tooltip/panel 保持一致：优先使用 im-panel-*，兼容旧的 im-menu-* 变量
@@ -312,6 +325,9 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
     color: 'var(--im-text-strong, var(--im-menu-text, rgba(15,23,42,0.85)))',
     pointerEvents: 'auto',
     zIndex: 9999,
+    boxSizing: 'border-box',
+    overflowX: 'hidden',
+    overflowY: 'auto',
   };
 
   const item: CSSProperties = {
@@ -371,7 +387,7 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
             <span style={{ width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
               {it.icon ?? null}
             </span>
-            <span style={{ flex: 1, minWidth: 0 }}>{it.label}</span>
+            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.label}</span>
             {it.shortcut ? (
               <span
                 style={{
@@ -380,6 +396,7 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
                   opacity: 0.7,
                   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                   whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}
               >
                 {it.shortcut}
