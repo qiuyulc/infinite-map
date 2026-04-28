@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { InfiniteMap, STORE_KEYS, type InfiniteMapPlugin, type MapContext, type NodeData } from '@qiuyulc/infinite-map';
 import { createDefaultEditorPlugins } from '../editor/createDefaultEditorPlugins';
+import { createDefaultEditorPluginsWithUI } from '../createDefaultEditorPluginsWithUI';
 import { createMinimapPlugin } from '../plugins/createMinimapPlugin';
 
 function setRect(el: Element, rect: Partial<DOMRect>) {
@@ -186,6 +187,50 @@ describe('InfiniteMap integrations (jsdom)', () => {
     await waitFor(() => {
       const afterX = ctxRef!.getCamera().x;
       expect(afterX).not.toBe(beforeX);
+    });
+  });
+
+  it('snap toggle disables snapping and clears guides (zoomDock)', async () => {
+    let ctxRef: MapContext | null = null;
+    const nodes: NodeData[] = [
+      { id: 'a', x: 0, y: 0, width: 80, height: 40, label: 'A' },
+      { id: 'b', x: 400, y: 300, width: 80, height: 40, label: 'B' },
+    ];
+
+    const plugins = [...createDefaultEditorPluginsWithUI({ zoomDock: { enabled: true } }), createCapturePlugin((c) => (ctxRef = c))];
+    const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={() => void 0} />);
+    const root = container.firstElementChild as HTMLElement;
+    setRect(root, { width: 800, height: 600, left: 0, top: 0 });
+
+    await waitFor(() => expect(ctxRef).toBeTruthy());
+    // 先手动塞一条辅助线，验证关闭时会清空
+    ctxRef!.store.set(STORE_KEYS.snapGuides, { v: [10], h: [20] });
+    ctxRef!.requestRender();
+    await waitFor(() => {
+      const anyGuide = container.querySelector('[data-im-guide]') as HTMLElement | null;
+      expect(anyGuide).toBeTruthy();
+    });
+
+    const btn = await waitFor(() => {
+      const el = container.querySelector('button[data-im-snap-toggle]') as HTMLButtonElement | null;
+      expect(el).toBeTruthy();
+      return el!;
+    });
+
+    // disable
+    fireEvent.click(btn);
+    await waitFor(() => {
+      const cfg = ctxRef!.store.get<any>(STORE_KEYS.snapConfig);
+      expect(cfg?.enabled).toBe(false);
+      expect(ctxRef!.store.get<any>(STORE_KEYS.snapGuides)).toBeFalsy();
+      expect(container.querySelector('[data-im-guide]')).toBeFalsy();
+    });
+
+    // enable
+    fireEvent.click(btn);
+    await waitFor(() => {
+      const cfg = ctxRef!.store.get<any>(STORE_KEYS.snapConfig);
+      expect(cfg?.enabled).toBe(true);
     });
   });
 });
