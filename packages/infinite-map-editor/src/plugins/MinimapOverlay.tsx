@@ -33,8 +33,6 @@ function EngineMinimapOverlay({
   const includeOrigin = opts.includeOrigin ?? true;
   const needsRedraw = opts.needsRedraw;
 
-  const nodes = ctx.getNodes();
-
   // DPR/尺寸
   useEffect(() => {
     const c = canvasRef.current;
@@ -49,6 +47,9 @@ function EngineMinimapOverlay({
   }, [width, height]);
 
   const redrawStatic = useCallback(() => {
+    // 注意：engine 模式下拖拽节点不会驱动 React re-render；
+    // 因此这里不能依赖 render 阶段捕获的 nodes，而是每次重绘都从 ctx 拉取最新快照。
+    const nodes = ctx.getNodes() as NodeData[];
     const dpr = window.devicePixelRatio || 1;
     if (!staticCanvasRef.current) staticCanvasRef.current = document.createElement('canvas');
     const sc = staticCanvasRef.current;
@@ -110,7 +111,7 @@ function EngineMinimapOverlay({
       sctx.fillStyle = n.color ?? defaultNodeFill;
       sctx.fillRect(x, y, nw, nh);
     }
-  }, [cachePadding, height, includeOrigin, nodes, width]);
+  }, [cachePadding, ctx, height, includeOrigin, width]);
 
   const redrawDynamic = useCallback(() => {
     const c = canvasRef.current;
@@ -137,6 +138,7 @@ function EngineMinimapOverlay({
 
     // 统计（可选，避免默认做重计算）
     if (showStats) {
+      const nodes = ctx.getNodes() as NodeData[];
       const visibleNodes = ctx.getVisibleNodes() as NodeData[];
       const visibleCount = visibleNodes.length;
       const totalCount = nodes.length;
@@ -151,15 +153,40 @@ function EngineMinimapOverlay({
       void visibleCount;
       void totalCount;
     }
-  }, [ctx, engine.cameraRef, height, nodes.length, showStats, width]);
+  }, [ctx, engine.cameraRef, height, showStats, width]);
 
-  // 静态缓存更新：nodes/theme/needsRedraw
-  useEffect(() => {
+  // 静态缓存更新：engine 模式下需要订阅 patches:applied（拖拽节点不会触发 React re-render）
+  const staticRafRef = useRef<number | null>(null);
+  const runStaticNow = useCallback(() => {
     redrawStatic();
-    // 静态更新后补一次动态层
     redrawDynamic();
+  }, [redrawDynamic, redrawStatic]);
+  const scheduleStatic = useCallback(() => {
+    if (staticRafRef.current != null) return;
+    staticRafRef.current = requestAnimationFrame(() => {
+      staticRafRef.current = null;
+      runStaticNow();
+    });
+  }, [runStaticNow]);
+
+  useEffect(() => {
+    const unPatches = ctx.bus.on('patches:applied' as any, scheduleStatic);
+    const unNeeds = ctx.store.subscribe(STORE_KEYS.minimapNeedsRedraw, scheduleStatic);
+    // 首次挂载：同步构建 transformRef，避免测试环境 / 首帧交互时 rAF 尚未执行导致 minimap 点击无效
+    runStaticNow();
+    return () => {
+      unPatches?.();
+      unNeeds?.();
+      if (staticRafRef.current != null) cancelAnimationFrame(staticRafRef.current);
+      staticRafRef.current = null;
+    };
+  }, [ctx, runStaticNow, scheduleStatic]);
+
+  // props/theme 变化时也需要更新静态层
+  useEffect(() => {
+    runStaticNow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [needsRedraw ?? nodes, width, height, cachePadding, themeVersion, includeOrigin, redrawStatic]);
+  }, [needsRedraw, width, height, cachePadding, themeVersion, includeOrigin, runStaticNow]);
 
   // 动态层订阅：camera/view 变化时 rAF redraw
   useEffect(() => {
@@ -235,6 +262,7 @@ function EngineMinimapOverlay({
     const rect = canvas.getBoundingClientRect();
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
+    const nodes = ctx.getNodes() as NodeData[];
     if (nodes.length === 0) return;
 
     const cam = engine.cameraRef.current;
@@ -263,11 +291,11 @@ function EngineMinimapOverlay({
   const stats = useMemo(() => {
     const cam = engine.cameraRef.current;
     const visibleCount = (ctx.getVisibleNodes() as NodeData[]).length;
-    const totalCount = nodes.length;
+    const totalCount = (ctx.getNodes() as NodeData[]).length;
     const inViewCount = ctx.store.get<number>(STORE_KEYS.minimapInViewCount) ?? 0;
     return `rendered ${visibleCount}/${totalCount} · in view ${inViewCount} · zoom ${cam.zoom.toFixed(2)}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes.length, showStats, themeVersion]);
+  }, [showStats, themeVersion]);
 
   return (
     <div
