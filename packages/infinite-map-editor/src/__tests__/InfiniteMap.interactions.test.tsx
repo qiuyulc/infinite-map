@@ -56,6 +56,62 @@ describe('InfiniteMap integrations (jsdom)', () => {
     });
   });
 
+  it('selection overlay clears stale pan transform after rerender (virtualization + keepAlive)', async () => {
+    let ctxRef: MapContext | null = null;
+    const nodes: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 80, height: 40, label: 'A' }];
+
+    const plugins = [...createDefaultEditorPlugins(), createCapturePlugin((c) => (ctxRef = c))];
+    const { container } = render(
+      <InfiniteMap
+        nodes={nodes}
+        plugins={plugins}
+        onNodesChange={() => void 0}
+        virtualization={{ enabled: true, keepAlive: () => true }}
+      />
+    );
+    const root = container.firstElementChild as HTMLElement;
+    setRect(root, { width: 800, height: 600, left: 0, top: 0 });
+
+    await screen.findByText('A');
+    await new Promise((r) => setTimeout(r, 0));
+
+    // select node A
+    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 410, clientY: 260 });
+    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 410, clientY: 260 });
+    await waitFor(() => expect(ctxRef).toBeTruthy());
+
+    // wait selection overlay
+    const selectionPluginRoot = await waitFor(() => {
+      const el = container.querySelector('div[data-plugin="selection"]') as HTMLElement | null;
+      expect(el).toBeTruthy();
+      return el!;
+    });
+    const overlayRoot = await waitFor(() => {
+      const el = selectionPluginRoot.querySelector('div[style*="pointer-events: none"]') as HTMLElement | null;
+      expect(el).toBeTruthy();
+      return el!;
+    });
+
+    const before = ctxRef!.getCamera();
+    // pan camera by emitting request event (engine 模式下由 useMapRuntimeEffects 处理)
+    ctxRef!.bus.emit('camera:set', { camera: { ...before, x: before.x + 100 }, immediate: true } as any);
+    await waitFor(() => {
+      // 相机变化后 overlay 不重渲染，依赖 imperative transform 跟随
+      expect(overlayRoot.style.transform).toContain('translate3d(');
+    });
+
+    // 触发一次 overlay re-render（模拟“虚拟化/keepAlive 导致的额外刷新”）
+    ctxRef!.requestRender();
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+
+    // rerender 后，overlay 应该使用新的 camera 重新计算 left/top，因此 transform 不应残留旧的 pan 偏移
+    await waitFor(() => {
+      expect(ctxRef!.getCamera().x).toBe(before.x + 100);
+      expect(overlayRoot.style.transform).toBe('');
+    });
+  });
+
   it('hover updates cursor via hitTest pipeline', async () => {
     let ctxRef: MapContext | null = null;
     const nodes: NodeData[] = [
