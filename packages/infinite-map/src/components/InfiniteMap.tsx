@@ -1063,6 +1063,13 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     scheduleComputeVisible();
   }, [scheduleComputeVisible, nodes]);
 
+  // 容器尺寸变化时也需要重新计算一次（初次挂载时 viewport 可能为 0x0，
+  // 如果不在这里补一次，只有发生 camera 变更（例如拖拽）才会触发 visible 计算）
+  useEffect(() => {
+    if (viewport.w <= 0 || viewport.h <= 0) return;
+    scheduleComputeVisible();
+  }, [scheduleComputeVisible, viewport.w, viewport.h]);
+
   // viewport DOM：订阅 transform，直接写 style（rAF 合并）
   useEffect(() => {
     const el = viewportDomRef.current;
