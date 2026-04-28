@@ -7,8 +7,6 @@ export function RenderDomNodes({
   camera,
   cameraRef,
   visibleNodes,
-  applyCameraTransform = true,
-  worldRef,
   zIndex = 1,
   onNodeDrag,
   renderNode,
@@ -19,13 +17,6 @@ export function RenderDomNodes({
   camera: Camera;
   cameraRef: React.MutableRefObject<Camera>;
   visibleNodes: NodeData[];
-  /**
-   * 是否由 React 根据 camera 计算世界层 transform
-   * - true（默认）：transform 由 React 控制
-   * - false：transform 由外部（DOM imperative）控制，例如 domPan
-   */
-  applyCameraTransform?: boolean;
-  worldRef?: React.Ref<HTMLDivElement>;
   zIndex?: number;
   onNodeDrag?: (id: string, pos: { x: number; y: number }, phase: 'move' | 'end') => void;
   renderNode?: (node: NodeData) => ReactNode;
@@ -137,19 +128,14 @@ export function RenderDomNodes({
       left: 0,
       top: 0,
       transformOrigin: '0 0',
-      transform: applyCameraTransform
-        ? `translate3d(${-camera.x * camera.zoom}px, ${-camera.y * camera.zoom}px, 0) scale(${camera.zoom})`
-        : undefined,
+      transform: `translate3d(${-camera.x * camera.zoom}px, ${-camera.y * camera.zoom}px, 0) scale(${camera.zoom})`,
       willChange: 'transform',
       width: 0,
       height: 0,
       zIndex,
     };
-  }, [applyCameraTransform, camera.x, camera.y, camera.zoom, zIndex]);
+  }, [camera.x, camera.y, camera.zoom, zIndex]);
 
-  return (
-    <div ref={worldRef} style={worldStyle}>
-      {domNodeElements}
-    </div>
-  );
+  return <div style={worldStyle}>{domNodeElements}</div>;
 }
+
