@@ -29,6 +29,11 @@ export type PluginInputDispatchOptions = {
   store: { get: <T>(key: string) => T | undefined; set: (key: string, v: any) => void };
   screenToWorld: (p: { x: number; y: number }) => { x: number; y: number };
   commitCamera: (next: { x: number; y: number; zoom: number }, immediate: boolean) => void;
+  domPan?: {
+    enabled?: boolean;
+    stateSync?: 'throttle' | 'end';
+    throttleMs?: number;
+  };
   mouseRef: React.MutableRefObject<{ x: number; y: number } | null>;
   hoverRef: React.MutableRefObject<HitTestTarget>;
   onEditorErrorRef: React.MutableRefObject<((err: unknown, info: EditorErrorInfo) => void) | undefined>;
@@ -74,6 +79,7 @@ export function usePluginInputDispatch({
   store,
   screenToWorld,
   commitCamera,
+  domPan,
   mouseRef,
   hoverRef,
   onEditorErrorRef,
@@ -92,6 +98,10 @@ export function usePluginInputDispatch({
   const panRef = useRef<null | { pointerId: number; startScreen: { x: number; y: number }; startCam: { x: number; y: number } }>(
     null
   );
+  const panSyncRef = useRef<{ lastSyncTs: number; lastCam: { x: number; y: number; zoom: number } | null }>({
+    lastSyncTs: 0,
+    lastCam: null,
+  });
 
   const dispatchPointer = useCallback(
     (type: MapPointerEvent['type'], e: React.PointerEvent): HandlerResult => {
@@ -169,9 +179,41 @@ export function usePluginInputDispatch({
           const cam = ctx0.getCamera();
           const dx = e0.screen.x - st0.startScreen.x;
           const dy = e0.screen.y - st0.startScreen.y;
-          commitCamera({ x: st0.startCam.x - dx / cam.zoom, y: st0.startCam.y - dy / cam.zoom, zoom: cam.zoom }, false);
+          const nextCam = { x: st0.startCam.x - dx / cam.zoom, y: st0.startCam.y - dy / cam.zoom, zoom: cam.zoom };
+
+          // 轨道 A：pan 中绕过 React（仅更新 ref + DOM transform）
+          if (domPan?.enabled) {
+            // ctx.getCamera() 返回的是 cameraRef.current（对象），直接写属性即可
+            const cref = ctx0.getCamera() as any;
+            if (cref) {
+              cref.x = nextCam.x;
+              cref.y = nextCam.y;
+              cref.zoom = nextCam.zoom;
+            }
+
+            // imperative 更新 viewport transform（由 InfiniteMap 注册 service）
+            const vp = ctx0.getService?.<any>('viewport-dom');
+            vp?.setTransform?.(nextCam);
+
+            // 轨道 B：同步 React state（用于“极快补上”新区域节点/虚拟化）
+            const mode = domPan.stateSync ?? 'throttle';
+            const throttleMs = domPan.throttleMs ?? 80;
+            if (mode === 'throttle') {
+              const now = (globalThis as any).performance?.now ? (globalThis as any).performance.now() : Date.now();
+              if (now - panSyncRef.current.lastSyncTs >= throttleMs) {
+                panSyncRef.current.lastSyncTs = now;
+                panSyncRef.current.lastCam = nextCam;
+                commitCamera(nextCam, false);
+              }
+            } else {
+              panSyncRef.current.lastCam = nextCam;
+            }
+            return;
+          }
+
+          commitCamera(nextCam, false);
         },
-        onEnd: (e0: MapPointerEvent) => {
+        onEnd: (e0: MapPointerEvent, ctx0: MapContext) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
           if (pan.panActive) {
@@ -179,14 +221,22 @@ export function usePluginInputDispatch({
             pan.panKeepAliveIdSetRef.current.clear();
             pan.panKeepAliveLRURef.current.clear();
           }
+          if (domPan?.enabled) {
+            const c = panSyncRef.current.lastCam ?? (ctx0.getCamera() as any);
+            if (c) commitCamera({ x: c.x, y: c.y, zoom: c.zoom }, true);
+          }
         },
-        onCancel: (e0: MapPointerEvent) => {
+        onCancel: (e0: MapPointerEvent, ctx0: MapContext) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
           if (pan.panActive) {
             pan.setPanActive(false);
             pan.panKeepAliveIdSetRef.current.clear();
             pan.panKeepAliveLRURef.current.clear();
+          }
+          if (domPan?.enabled) {
+            const c = panSyncRef.current.lastCam ?? (ctx0.getCamera() as any);
+            if (c) commitCamera({ x: c.x, y: c.y, zoom: c.zoom }, true);
           }
         },
       } satisfies Gesture);

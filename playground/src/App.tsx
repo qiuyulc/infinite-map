@@ -76,6 +76,8 @@ export default function App() {
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
+  const [domPanEnabled, setDomPanEnabled] = useState(false);
+  const [domPanFillMode, setDomPanFillMode] = useState<'fast' | 'never'>('fast');
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
   const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
@@ -206,6 +208,17 @@ export default function App() {
               <input className="pg-check" type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
             </label>
             <label className="pg-row">
+              <span className="pg-row__label">domPan</span>
+              <input className="pg-check" type="checkbox" checked={domPanEnabled} onChange={(e) => setDomPanEnabled(e.target.checked)} />
+            </label>
+            <label className="pg-row">
+              <span className="pg-row__label">补节点</span>
+              <select className="pg-control" value={domPanFillMode} onChange={(e) => setDomPanFillMode(e.target.value as any)} disabled={!domPanEnabled}>
+                <option value="fast">极快补上</option>
+                <option value="never">绝不空白</option>
+              </select>
+            </label>
+            <label className="pg-row">
               <span className="pg-row__label">keepAlive(图表)</span>
               <input className="pg-check" type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
@@ -329,6 +342,15 @@ export default function App() {
             plugins={plugins}
             themeBase={themeBase}
             panEnabled={panEnabled}
+            domPan={
+              domPanEnabled
+                ? {
+                    enabled: true,
+                    stateSync: 'throttle',
+                    throttleMs: domPanFillMode === 'never' ? 16 : 80,
+                  }
+                : undefined
+            }
             backgroundMode={backgroundMode}
             gridSpacing="auto"
             dotSpacing="auto"

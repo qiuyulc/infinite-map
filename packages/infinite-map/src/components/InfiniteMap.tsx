@@ -221,6 +221,20 @@ export type InfiniteMapProps = {
   panEnabled?: boolean;
 
   /**
+   * 轨道 A（原生轨道）：拖动/缩放时绕过 React render（仅更新 DOM transform）
+   * - enabled=true：拖动地图时不再每帧 setState(camera)，而是 rAF 写入 viewport DOM transform
+   * - stateSync：
+   *   - throttle：按一定频率同步 React state（用于“极快补上”新区域节点/虚拟化）
+   *   - end：仅在手势结束时同步 React state（可能出现短暂空白，适合无虚拟化场景）
+   * - throttleMs：stateSync=throttle 时的最小间隔（ms）
+   */
+  domPan?: {
+    enabled?: boolean;
+    stateSync?: 'throttle' | 'end';
+    throttleMs?: number;
+  };
+
+  /**
    * 可选：对外暴露 editor API（用于自定义工具栏）
    * - 只在 plugins 存在时有效
    */
@@ -332,6 +346,7 @@ export function InfiniteMap({
   themeBase,
   theme,
   panEnabled = true,
+  domPan,
   apiRef,
   debug = false,
 }: InfiniteMapProps) {
@@ -339,6 +354,16 @@ export function InfiniteMap({
   const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const { camera, cameraRef, commitCamera } = useCamera(initialCamera);
   const { viewport, viewportRef } = useViewportSize(containerRef);
+
+  const domPanEnabled = domPan?.enabled === true;
+  const viewportDomRef = useRef<HTMLDivElement | null>(null);
+  const viewportDomRafRef = useRef<number | null>(null);
+  const lastZoomRef = useRef<number | null>(null);
+
+  const cameraToTransform = useCallback((c: { x: number; y: number; zoom: number }) => {
+    const z = c.zoom || 1;
+    return `translate3d(${-c.x * z}px, ${-c.y * z}px, 0) scale(${z})`;
+  }, []);
 
   // nodes/visibleNodes refs：给插件 ctx 读取，避免闭包过期
   const nodesRef = useRef(nodes);
@@ -500,6 +525,34 @@ export function InfiniteMap({
     });
   }, [ctx]);
 
+  // domPan：注册 viewport-dom service，用于在 pan move 中直接更新 DOM transform（绕过 React render）
+  useEffect(() => {
+    if (!domPanEnabled) return;
+    ctx.registerService('viewport-dom', {
+      setTransform: (c: { x: number; y: number; zoom: number }) => {
+        const el = viewportDomRef.current;
+        if (!el) return;
+        const apply = () => {
+          viewportDomRafRef.current = null;
+          el.style.transform = cameraToTransform(c);
+          if (lastZoomRef.current !== c.zoom) {
+            lastZoomRef.current = c.zoom;
+            const z = c.zoom || 1;
+            // 供 CSS 背景使用（避免 pan 时重绘 BackgroundGrid/BackgroundDots）
+            el.style.setProperty('--im-dompan-grid-line', `${1 / z}px`);
+            el.style.setProperty('--im-dompan-dot-r', `${dotRadiusPx / z}px`);
+          }
+        };
+        if (viewportDomRafRef.current != null) return;
+        viewportDomRafRef.current = requestAnimationFrame(apply);
+      },
+    });
+    return () => {
+      if (viewportDomRafRef.current != null) cancelAnimationFrame(viewportDomRafRef.current);
+      viewportDomRafRef.current = null;
+    };
+  }, [cameraToTransform, ctx, domPanEnabled, dotRadiusPx]);
+
   // 把视图配置（min/max zoom）暴露给插件（如 ViewCommandsPlugin）
   useEffect(() => {
     ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
@@ -599,6 +652,13 @@ export function InfiniteMap({
     store,
     screenToWorld,
     commitCamera,
+    domPan: domPanEnabled
+      ? {
+          enabled: true,
+          stateSync: domPan?.stateSync ?? 'throttle',
+          throttleMs: domPan?.throttleMs ?? 80,
+        }
+      : undefined,
     mouseRef,
     hoverRef,
     onEditorErrorRef,
@@ -692,7 +752,44 @@ export function InfiniteMap({
       {/* 插件 background 层（在节点层之下） */}
       {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
 
-      {backgroundMode === 'grid' ? (
+      {domPanEnabled ? (
+        // domPan：背景与节点都放进同一个 viewport DOM（transform 由 pointermove 直接写入 style）
+        <div
+          ref={viewportDomRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            transformOrigin: '0 0',
+            transform: cameraToTransform(camera),
+            willChange: 'transform',
+          }}
+        >
+          {backgroundMode === 'grid' ? (
+            <BackgroundGrid
+              // world-anchored：不依赖 camera.x/y，跟随 viewport transform 一起移动
+              camera={{ x: 0, y: 0, zoom: 1 }}
+              gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
+              gridAlpha={gridAlpha}
+            />
+          ) : backgroundMode === 'dots' ? (
+            <BackgroundDots camera={{ x: 0, y: 0, zoom: 1 }} dotSpacing={dotSpacing} dotRadiusPx={dotRadiusPx} dotAlpha={dotAlpha} />
+          ) : null}
+
+          {/* 节点层：DOM 渲染（domPan 时不由 React 计算 transform） */}
+          <RenderDomNodes
+            camera={camera}
+            cameraRef={cameraRef}
+            visibleNodes={visibleNodes}
+            applyCameraTransform={false}
+            zIndex={1}
+            onNodeDrag={onNodeDrag}
+            renderNode={renderNode}
+            renderNodeContent={renderNodeContent}
+            getDefaultNodeProps={getDefaultNodeProps}
+            defaultNodeShowMeta={defaultNodeShowMeta}
+          />
+        </div>
+      ) : backgroundMode === 'grid' ? (
         <BackgroundGrid
           camera={camera}
           gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
@@ -715,17 +812,19 @@ export function InfiniteMap({
       />
 
       {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
-      <RenderDomNodes
-        camera={camera}
-        cameraRef={cameraRef}
-        visibleNodes={visibleNodes}
-        zIndex={1}
-        onNodeDrag={onNodeDrag}
-        renderNode={renderNode}
-        renderNodeContent={renderNodeContent}
-        getDefaultNodeProps={getDefaultNodeProps}
-        defaultNodeShowMeta={defaultNodeShowMeta}
-      />
+      {!domPanEnabled ? (
+        <RenderDomNodes
+          camera={camera}
+          cameraRef={cameraRef}
+          visibleNodes={visibleNodes}
+          zIndex={1}
+          onNodeDrag={onNodeDrag}
+          renderNode={renderNode}
+          renderNodeContent={renderNodeContent}
+          getDefaultNodeProps={getDefaultNodeProps}
+          defaultNodeShowMeta={defaultNodeShowMeta}
+        />
+      ) : null}
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
       {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 2, onEditorError: onEditorErrorRef.current })}
