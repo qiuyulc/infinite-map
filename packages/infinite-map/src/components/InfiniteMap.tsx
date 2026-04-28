@@ -142,10 +142,6 @@ export type InfiniteMapProps = {
   gridSpacing?: number | 'auto';
   /** 网格线基础透明度 */
   gridAlpha?: number;
-  /** 高亮半径（屏幕像素） */
-  highlightRadiusPx?: number;
-  /** wheel 时的“高亮脉冲”强度 */
-  wheelPulseStrength?: number;
 
   /** 缩放 */
   minZoom?: number;
@@ -187,11 +183,7 @@ export type InfiniteMapProps = {
   /** 虚拟化用的空间索引格子大小（世界单位） */
   cellSize?: number;
 
-  /** minimap 尺寸 */
-  minimapWidth?: number;
-  minimapHeight?: number;
-  minimapCachePadding?: number;
-  minimapNeedsRedraw?: unknown;
+  // minimap 的尺寸/刷新等配置已迁移到 @qiuyulc/infinite-map-editor 的 minimap plugin options
 
   /**
    * 主题（组件库风格）
@@ -309,8 +301,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     backgroundMode = 'dots',
     gridSpacing = 'auto',
     gridAlpha = 0.14,
-    highlightRadiusPx = 140,
-    wheelPulseStrength = 0.55,
     minZoom = 0.25,
     maxZoom = 2.5,
     zoomSpeed = 0.0012,
@@ -318,10 +308,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     virtualization,
     overscanPx = 900,
     cellSize = 900,
-    minimapWidth = 260,
-    minimapHeight = 160,
-    minimapCachePadding = 120,
-    minimapNeedsRedraw,
     themeBase,
     theme,
     panEnabled = true,
@@ -331,7 +317,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewportDomRef = useRef<HTMLDivElement | null>(null);
-  const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // engine store（稳定引用）
   const engineStoreRef = useRef<ReturnType<typeof createEngineStore> | null>(null);
@@ -633,10 +618,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 
   // 插件生命周期（setup/teardown）
   usePluginLifecycle({ plugins, ctx, onEditorErrorRef });
-
-  // 鼠标位置、wheel pulse、theme vars
-  const mouseRef = useRef<{ x: number; y: number } | null>(null);
-  const pulseRef = useRef({ value: 0, lastTs: 0 });
   const themeVars = useInjectedThemeVars(theme);
 
   // runtime effects（wheel + highlight + minimap config）
@@ -644,29 +625,15 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     plugins,
     ctx,
     containerRef,
-    highlightCanvasRef,
-    viewport,
-    viewportRef,
     cameraRef,
     commitCamera,
-    mouseRef,
-    pulseRef,
     panEnabled: panEnabled !== false,
     minZoom,
     maxZoom,
     zoomSpeed,
     pinchZoomFactor,
-    dotSpacing,
-    dotRadiusPx,
-    highlightRadiusPx,
-    wheelPulseStrength,
     screenToWorld,
-    store,
     bus,
-    minimapWidth,
-    minimapHeight,
-    minimapCachePadding,
-    minimapNeedsRedraw,
   });
 
   // input dispatch（内置 pan gesture 会调用 commitCamera）
@@ -677,7 +644,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     store,
     screenToWorld,
     commitCamera: (next, immediate) => commitCamera(next, immediate),
-    mouseRef,
     hoverRef,
     onEditorErrorRef,
     debugRef,
@@ -770,16 +736,12 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
         }
       }}
       onPointerLeave={(e: ReactPointerEvent) => {
-        mouseRef.current = null;
         hoverRef.current = { kind: 'blank' };
         store.set(STORE_KEYS.hoverHit, { kind: 'blank' });
         if (containerRef.current) containerRef.current.style.cursor = 'default';
         dispatchPointer('cancel', e);
       }}
     >
-      {/* 插件 background 层（屏幕空间） */}
-      {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
-
       {/* 背景（屏幕空间，但图案锚定世界坐标；由 store.subscribe 直接写 style） */}
       <EngineBackgroundLayer
         store={engineStore}
@@ -789,8 +751,11 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
         dotAlpha={dotAlpha}
         gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
         gridAlpha={gridAlpha}
-        zIndex={1}
+        zIndex={0}
       />
+
+      {/* 插件 background 层（屏幕空间） */}
+      {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 1, onEditorError: onEditorErrorRef.current })}
 
       {/* viewport DOM：transform 由 store.subscribe 直接写入 */}
       <div
@@ -817,18 +782,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
         />
       </div>
 
-      {/* 高亮点层（Canvas，只画鼠标附近） */}
-      <canvas
-        ref={highlightCanvasRef}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-      />
-
       {/* 插件 overlay/hud（屏幕空间） */}
       {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 20, onEditorError: onEditorErrorRef.current })}
       {RenderPluginOverlays({ plugins, slot: 'hud', ctx, zIndex: 30, onEditorError: onEditorErrorRef.current })}
@@ -839,4 +792,3 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 export function InfiniteMap(props: InfiniteMapProps) {
   return <InfiniteMapEngine {...props} />;
 }
-

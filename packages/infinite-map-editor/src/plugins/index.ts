@@ -34,6 +34,10 @@ export type { ExportPngPluginOptions } from './createExportPngPlugin';
 export { createSnapGuidesPlugin } from './createSnapGuidesPlugin';
 export type { SnapConfig, SnapGuidesPluginOptions } from './createSnapGuidesPlugin';
 
+// editor ux
+export { createHoverHighlightPlugin } from './createHoverHighlightPlugin';
+export type { HoverHighlightPluginOptions } from './createHoverHighlightPlugin';
+
 export { createClipboardPlugin } from './createClipboardPlugin';
 export type { ClipboardPluginOptions } from './createClipboardPlugin';
 

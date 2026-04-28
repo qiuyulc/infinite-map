@@ -29,7 +29,6 @@ export type PluginInputDispatchOptions = {
   store: { get: <T>(key: string) => T | undefined; set: (key: string, v: any) => void };
   screenToWorld: (p: { x: number; y: number }) => { x: number; y: number };
   commitCamera: (next: { x: number; y: number; zoom: number }, immediate: boolean) => void;
-  mouseRef: React.MutableRefObject<{ x: number; y: number } | null>;
   hoverRef: React.MutableRefObject<HitTestTarget>;
   onEditorErrorRef: React.MutableRefObject<((err: unknown, info: EditorErrorInfo) => void) | undefined>;
   debugRef: React.MutableRefObject<boolean>;
@@ -74,7 +73,6 @@ export function usePluginInputDispatch({
   store,
   screenToWorld,
   commitCamera,
-  mouseRef,
   hoverRef,
   onEditorErrorRef,
   debugRef,
@@ -107,8 +105,6 @@ export function usePluginInputDispatch({
       const r = containerRectRef.current;
       const sx = e.clientX - (r?.left ?? 0);
       const sy = e.clientY - (r?.top ?? 0);
-      // 无论是否被手势接管，都更新鼠标位置（highlight layer 会用）
-      mouseRef.current = { x: sx, y: sy };
       const m: MapPointerEvent = {
         type,
         pointerId: (e as any).pointerId,
@@ -319,7 +315,7 @@ export function usePluginInputDispatch({
       if (phase !== 'move') st.active = null;
       return { handled: true, mode: 'stop' };
     },
-    [plugins, containerRef, mouseRef, screenToWorld, ctx, onEditorErrorRef, debugRef, store, hoverRef, commitCamera, pan]
+    [plugins, containerRef, screenToWorld, ctx, onEditorErrorRef, debugRef, store, hoverRef, commitCamera, pan]
   );
 
   const dispatchContextMenu = useCallback(

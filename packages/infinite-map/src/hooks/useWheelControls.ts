@@ -4,8 +4,6 @@ import { clamp } from '../core/utils';
 
 type Params = {
   containerRef: RefObject<HTMLElement | null>;
-  mouseRef: MutableRefObject<{ x: number; y: number } | null>;
-  pulseRef: MutableRefObject<{ value: number; lastTs: number }>;
   cameraRef: MutableRefObject<Camera>;
   commitCamera: (next: Camera, immediate?: boolean) => void;
   /**
@@ -33,8 +31,6 @@ type Params = {
  */
 export function useWheelControls({
   containerRef,
-  mouseRef,
-  pulseRef,
   cameraRef,
   commitCamera,
   panEnabled = true,
@@ -62,8 +58,6 @@ export function useWheelControls({
       const dx = e.deltaX;
       const dy = e.deltaY;
       const isPinch = e.ctrlKey === true;
-      pulseRef.current.value = 1;
-      mouseRef.current = { x: sx, y: sy };
 
       const looksLikeMouseWheel = e.deltaMode === 1 || e.deltaMode === 2;
       const shouldZoom = isPinch || looksLikeMouseWheel;
@@ -121,10 +115,8 @@ export function useWheelControls({
     panEnabled,
     maxZoom,
     minZoom,
-    mouseRef,
     onWheelIntercept,
     pinchZoomFactor,
-    pulseRef,
     zoomSpeed,
   ]);
 }
