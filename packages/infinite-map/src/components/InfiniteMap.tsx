@@ -9,12 +9,15 @@ import {
   type ReactNode,
   type MutableRefObject,
 } from 'react';
-import type { Camera, NodeData, Rect } from '../core/types';
+import { rectIntersects, type Camera, type NodeData, type Rect } from '../core/types';
 import { buildSpatialIndex } from '../core/spatialIndex';
 import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
+import { EngineBackgroundLayer } from './EngineBackgroundLayer';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
 import { RenderDomNodes } from './RenderDomNodes';
+import { EngineDomNodesLayer } from './EngineDomNodesLayer';
+import { createEngineStore } from '../engine';
 import type { InfiniteMapDoc } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS } from '../editor/keys';
@@ -102,6 +105,14 @@ export type InfiniteMapProps = {
   onNodeDrag?: (id: string, pos: { x: number; y: number }, phase: 'move' | 'end') => void;
   /** 初始相机 */
   initialCamera?: Camera;
+
+  /**
+   * 实验性高性能引擎（Zustand + 原生双轨）
+   * - enabled=true 时：拖拽/缩放等高频交互不再驱动 React re-render
+   */
+  engine?: {
+    enabled?: boolean;
+  };
 
   /**
    * 命令冲突策略（当多个 plugin 提供同名 commandId）
@@ -292,7 +303,7 @@ export type InfiniteMapApi = {
   parseDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
 };
 
-export function InfiniteMap({
+function InfiniteMapLegacy({
   nodes,
   plugins,
   editable,
@@ -569,7 +580,6 @@ export function InfiniteMap({
     highlightCanvasRef,
     viewport,
     viewportRef,
-    camera,
     cameraRef,
     commitCamera,
     mouseRef,
@@ -735,4 +745,544 @@ export function InfiniteMap({
 
     </div>
   );
+}
+
+// -----------------------------------------------------------------------------
+// Engine mode（Zustand + 原生双轨 + 非响应式订阅）
+// -----------------------------------------------------------------------------
+
+function InfiniteMapEngine(props: InfiniteMapProps) {
+  const {
+    nodes,
+    plugins,
+    editable,
+    editMode,
+    onNodesChange,
+    onPatches,
+    renderNode,
+    renderNodeContent,
+    getDefaultNodeProps,
+    defaultNodeShowMeta = false,
+    onNodeDrag,
+    initialCamera = { x: -400, y: -250, zoom: 1 },
+    commandConflictPolicy = 'keep-first',
+    warnOnCommandConflict = true,
+    editorHooks,
+    hookMode = 'observe',
+    onEditorError,
+    dotSpacing = 48,
+    dotRadiusPx = 1.35,
+    dotAlpha = 0.18,
+    backgroundMode = 'dots',
+    gridSpacing = 'auto',
+    gridAlpha = 0.14,
+    highlightRadiusPx = 140,
+    wheelPulseStrength = 0.55,
+    minZoom = 0.25,
+    maxZoom = 2.5,
+    zoomSpeed = 0.0012,
+    pinchZoomFactor = 0.6,
+    virtualization,
+    overscanPx = 900,
+    cellSize = 900,
+    minimapWidth = 260,
+    minimapHeight = 160,
+    minimapCachePadding = 120,
+    minimapNeedsRedraw,
+    themeBase,
+    theme,
+    panEnabled = true,
+    apiRef,
+    debug = false,
+  } = props;
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const viewportDomRef = useRef<HTMLDivElement | null>(null);
+  const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // engine store（稳定引用）
+  const engineStoreRef = useRef<ReturnType<typeof createEngineStore> | null>(null);
+  if (!engineStoreRef.current) engineStoreRef.current = createEngineStore(initialCamera);
+  const engineStore = engineStoreRef.current;
+
+  // 真相源：cameraRef（高频）
+  const cameraRef = useRef<Camera>(initialCamera);
+
+  const { viewport, viewportRef } = useViewportSize(containerRef);
+  useEffect(() => {
+    engineStore.getState().setViewport(viewport);
+  }, [engineStore, viewport]);
+
+  // nodes refs：给插件 ctx 读取，避免闭包过期
+  const nodesRef = useRef(nodes);
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
+  const nodesById = useMemo(() => new Map(nodes.map((n) => [n.id, n] as const)), [nodes]);
+
+  // visibleNodes ref（给插件读取）
+  const visibleNodesRef = useRef<NodeData[]>([]);
+
+  // 空间索引（给插件查询）
+  const spatialIndex = useMemo(() => buildSpatialIndex(nodes, cellSize), [nodes, cellSize]);
+  const spatialIndexRef = useRef(spatialIndex);
+  useEffect(() => {
+    spatialIndexRef.current = spatialIndex;
+  }, [spatialIndex]);
+
+  const { screenToWorld, worldToScreen, rectScreenToWorld, rectWorldToScreen } = useCoordinateTransforms(cameraRef);
+
+  // 插件 bus/store（稳定引用，仍沿用现有插件契约）
+  const bus = useMemo(() => createEventBus(), []);
+  const store = useMemo(() => createStore(), []);
+
+  const hooksRef = useRef(editorHooks);
+  useEffect(() => {
+    hooksRef.current = editorHooks;
+  }, [editorHooks]);
+  const hookModeRef = useRef(hookMode);
+  useEffect(() => {
+    hookModeRef.current = hookMode;
+  }, [hookMode]);
+  const onEditorErrorRef = useRef(onEditorError);
+  useEffect(() => {
+    onEditorErrorRef.current = onEditorError;
+  }, [onEditorError]);
+  const debugRef = useRef(debug);
+  useEffect(() => {
+    debugRef.current = debug;
+  }, [debug]);
+
+  const onNodesChangeRef = useRef(onNodesChange);
+  useEffect(() => {
+    onNodesChangeRef.current = onNodesChange;
+  }, [onNodesChange]);
+  const onPatchesRef = useRef(onPatches);
+  useEffect(() => {
+    onPatchesRef.current = onPatches;
+  }, [onPatches]);
+
+  const hasChangeSink = Boolean(onNodesChange) || Boolean(onPatches);
+  const resolvedEditMode = useMemo<'auto' | 'readonly' | 'controlled'>(() => {
+    if (editMode) return editMode;
+    if (editable === false) return 'readonly';
+    if (editable === true) return 'controlled';
+    return 'auto';
+  }, [editMode, editable]);
+  const editEnabled = resolvedEditMode === 'readonly' ? false : hasChangeSink;
+
+  // ctx 引用
+  const ctxRef = useRef<MapContext | null>(null);
+  const hoverRef = useRef<HitTestTarget>({ kind: 'blank' });
+
+  // 插件渲染请求：仅用于 overlay/hud（节点/背景不依赖该机制）
+  const [, bumpOverlay] = useState(0);
+  const overlayRafRef = useRef<number | null>(null);
+  const requestRender = useCallback(() => {
+    if (overlayRafRef.current != null) return;
+    overlayRafRef.current = requestAnimationFrame(() => {
+      overlayRafRef.current = null;
+      bumpOverlay((x) => (x + 1) % 1000000);
+    });
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (overlayRafRef.current != null) cancelAnimationFrame(overlayRafRef.current);
+    };
+  }, []);
+
+  const { applyPatches: applyPatchesRaw } = usePatchEngine({
+    bus,
+    nodesRef,
+    onNodesChangeRef,
+    onPatchesRef,
+    hooksRef,
+    hookModeRef,
+    onEditorErrorRef,
+  });
+
+  const runCommandWithHooks = useRunCommandWithHooks({ ctxRef, hooksRef, hookModeRef, onEditorErrorRef });
+
+  const applyPatches = useCallback(
+    (patches: NodePatch[], meta: ChangeMeta) => {
+      if (resolvedEditMode === 'readonly') return;
+      if (resolvedEditMode === 'controlled') {
+        if (!onNodesChangeRef.current && !onPatchesRef.current) return;
+      }
+      applyPatchesRaw(patches, meta);
+    },
+    [applyPatchesRaw, resolvedEditMode]
+  );
+
+  const { ctx } = useMapContext({
+    ctxRef,
+    cameraRef,
+    viewportRef,
+    nodesRef,
+    visibleNodesRef,
+    spatialIndexRef,
+    screenToWorld,
+    worldToScreen,
+    rectScreenToWorld,
+    rectWorldToScreen,
+    applyPatches,
+    bus,
+    store,
+    requestRender,
+    runCommandWithHooks,
+  });
+
+  // 将 engine store 暴露给插件（供未来插件直接 subscribe）
+  useEffect(() => {
+    ctx.registerService('engine', { store: engineStore, cameraRef });
+  }, [ctx, engineStore]);
+
+  // view config / pan enabled / edit enabled
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.viewConfig, { minZoom, maxZoom, zoomStep: 1.2, paddingPx: 48 });
+  }, [ctx, maxZoom, minZoom]);
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.viewPanEnabled, panEnabled !== false);
+  }, [ctx, panEnabled]);
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.editEnabled, editEnabled);
+  }, [ctx, editEnabled]);
+
+  useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });
+
+  // pan keepAlive（低频：仅 start/end 改变）
+  const [panActive, setPanActive] = useState(false);
+  const panKeepAliveEnabled = (virtualization?.panKeepAlive ?? true) !== false;
+  const panKeepAliveMaxNodes = typeof virtualization?.panKeepAlive === 'object' ? virtualization.panKeepAlive.maxNodes ?? 2000 : 2000;
+  const panKeepAliveIdSetRef = useRef<Set<string>>(new Set());
+  const panKeepAliveLRURef = useRef<Map<string, number>>(new Map());
+  const panKeepAliveAdd = useCallback(
+    (ids: Iterable<string>) => {
+      const set0 = panKeepAliveIdSetRef.current;
+      const lru = panKeepAliveLRURef.current;
+      for (const id of ids) {
+        set0.add(id);
+        if (lru.has(id)) lru.delete(id);
+        lru.set(id, Date.now());
+      }
+      while (lru.size > panKeepAliveMaxNodes) {
+        const first = lru.keys().next().value as string | undefined;
+        if (!first) break;
+        lru.delete(first);
+        set0.delete(first);
+      }
+    },
+    [panKeepAliveMaxNodes]
+  );
+  useEffect(() => {
+    ctx.store.set(STORE_KEYS.viewPanActive, panActive);
+    engineStore.getState().setInteraction({ panning: panActive });
+  }, [ctx, engineStore, panActive]);
+
+  // commitCamera：原生轨道（不 setState）
+  const commitRafRef = useRef<number | null>(null);
+  const lastCommitRef = useRef<Camera>(initialCamera);
+
+  const scheduleComputeVisible = useCallback(() => {
+    if (commitRafRef.current != null) return;
+    commitRafRef.current = requestAnimationFrame(() => {
+      commitRafRef.current = null;
+      const cam = cameraRef.current;
+      const vp = viewportRef.current;
+      if (vp.w <= 0 || vp.h <= 0) return;
+      const z = cam.zoom || 1;
+      const overscanWorld = (virtualization?.overscanPx ?? overscanPx) / z;
+      const viewRect = { x: cam.x - overscanWorld, y: cam.y - overscanWorld, w: vp.w / z + overscanWorld * 2, h: vp.h / z + overscanWorld * 2 };
+      // 复用 ctx 查询（内部使用 spatial index），避免依赖索引实现细节
+      const base = (virtualization?.enabled ?? true) ? (ctx.queryNodesInWorldRect(viewRect) as NodeData[]) : nodesRef.current;
+      const filtered = (base as NodeData[]).filter((n) => rectIntersects(viewRect, { x: n.x, y: n.y, w: n.width, h: n.height }));
+
+      // keepAlive：额外合并“不被卸载”的节点
+      const keepAlive = virtualization?.keepAlive;
+      if ((virtualization?.enabled ?? true) && keepAlive) {
+        const byId0 = new Set(filtered.map((n) => n.id));
+        for (const n of nodesRef.current) if (keepAlive(n) && !byId0.has(n.id)) filtered.push(n);
+      }
+      // pan keepAlive：额外合并“离场节点”
+      if ((virtualization?.enabled ?? true) && panActive && panKeepAliveEnabled && panKeepAliveIdSetRef.current.size) {
+        const byId0 = new Set(filtered.map((n) => n.id));
+        for (const id of panKeepAliveIdSetRef.current) {
+          if (byId0.has(id)) continue;
+          const n = nodesById.get(id);
+          if (n) filtered.push(n);
+        }
+      }
+
+      filtered.sort((a, b) => {
+        const za = a.z ?? 0;
+        const zb = b.z ?? 0;
+        if (za !== zb) return za - zb;
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      });
+
+      const ids = filtered.map((n) => n.id);
+      // 仅当 ids 变化时更新（避免无意义通知）
+      const prev = engineStore.getState().visibleNodeIds;
+      let same = prev.length === ids.length;
+      if (same) for (let i = 0; i < ids.length; i++) if (ids[i] !== prev[i]) { same = false; break; }
+      if (!same) engineStore.getState().setVisibleNodeIds(ids);
+      visibleNodesRef.current = filtered;
+      if (panActive && panKeepAliveEnabled) panKeepAliveAdd(ids);
+    });
+  }, [ctx, engineStore, nodesById, nodesRef, overscanPx, panActive, panKeepAliveAdd, panKeepAliveEnabled, spatialIndexRef, viewportRef, virtualization]);
+
+  const commitCamera = useCallback(
+    (next: Camera, _immediate?: boolean) => {
+      cameraRef.current = next;
+      lastCommitRef.current = next;
+      engineStore.getState().setView(next);
+      bus.emit('camera:changed', { camera: next } as any);
+      scheduleComputeVisible();
+    },
+    [bus, engineStore, scheduleComputeVisible]
+  );
+
+  // camera service：供 minimap/commands 等驱动相机
+  useEffect(() => {
+    ctx.registerService('camera', {
+      set: (next: Camera, immediate?: boolean) => {
+        commitCamera(next, Boolean(immediate));
+      },
+    });
+  }, [ctx, commitCamera]);
+
+  // 初始化 visible nodes
+  useEffect(() => {
+    scheduleComputeVisible();
+  }, [scheduleComputeVisible, nodes]);
+
+  // viewport DOM：订阅 transform，直接写 style（rAF 合并）
+  useEffect(() => {
+    const el = viewportDomRef.current;
+    if (!el) return;
+    let raf: number | null = null;
+    let pending = engineStore.getState().view.transform;
+    const un = engineStore.subscribe(
+      (s) => s.view.transform,
+      (t) => {
+        pending = t;
+        if (raf != null) return;
+        raf = requestAnimationFrame(() => {
+          raf = null;
+          el.style.transform = pending;
+        });
+      },
+      { equalityFn: Object.is }
+    );
+    return () => {
+      un();
+      if (raf != null) cancelAnimationFrame(raf);
+    };
+  }, [engineStore]);
+
+  // 插件生命周期（setup/teardown）
+  usePluginLifecycle({ plugins, ctx, onEditorErrorRef });
+
+  // 鼠标位置、wheel pulse、theme vars
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
+  const pulseRef = useRef({ value: 0, lastTs: 0 });
+  const themeVars = useInjectedThemeVars(theme);
+
+  // runtime effects（wheel + highlight + minimap config）
+  useMapRuntimeEffects({
+    plugins,
+    ctx,
+    containerRef,
+    highlightCanvasRef,
+    viewport,
+    viewportRef,
+    cameraRef,
+    commitCamera,
+    mouseRef,
+    pulseRef,
+    panEnabled: panEnabled !== false,
+    minZoom,
+    maxZoom,
+    zoomSpeed,
+    pinchZoomFactor,
+    dotSpacing,
+    dotRadiusPx,
+    highlightRadiusPx,
+    wheelPulseStrength,
+    screenToWorld,
+    store,
+    bus,
+    minimapWidth,
+    minimapHeight,
+    minimapCachePadding,
+    minimapNeedsRedraw,
+  });
+
+  // input dispatch（内置 pan gesture 会调用 commitCamera）
+  const { dispatchPointer, dispatchContextMenu } = usePluginInputDispatch({
+    plugins,
+    ctx,
+    containerRef,
+    store,
+    screenToWorld,
+    commitCamera: (next, immediate) => commitCamera(next, immediate),
+    mouseRef,
+    hoverRef,
+    onEditorErrorRef,
+    debugRef,
+    pan: {
+      panActive,
+      setPanActive,
+      panKeepAliveEnabled,
+      panKeepAliveAdd,
+      panKeepAliveIdSetRef,
+      panKeepAliveLRURef,
+      visibleNodesRef: visibleNodesRef as any,
+    },
+  });
+
+  // apiRef：沿用现有 attach（commitCamera 已是引擎实现）
+  useAttachApiRef({
+    apiRef,
+    plugins,
+    ctx,
+    commitCamera,
+    runCommandWithHooks,
+    getNodeRect: (_id) => null,
+    getSelectionRect: () => null,
+    onNodesChange,
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      data-im-theme={themeBase ?? 'light'}
+      tabIndex={0}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        ...(themeVars ?? {}),
+        background: 'var(--im-map-bg, var(--map-bg))',
+        borderRadius: 0,
+        border: 'none',
+        transition: 'background-color 220ms ease, border-color 220ms ease',
+        touchAction: 'none',
+        outline: 'none',
+      }}
+      onPointerDownCapture={(e) => {
+        const t = e.target as unknown as HTMLElement | null;
+        if (t?.closest?.('[data-im-ui]')) return;
+        (e.currentTarget as HTMLElement).focus?.();
+        const res = dispatchPointer('down', e);
+        if (res.handled === true && res.mode !== 'continue') {
+          (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onPointerMoveCapture={(e) => {
+        const t = e.target as unknown as HTMLElement | null;
+        if (t?.closest?.('[data-im-ui]')) return;
+        const res = dispatchPointer('move', e);
+        if (res.handled === true && res.mode !== 'continue') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onPointerUpCapture={(e) => {
+        const t = e.target as unknown as HTMLElement | null;
+        if (t?.closest?.('[data-im-ui]')) return;
+        const res = dispatchPointer('up', e);
+        if (res.handled === true && res.mode !== 'continue') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onPointerCancelCapture={(e) => {
+        const t = e.target as unknown as HTMLElement | null;
+        if (t?.closest?.('[data-im-ui]')) return;
+        const res = dispatchPointer('cancel', e);
+        if (res.handled === true && res.mode !== 'continue') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onContextMenuCapture={(e) => {
+        const t = e.target as unknown as HTMLElement | null;
+        if (t?.closest?.('[data-im-ui]')) return;
+        const res = dispatchContextMenu(e);
+        if (res.handled === true && res.mode !== 'continue') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onPointerLeave={(e: ReactPointerEvent) => {
+        mouseRef.current = null;
+        hoverRef.current = { kind: 'blank' };
+        store.set(STORE_KEYS.hoverHit, { kind: 'blank' });
+        if (containerRef.current) containerRef.current.style.cursor = 'default';
+        dispatchPointer('cancel', e);
+      }}
+    >
+      {/* 插件 background 层（屏幕空间） */}
+      {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
+
+      {/* viewport DOM：transform 由 store.subscribe 直接写入 */}
+      <div
+        ref={viewportDomRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transformOrigin: '0 0',
+          transform: engineStore.getState().view.transform,
+          willChange: 'transform',
+          zIndex: 1,
+        }}
+      >
+        <EngineBackgroundLayer
+          store={engineStore}
+          backgroundMode={backgroundMode}
+          dotSpacing={dotSpacing}
+          dotRadiusPx={dotRadiusPx}
+          dotAlpha={dotAlpha}
+          gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
+          gridAlpha={gridAlpha}
+        />
+
+        <EngineDomNodesLayer
+          store={engineStore}
+          nodesById={nodesById}
+          cameraRef={cameraRef}
+          zIndex={2}
+          onNodeDrag={onNodeDrag}
+          renderNode={renderNode}
+          renderNodeContent={renderNodeContent}
+          getDefaultNodeProps={getDefaultNodeProps}
+          defaultNodeShowMeta={defaultNodeShowMeta}
+        />
+      </div>
+
+      {/* 高亮点层（Canvas，只画鼠标附近） */}
+      <canvas
+        ref={highlightCanvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* 插件 overlay/hud（屏幕空间） */}
+      {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 20, onEditorError: onEditorErrorRef.current })}
+      {RenderPluginOverlays({ plugins, slot: 'hud', ctx, zIndex: 30, onEditorError: onEditorErrorRef.current })}
+    </div>
+  );
+}
+
+export function InfiniteMap(props: InfiniteMapProps) {
+  return props.engine?.enabled ? <InfiniteMapEngine {...props} /> : <InfiniteMapLegacy {...props} />;
 }

@@ -13,7 +13,6 @@ export function useMapRuntimeEffects({
   highlightCanvasRef,
   viewport,
   viewportRef,
-  camera,
   cameraRef,
   commitCamera,
   mouseRef,
@@ -41,7 +40,6 @@ export function useMapRuntimeEffects({
   highlightCanvasRef: { current: HTMLCanvasElement | null };
   viewport: { w: number; h: number };
   viewportRef: React.MutableRefObject<{ w: number; h: number }>;
-  camera: Camera;
   cameraRef: React.MutableRefObject<Camera>;
   commitCamera: (next: Camera, immediate?: boolean) => void;
   mouseRef: React.MutableRefObject<{ x: number; y: number } | null>;
@@ -107,7 +105,7 @@ export function useMapRuntimeEffects({
     cameraRef,
     mouseRef,
     pulseRef,
-    dotSpacing: dotSpacing === 'auto' ? computeAdaptiveSteps(camera.zoom).minorStepWorld : dotSpacing,
+    dotSpacing: dotSpacing === 'auto' ? computeAdaptiveSteps(cameraRef.current.zoom || 1).minorStepWorld : dotSpacing,
     dotRadiusPx,
     highlightRadiusPx,
     wheelPulseStrength,
