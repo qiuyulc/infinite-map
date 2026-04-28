@@ -74,7 +74,7 @@ export default function App() {
   const [zoomDockEnabled, setZoomDockEnabled] = useState(true);
   const [toolbarEnabled, setToolbarEnabled] = useState(true);
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
-  const [virtualizationEnabled, setVirtualizationEnabled] = useState(true);
+  const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
