@@ -20,7 +20,9 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   // 注意：不能在这里开始调用 hooks（useEffect/useRef），因为上面有多个 early-return。
   // 否则 selection 从空 -> 非空 会导致 hooks 调用顺序变化，从而触发 React internal error。
   const resizeState = ctx.store.get<any>(STORE_KEYS.resizeState);
-  return <SelectionOverlayInner ctx={ctx} ids={ids} nodes={nodes} selectedNodes={selectedNodes} resizeState={resizeState} />;
+  // 关键：当 selection 切换时，强制 remount 内层组件，清理掉上一轮 pan 跟随留下的 imperative DOM 状态，
+  // 避免出现“拖动画布后再选中其它节点，选框/resize handle 仍带着旧坐标系偏移”的错位问题。
+  return <SelectionOverlayInner key={ids.join(',')} ctx={ctx} ids={ids} nodes={nodes} selectedNodes={selectedNodes} resizeState={resizeState} />;
 }
 
 function SelectionOverlayInner({
