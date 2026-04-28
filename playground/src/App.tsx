@@ -76,6 +76,7 @@ export default function App() {
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
+  const [engineEnabled, setEngineEnabled] = useState(false);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
   const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
@@ -206,6 +207,10 @@ export default function App() {
               <input className="pg-check" type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
             </label>
             <label className="pg-row">
+              <span className="pg-row__label">Engine(Zustand)</span>
+              <input className="pg-check" type="checkbox" checked={engineEnabled} onChange={(e) => setEngineEnabled(e.target.checked)} />
+            </label>
+            <label className="pg-row">
               <span className="pg-row__label">keepAlive(图表)</span>
               <input className="pg-check" type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
@@ -327,6 +332,7 @@ export default function App() {
             onNodesChange={onNodesChange}
             onPatches={onPatches}
             plugins={plugins}
+            engine={engineEnabled ? { enabled: true } : undefined}
             themeBase={themeBase}
             panEnabled={panEnabled}
             backgroundMode={backgroundMode}
