@@ -25,8 +25,17 @@ export function createSnapGuidesPlugin(opts: SnapGuidesPluginOptions = {}): Infi
     overlay: SnapGuidesOverlay,
     setup: (ctx) => {
       const prev = ctx.store.get<SnapConfig>(STORE_KEYS.snapConfig);
-      if (prev) return;
-      ctx.store.set(STORE_KEYS.snapConfig, { ...DEFAULT_CONFIG, ...opts });
+      // 注意：Playground 需要在运行期切换“吸附/辅助线”，因此这里不能只初始化一次。
+      // 合并规则：
+      // - DEFAULT 兜底
+      // - prev 保留用户/宿主已写入的其它字段
+      // - opts 覆盖（当外部传入新的 enabled/guidesEnabled 等）
+      const next: SnapConfig = { ...DEFAULT_CONFIG, ...(prev ?? {}), ...(opts as any) };
+      ctx.store.set(STORE_KEYS.snapConfig, next);
+      // 关闭吸附或关闭辅助线：立即清空 guides，避免残留
+      if (next.enabled === false || next.guidesEnabled === false) {
+        ctx.store.set(STORE_KEYS.snapGuides, null);
+      }
     },
   };
 }

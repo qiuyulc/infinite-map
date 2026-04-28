@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import {
   InfiniteMap,
   applyPatchesToNodes,
   computeLayout,
-  STORE_KEYS,
-  type MapContext,
   type InfiniteMapApi,
   type NodePatch,
   type ChangeMeta,
@@ -108,8 +106,6 @@ export default function App() {
     return createResourceStore(initial);
   }, []);
 
-  const ctxRef = useRef<MapContext | null>(null);
-
   const plugins = useMemo(() => {
     return composePlugins([
       ...createDefaultEditorPluginsWithUI({
@@ -124,20 +120,8 @@ export default function App() {
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
       createHudContributionExamplePlugin(),
-      // capture ctx for playground controls
-      { id: 'pg.capture', setup: (ctx) => void (ctxRef.current = ctx) },
     ]);
   }, [contextMenuEnabled, guidesEnabled, minimapEnabled, rulersEnabled, snapEnabled, toolbarEnabled, zoomDockEnabled]);
-
-  // 运行时同步 snap 配置（避免 createSnapGuidesPlugin 只初始化一次导致开关无效）
-  useEffect(() => {
-    const ctx = ctxRef.current;
-    if (!ctx) return;
-    const prev = (ctx.store.get<any>(STORE_KEYS.snapConfig) ?? {}) as any;
-    ctx.store.set(STORE_KEYS.snapConfig, { ...prev, enabled: snapEnabled, guidesEnabled });
-    if (!snapEnabled || !guidesEnabled) ctx.store.set(STORE_KEYS.snapGuides, null);
-    ctx.requestRender();
-  }, [guidesEnabled, snapEnabled]);
 
   const apiRef = useRef<InfiniteMapApi | null>(null);
 

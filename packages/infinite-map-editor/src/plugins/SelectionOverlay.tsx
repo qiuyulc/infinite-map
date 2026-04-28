@@ -96,9 +96,37 @@ function SelectionOverlayInner({
 
     let raf: number | null = null;
     let pendingCam: { x: number; y: number; zoom: number } | null = null;
+    let pendingDrag = false;
+
+    const computeDragOffset = () => {
+      const drag = ctx.store.get<any>(STORE_KEYS.dragState);
+      let dragDxPx = 0;
+      let dragDyPx = 0;
+      if (drag?.startById && drag?.lastById) {
+        const anyId: string | undefined = drag.primaryId ?? drag.ids?.[0];
+        const s = anyId ? drag.startById[anyId] : null;
+        const l = anyId ? drag.lastById[anyId] : null;
+        if (s && l) {
+          const zoom = (engine.store.getState().view.zoom || 1) as number;
+          dragDxPx = (l.x - s.x) * zoom;
+          dragDyPx = (l.y - s.y) * zoom;
+        }
+      }
+      dragOffsetRef.current.x = dragDxPx;
+      dragOffsetRef.current.y = dragDyPx;
+    };
+
+    const scheduleApply = () => {
+      if (raf != null) return;
+      raf = requestAnimationFrame(apply);
+    };
 
     const apply = () => {
       raf = null;
+      if (pendingDrag) {
+        pendingDrag = false;
+        computeDragOffset();
+      }
       const cam = pendingCam ?? engine.store.getState().view;
       pendingCam = null;
 
@@ -130,13 +158,21 @@ function SelectionOverlayInner({
       (s: any) => s.view,
       (v: any) => {
         pendingCam = v;
-        if (raf != null) return;
-        raf = requestAnimationFrame(apply);
+        scheduleApply();
       },
       { equalityFn: () => false }
     );
+
+    // 订阅 dragState：在 Engine 模式下节点 move 阶段只改 DOM（data 不变），
+    // selection overlay 必须跟随 dragState 更新，否则会出现“边框不跟随节点”的错觉。
+    const unDrag = ctx.store.subscribe(STORE_KEYS.dragState, () => {
+      pendingDrag = true;
+      scheduleApply();
+    });
+
     return () => {
       un?.();
+      unDrag?.();
       if (raf != null) cancelAnimationFrame(raf);
     };
   }, [ctx, engine]);
