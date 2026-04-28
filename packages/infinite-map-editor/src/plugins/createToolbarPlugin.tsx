@@ -39,11 +39,6 @@ export type ToolbarPluginOptions = {
    * 最大宽度（像素），超出时横向滚动（默认 520）
    */
   maxWidthPx?: number;
-  /**
-   * 最大高度（像素），超出时纵向滚动（默认 120）
-   * - 一般不会用到；主要用于自定义 items 很多/多行布局时兜底
-   */
-  maxHeightPx?: number;
 };
 
 function run(ctx: MapContext, id: string) {
@@ -228,7 +223,6 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
 const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
   const maxWidthPx = opts.maxWidthPx ?? 520;
-  const maxHeightPx = opts.maxHeightPx ?? 120;
   const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
   const extraItems = ctx.store.get<ToolbarItem[]>(STORE_KEYS.toolbarItems) ?? [];
   const items = useMemo(() => mergeToolbarItems(baseItems, extraItems), [baseItems, extraItems]);
@@ -263,9 +257,9 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     userSelect: 'none',
     boxSizing: 'border-box',
     maxWidth: maxWidthPx,
-    maxHeight: maxHeightPx,
     overflowX: 'auto',
-    overflowY: 'auto',
+    overflowY: 'hidden',
+    whiteSpace: 'nowrap',
   };
 
   const btn: CSSProperties = {
