@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { STORE_KEYS, VISUAL_CONST, type MapContext } from '@qiuyulc/infinite-map';
 
 const STORE_KEY = STORE_KEYS.selectionIds;
@@ -17,8 +17,15 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   const selectedNodes = nodes.filter((n) => selected.has(n.id) && !n.hidden);
   if (selectedNodes.length === 0) return null;
 
-  // Engine 模式：节点拖拽 move 阶段不更新节点数据（只改 DOM），
-  // 选中框需要在屏幕空间跟随拖拽位移，否则会“停在原地”。
+  // Engine 模式下：
+  // - 节点拖拽 move：只改 DOM（数据不变）=> 选中框需要跟随拖拽位移
+  // - 地图拖拽（pan）：cameraRef 在变，但 overlay 不一定重渲染 => 选中框需要跟随 camera 变化
+  const engine = ctx.getService<{ store: any }>('engine');
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const lastCamRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
+  const panOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
   const drag = ctx.store.get<any>(STORE_KEYS.dragState);
   let dragDxPx = 0;
   let dragDyPx = 0;
@@ -32,6 +39,70 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
       dragDyPx = (l.y - s.y) * zoom;
     }
   }
+  dragOffsetRef.current.x = dragDxPx;
+  dragOffsetRef.current.y = dragDyPx;
+
+  // 订阅 camera 变化：只做屏幕空间 translate，避免让 overlay 走 React render
+  useEffect(() => {
+    if (!engine?.store) return;
+    const el = rootRef.current;
+    if (!el) return;
+
+    let raf: number | null = null;
+    let pendingCam: { x: number; y: number; zoom: number } | null = null;
+
+    const apply = () => {
+      raf = null;
+      const cam = pendingCam ?? engine.store.getState().view;
+      pendingCam = null;
+
+      const last = lastCamRef.current;
+      if (!last) {
+        lastCamRef.current = { x: cam.x, y: cam.y, zoom: cam.zoom || 1 };
+      } else {
+        const z0 = last.zoom || 1;
+        const z1 = cam.zoom || 1;
+        // zoom 变化：选框尺寸/handle 依赖 zoom，无法仅靠 translate 修正；让下一次正常渲染接管
+        // 这里先重置平移补偿，避免错位累积。
+        if (Math.abs(z1 - z0) > 1e-6) {
+          panOffsetRef.current = { x: 0, y: 0 };
+          lastCamRef.current = { x: cam.x, y: cam.y, zoom: z1 };
+        } else {
+          const dxWorld = cam.x - last.x;
+          const dyWorld = cam.y - last.y;
+          // screen delta = -(deltaWorld * zoom)
+          panOffsetRef.current.x += -dxWorld * z1;
+          panOffsetRef.current.y += -dyWorld * z1;
+          lastCamRef.current = { x: cam.x, y: cam.y, zoom: z1 };
+        }
+      }
+
+      const x = panOffsetRef.current.x + dragOffsetRef.current.x;
+      const y = panOffsetRef.current.y + dragOffsetRef.current.y;
+      el.style.transform = x || y ? `translate3d(${x}px, ${y}px, 0)` : '';
+      el.style.willChange = x || y ? 'transform' : '';
+    };
+
+    // init
+    const initCam = engine.store.getState().view;
+    lastCamRef.current = { x: initCam.x, y: initCam.y, zoom: initCam.zoom || 1 };
+    panOffsetRef.current = { x: 0, y: 0 };
+    apply();
+
+    const un = engine.store.subscribe(
+      (s: any) => s.view,
+      (v: any) => {
+        pendingCam = v;
+        if (raf != null) return;
+        raf = requestAnimationFrame(apply);
+      },
+      { equalityFn: () => false }
+    );
+    return () => {
+      un?.();
+      if (raf != null) cancelAnimationFrame(raf);
+    };
+  }, [ctx, engine]);
 
   const boxStyle: CSSProperties = {
     position: 'absolute',
@@ -235,10 +306,12 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
 
   return (
     <div
+      ref={rootRef}
       style={{
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
+        // 初始 transform（后续会被 engine subscribe 直接写入）
         transform: dragDxPx || dragDyPx ? `translate3d(${dragDxPx}px, ${dragDyPx}px, 0)` : undefined,
         willChange: dragDxPx || dragDyPx ? 'transform' : undefined,
       }}
