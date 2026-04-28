@@ -22,9 +22,13 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   // - 地图拖拽（pan）：cameraRef 在变，但 overlay 不一定重渲染 => 选中框需要跟随 camera 变化
   const engine = ctx.getService<{ store: any }>('engine');
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const lastCamRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
-  const panOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  /**
+   * 选中框“本次 React 渲染”所使用的 camera 快照。
+   * - 如果组件因为容器 resize 等原因发生 re-render，这里会更新为最新 camera，
+   *   从而避免我们在 effect 里继续叠加旧的平移补偿导致错位。
+   */
+  const baseCamRef = useRef<{ x: number; y: number; zoom: number } | null>(null);
 
   const drag = ctx.store.get<any>(STORE_KEYS.dragState);
   let dragDxPx = 0;
@@ -42,6 +46,12 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   dragOffsetRef.current.x = dragDxPx;
   dragOffsetRef.current.y = dragDyPx;
 
+  // 每次渲染时，刷新 base camera（用于“相对本次渲染”计算平移补偿）
+  // 注意：worldToScreen 只依赖 camera，不依赖 viewport 尺寸，因此 resize 导致的 re-render
+  // 需要把 baseCam 更新到当前 camera，避免 translate 重复应用。
+  const camNow = ctx.getCamera();
+  baseCamRef.current = { x: camNow.x, y: camNow.y, zoom: camNow.zoom || 1 };
+
   // 订阅 camera 变化：只做屏幕空间 translate，避免让 overlay 走 React render
   useEffect(() => {
     if (!engine?.store) return;
@@ -56,37 +66,28 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
       const cam = pendingCam ?? engine.store.getState().view;
       pendingCam = null;
 
-      const last = lastCamRef.current;
-      if (!last) {
-        lastCamRef.current = { x: cam.x, y: cam.y, zoom: cam.zoom || 1 };
-      } else {
-        const z0 = last.zoom || 1;
-        const z1 = cam.zoom || 1;
-        // zoom 变化：选框尺寸/handle 依赖 zoom，无法仅靠 translate 修正；让下一次正常渲染接管
-        // 这里先重置平移补偿，避免错位累积。
-        if (Math.abs(z1 - z0) > 1e-6) {
-          panOffsetRef.current = { x: 0, y: 0 };
-          lastCamRef.current = { x: cam.x, y: cam.y, zoom: z1 };
-        } else {
-          const dxWorld = cam.x - last.x;
-          const dyWorld = cam.y - last.y;
-          // screen delta = -(deltaWorld * zoom)
-          panOffsetRef.current.x += -dxWorld * z1;
-          panOffsetRef.current.y += -dyWorld * z1;
-          lastCamRef.current = { x: cam.x, y: cam.y, zoom: z1 };
-        }
+      const base = baseCamRef.current;
+      const z1 = cam.zoom || 1;
+
+      // zoom 变化时：仅靠 translate 无法修正（handle 尺寸与旋转边框都依赖 zoom）
+      // 这里触发一次 overlay re-render 来刷新几何。
+      if (base && Math.abs(z1 - base.zoom) > 1e-6) {
+        ctx.requestRender();
+        baseCamRef.current = { x: cam.x, y: cam.y, zoom: z1 };
       }
 
-      const x = panOffsetRef.current.x + dragOffsetRef.current.x;
-      const y = panOffsetRef.current.y + dragOffsetRef.current.y;
+      const dxWorld = base ? cam.x - base.x : 0;
+      const dyWorld = base ? cam.y - base.y : 0;
+      const panDxPx = -dxWorld * z1;
+      const panDyPx = -dyWorld * z1;
+
+      const x = panDxPx + dragOffsetRef.current.x;
+      const y = panDyPx + dragOffsetRef.current.y;
       el.style.transform = x || y ? `translate3d(${x}px, ${y}px, 0)` : '';
       el.style.willChange = x || y ? 'transform' : '';
     };
 
     // init
-    const initCam = engine.store.getState().view;
-    lastCamRef.current = { x: initCam.x, y: initCam.y, zoom: initCam.zoom || 1 };
-    panOffsetRef.current = { x: 0, y: 0 };
     apply();
 
     const un = engine.store.subscribe(
