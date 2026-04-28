@@ -72,6 +72,11 @@ export { STORE_KEYS, VISUAL_CONST } from './editor/keys';
 export { applyPatchesToNodes, createEventBus, createStore } from './editor/runtime';
 
 // -----------------------------------------------------------------------------
+// Engine（高性能“状态与渲染分离”基础设施：vanilla store + subscribe）
+// -----------------------------------------------------------------------------
+export * from './engine';
+
+// -----------------------------------------------------------------------------
 // UI Kit（默认皮肤/组件/HUD 插件）
 // -----------------------------------------------------------------------------
 // 既支持从主入口拿：import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map'
