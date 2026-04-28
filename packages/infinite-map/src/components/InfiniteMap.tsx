@@ -11,8 +11,8 @@ import {
 } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
 import { buildSpatialIndex } from '../core/spatialIndex';
-import { BackgroundDotsWorld } from './BackgroundDotsWorld';
-import { BackgroundGridWorld } from './BackgroundGridWorld';
+import { BackgroundDots } from './BackgroundDots';
+import { BackgroundGrid } from './BackgroundGrid';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
 import { RenderDomNodes } from './RenderDomNodes';
 import { ViewportLayer } from './ViewportLayer';
@@ -707,23 +707,15 @@ export function InfiniteMap({
       {/* 插件 background 层（在节点层之下） */}
       {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
 
-      {/* 背景（放入 ViewportLayer：pan 时无需依赖 camera.x/y 更新） */}
-      <ViewportLayer store={store} zIndex={0}>
-        {backgroundMode === 'grid' ? (
-          <BackgroundGridWorld
-            zoom={cameraRef.current.zoom || 1}
-            gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
-            gridAlpha={gridAlpha}
-          />
-        ) : backgroundMode === 'dots' ? (
-          <BackgroundDotsWorld
-            zoom={cameraRef.current.zoom || 1}
-            dotSpacing={dotSpacing}
-            dotRadiusPx={dotRadiusPx}
-            dotAlpha={dotAlpha}
-          />
-        ) : null}
-      </ViewportLayer>
+      {backgroundMode === 'grid' ? (
+        <BackgroundGrid
+          camera={camera}
+          gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
+          gridAlpha={gridAlpha}
+        />
+      ) : backgroundMode === 'dots' ? (
+        <BackgroundDots camera={camera} dotSpacing={dotSpacing} dotRadiusPx={dotRadiusPx} dotAlpha={dotAlpha} />
+      ) : null}
 
       {/* 高亮点层（Canvas，只画鼠标附近） */}
       <canvas
