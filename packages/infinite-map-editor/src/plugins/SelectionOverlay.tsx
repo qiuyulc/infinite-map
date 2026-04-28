@@ -1,5 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
-import { STORE_KEYS, VISUAL_CONST, type MapContext } from '@qiuyulc/infinite-map';
+import { STORE_KEYS, VISUAL_CONST, type MapContext, type NodeData } from '@qiuyulc/infinite-map';
 
 const STORE_KEY = STORE_KEYS.selectionIds;
 
@@ -16,6 +16,26 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
 
   const selectedNodes = nodes.filter((n) => selected.has(n.id) && !n.hidden);
   if (selectedNodes.length === 0) return null;
+
+  // 注意：不能在这里开始调用 hooks（useEffect/useRef），因为上面有多个 early-return。
+  // 否则 selection 从空 -> 非空 会导致 hooks 调用顺序变化，从而触发 React internal error。
+  const resizeState = ctx.store.get<any>(STORE_KEYS.resizeState);
+  return <SelectionOverlayInner ctx={ctx} ids={ids} nodes={nodes} selectedNodes={selectedNodes} resizeState={resizeState} />;
+}
+
+function SelectionOverlayInner({
+  ctx,
+  ids,
+  nodes,
+  selectedNodes,
+  resizeState,
+}: {
+  ctx: MapContext;
+  ids: string[];
+  nodes: NodeData[];
+  selectedNodes: NodeData[];
+  resizeState: any;
+}) {
 
   // Engine 模式下：
   // - 节点拖拽 move：只改 DOM（数据不变）=> 选中框需要跟随拖拽位移
@@ -208,7 +228,17 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
     })();
 
   // 单选：渲染 8 个缩放指示点（角+边中点）
-  const single = ids.length === 1 ? nodes.find((n) => n.id === ids[0]) : null;
+  const single0 = ids.length === 1 ? nodes.find((n) => n.id === ids[0]) : null;
+  const single =
+    single0 && resizeState?.id === single0.id && resizeState?.lastRect
+      ? ({
+          ...single0,
+          x: resizeState.lastRect.x,
+          y: resizeState.lastRect.y,
+          width: resizeState.lastRect.w,
+          height: resizeState.lastRect.h,
+        } as typeof single0)
+      : single0;
   const rotatedSingle =
     single &&
     (() => {
