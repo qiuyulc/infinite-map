@@ -107,8 +107,9 @@ export type InfiniteMapProps = {
   initialCamera?: Camera;
 
   /**
-   * 实验性高性能引擎（Zustand + 原生双轨）
-   * - enabled=true 时：拖拽/缩放等高频交互不再驱动 React re-render
+   * 高性能引擎（Zustand + 原生双轨）
+   * - 默认开启：拖拽/缩放/overlay 等高频交互不再驱动 React re-render
+   * - 如需回退旧实现：engine.enabled=false
    */
   engine?: {
     enabled?: boolean;
@@ -1300,5 +1301,6 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 }
 
 export function InfiniteMap(props: InfiniteMapProps) {
-  return props.engine?.enabled ? <InfiniteMapEngine {...props} /> : <InfiniteMapLegacy {...props} />;
+  // 迁移策略：engine 默认开启；如需回退旧实现，显式传 engine.enabled=false
+  return props.engine?.enabled === false ? <InfiniteMapLegacy {...props} /> : <InfiniteMapEngine {...props} />;
 }
