@@ -24,12 +24,13 @@ export const ViewportLayer = memo(function ViewportLayer({ store, zIndex = 1, ch
     <div
       style={{
         position: 'absolute',
-        inset: 0,
+        left: 0,
+        top: 0,
         transformOrigin: '0 0',
         transform,
         willChange: 'transform',
-        width: '100%',
-        height: '100%',
+        width: 0,
+        height: 0,
         zIndex,
       }}
     >
@@ -37,3 +38,4 @@ export const ViewportLayer = memo(function ViewportLayer({ store, zIndex = 1, ch
     </div>
   );
 });
+
