@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { STORE_KEYS, VISUAL_CONST, type MapContext, type NodeData } from '@qiuyulc/infinite-map';
 
 const STORE_KEY = STORE_KEYS.selectionIds;
@@ -73,6 +73,20 @@ function SelectionOverlayInner({
   // 需要把 baseCam 更新到当前 camera，避免 translate 重复应用。
   const camNow = ctx.getCamera();
   baseCamRef.current = { x: camNow.x, y: camNow.y, zoom: camNow.zoom || 1 };
+
+  // 关键：engine 模式下我们会在 effect 中 imperative 写入 rootRef.style.transform 来跟随 pan。
+  // 但当后续因为 resize / history / 其它 overlay bump 导致 React re-render 时，
+  // 如果本次 render 的 transform 仍然是空串，React 可能不会覆盖掉之前写入的 DOM transform，
+  // 从而出现“选框/resize handle 仍带着旧 pan 偏移”的错位。
+  // 因此每次 render 后都显式 reset 一次到“仅 drag 偏移”状态，再由订阅逻辑继续跟随 pan。
+  useLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const x = dragOffsetRef.current.x;
+    const y = dragOffsetRef.current.y;
+    el.style.transform = x || y ? `translate3d(${x}px, ${y}px, 0)` : '';
+    el.style.willChange = x || y ? 'transform' : '';
+  });
 
   // 订阅 camera 变化：只做屏幕空间 translate，避免让 overlay 走 React render
   useEffect(() => {
