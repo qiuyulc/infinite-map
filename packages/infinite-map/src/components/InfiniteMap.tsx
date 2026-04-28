@@ -15,7 +15,6 @@ import { BackgroundDots } from './BackgroundDots';
 import { BackgroundGrid } from './BackgroundGrid';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
 import { RenderDomNodes } from './RenderDomNodes';
-import { ViewportLayer } from './ViewportLayer';
 import type { InfiniteMapDoc } from '../editor/document';
 import type { EventKey, EventMap } from '../editor/types';
 import { STORE_KEYS } from '../editor/keys';
@@ -391,19 +390,6 @@ export function InfiniteMap({
   const bus = useMemo(() => createEventBus(), []);
   const store = useMemo(() => createStore(), []);
 
-  // 参考 react-flow：pan/zoom 时不依赖 React 每帧重渲染整棵树
-  // - 每次相机变更都写入 store.viewTransform（给 ViewportLayer 订阅）
-  // - 同时 emit camera:changed（给 HUD/插件订阅）
-  const commitCameraWithEffects = useCallback(
-    (next: Camera, immediate = false) => {
-      commitCamera(next, immediate);
-      const z = next.zoom || 1;
-      store.set(STORE_KEYS.viewTransform, `translate3d(${-next.x * z}px, ${-next.y * z}px, 0) scale(${z})`);
-      bus.emit('camera:changed', { camera: next });
-    },
-    [bus, commitCamera, store]
-  );
-
   const hooksRef = useRef(editorHooks);
   useEffect(() => {
     hooksRef.current = editorHooks;
@@ -532,11 +518,10 @@ export function InfiniteMap({
   // commands registry：将 plugins.commands 汇总到 store，供 CommandRunnerPlugin 使用
   useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });
 
-  // 初始化 transform（避免首次订阅拿到默认值）
+  // camera state 更新：广播 changed 事件（用于外部订阅）
   useEffect(() => {
-    const z = camera.zoom || 1;
-    store.set(STORE_KEYS.viewTransform, `translate3d(${-camera.x * z}px, ${-camera.y * z}px, 0) scale(${z})`);
-  }, [camera.x, camera.y, camera.zoom, store]);
+    bus.emit('camera:changed', { camera });
+  }, [bus, camera]);
 
   // 开发期提示：启用 plugins 但未提供受控出口时，编辑不会生效
   useEffect(() => {
@@ -555,7 +540,7 @@ export function InfiniteMap({
     apiRef,
     plugins,
     ctx,
-    commitCamera: commitCameraWithEffects,
+    commitCamera,
     runCommandWithHooks,
     getNodeRect,
     getSelectionRect,
@@ -586,7 +571,7 @@ export function InfiniteMap({
     viewportRef,
     camera,
     cameraRef,
-    commitCamera: commitCameraWithEffects,
+    commitCamera,
     mouseRef,
     pulseRef,
     panEnabled: panEnabled !== false,
@@ -613,7 +598,7 @@ export function InfiniteMap({
     containerRef,
     store,
     screenToWorld,
-    commitCamera: commitCameraWithEffects,
+    commitCamera,
     mouseRef,
     hoverRef,
     onEditorErrorRef,
@@ -730,18 +715,17 @@ export function InfiniteMap({
       />
 
       {/* 节点层：DOM 渲染（暂时不启用 Canvas 模式） */}
-      <ViewportLayer store={store} zIndex={1}>
-        <RenderDomNodes
-          cameraRef={cameraRef}
-          visibleNodes={visibleNodes}
-          zIndex={1}
-          onNodeDrag={onNodeDrag}
-          renderNode={renderNode}
-          renderNodeContent={renderNodeContent}
-          getDefaultNodeProps={getDefaultNodeProps}
-          defaultNodeShowMeta={defaultNodeShowMeta}
-        />
-      </ViewportLayer>
+      <RenderDomNodes
+        camera={camera}
+        cameraRef={cameraRef}
+        visibleNodes={visibleNodes}
+        zIndex={1}
+        onNodeDrag={onNodeDrag}
+        renderNode={renderNode}
+        renderNodeContent={renderNodeContent}
+        getDefaultNodeProps={getDefaultNodeProps}
+        defaultNodeShowMeta={defaultNodeShowMeta}
+      />
 
       {/* 插件 overlay 层（guides / marquee / selection 等，默认插槽） */}
       {RenderPluginOverlays({ plugins, slot: 'overlay', ctx, zIndex: 2, onEditorError: onEditorErrorRef.current })}
