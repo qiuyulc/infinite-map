@@ -342,9 +342,13 @@ function SelectionOverlayInner({
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
-        // 初始 transform（后续会被 engine subscribe 直接写入）
-        transform: dragDxPx || dragDyPx ? `translate3d(${dragDxPx}px, ${dragDyPx}px, 0)` : undefined,
-        willChange: dragDxPx || dragDyPx ? 'transform' : undefined,
+        // 初始 transform：
+        // - 选择变化时 React 可能会复用同一个 DOM 节点；如果这里是 undefined，
+        //   之前由 imperative 写入的 transform 可能不会被清掉，导致“切换选中后边框错位”。
+        // - 因此在无拖拽位移时显式写空串，确保 reset。
+        // 后续 pan/drag 的跟随由 engine subscribe 再次写入。
+        transform: dragDxPx || dragDyPx ? `translate3d(${dragDxPx}px, ${dragDyPx}px, 0)` : '',
+        willChange: dragDxPx || dragDyPx ? 'transform' : '',
       }}
     >
       {single ? rotatedSingle : selectedNodes.map((n) => renderRotatedBox(n))}
