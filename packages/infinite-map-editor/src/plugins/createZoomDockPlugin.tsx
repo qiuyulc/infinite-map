@@ -79,7 +79,7 @@ const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapC
     const next: Camera = { x: cx - vp.w / 2 / z, y: cy - vp.h / 2 / z, zoom: z };
     const svc = ctx.getService<{ set: (c: Camera, immediate?: boolean) => void }>('camera');
     if (svc?.set) svc.set(next, true);
-    else ctx.bus.emit('camera:change', { camera: next, immediate: true });
+    else ctx.bus.emit('camera:set', { camera: next, immediate: true });
   };
 
   const minimap = ctx.getService<{ enabled: () => boolean; getConfig: () => { width: number } }>('minimap');

@@ -119,7 +119,7 @@ api.subscribe('selection:change', ({ ids }) => {})
 ```ts
 api.getCamera()
 api.setCamera(next, { immediate?: boolean })
-api.subscribe('camera:change', (camera) => {})
+api.subscribe('camera:set', (camera) => {})
 ```
 
 ### doc（保存/加载）

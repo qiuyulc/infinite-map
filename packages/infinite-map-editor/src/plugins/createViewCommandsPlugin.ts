@@ -60,7 +60,7 @@ export function getViewLimits(ctx: MapContext): { minZoom: number; maxZoom: numb
 function setCamera(ctx: MapContext, next: Camera, immediate?: boolean) {
   const svc = getCameraService(ctx);
   if (svc?.set) svc.set(next, immediate);
-  else ctx.bus.emit('camera:change', { camera: next, immediate: Boolean(immediate) });
+  else ctx.bus.emit('camera:set', { camera: next, immediate: Boolean(immediate) });
 }
 
 function fitRect(ctx: MapContext, rect: Rect, opts?: { paddingPx?: number; immediate?: boolean }) {

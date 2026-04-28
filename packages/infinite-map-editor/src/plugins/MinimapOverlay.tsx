@@ -186,7 +186,7 @@ function EngineMinimapOverlay({
     (next: Camera, immediate?: boolean) => {
       const svc = ctx.getService<{ set: (c: Camera, immediate?: boolean) => void }>('camera');
       if (svc?.set) svc.set(next, immediate);
-      else ctx.bus.emit('camera:change', { camera: next, immediate: Boolean(immediate) });
+      else ctx.bus.emit('camera:set', { camera: next, immediate: Boolean(immediate) });
     },
     [ctx]
   );

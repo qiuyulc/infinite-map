@@ -223,7 +223,11 @@ export type EventMap = {
   'command:run': { id: string; source: 'keyboard' | 'toolbar' | 'menu' | 'api' };
 
   // camera（可选）
-  'camera:change': { camera: Camera; immediate: boolean };
+  /**
+   * 请求设置 camera（命令通道）
+   * - 插件/外部可以发起该事件，请求 InfiniteMap 更新 camera
+   */
+  'camera:set': { camera: Camera; immediate: boolean };
   /**
    * camera 已更新（由 InfiniteMap 在 React state 更新后广播）
    * - 用于外部订阅（自定义工具栏/状态栏）

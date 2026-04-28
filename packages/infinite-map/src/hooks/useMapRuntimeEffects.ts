@@ -55,7 +55,7 @@ export function useMapRuntimeEffects({
   wheelPulseStrength: number;
   screenToWorld: (p: { x: number; y: number }) => { x: number; y: number };
   store: { set: (key: string, v: any) => void };
-  bus: { on: (type: 'camera:change', handler: (p: { camera: Camera; immediate?: boolean }) => void) => () => void };
+  bus: { on: (type: 'camera:set', handler: (p: { camera: Camera; immediate?: boolean }) => void) => () => void };
   minimapWidth: number;
   minimapHeight: number;
   minimapCachePadding: number;
@@ -119,7 +119,7 @@ export function useMapRuntimeEffects({
 
   // camera 变更事件：允许插件（如 minimap）驱动相机
   useEffect(() => {
-    return bus.on('camera:change', ({ camera: next, immediate }) => {
+    return bus.on('camera:set', ({ camera: next, immediate }) => {
       commitCamera(next, Boolean(immediate));
     });
   }, [bus, commitCamera]);
