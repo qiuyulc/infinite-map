@@ -1236,6 +1236,18 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
       {/* 插件 background 层（屏幕空间） */}
       {RenderPluginOverlays({ plugins, slot: 'background', ctx, zIndex: 0, onEditorError: onEditorErrorRef.current })}
 
+      {/* 背景（屏幕空间，但图案锚定世界坐标；由 store.subscribe 直接写 style，避免 pan 时空白） */}
+      <EngineBackgroundLayer
+        store={engineStore}
+        backgroundMode={backgroundMode}
+        dotSpacing={dotSpacing}
+        dotRadiusPx={dotRadiusPx}
+        dotAlpha={dotAlpha}
+        gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
+        gridAlpha={gridAlpha}
+        zIndex={1}
+      />
+
       {/* viewport DOM：transform 由 store.subscribe 直接写入 */}
       <div
         ref={viewportDomRef}
@@ -1245,19 +1257,9 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
           transformOrigin: '0 0',
           transform: engineStore.getState().view.transform,
           willChange: 'transform',
-          zIndex: 1,
+          zIndex: 2,
         }}
       >
-        <EngineBackgroundLayer
-          store={engineStore}
-          backgroundMode={backgroundMode}
-          dotSpacing={dotSpacing}
-          dotRadiusPx={dotRadiusPx}
-          dotAlpha={dotAlpha}
-          gridSpacing={gridSpacing === 'auto' ? 'auto' : gridSpacing ?? dotSpacing}
-          gridAlpha={gridAlpha}
-        />
-
         <EngineDomNodesLayer
           store={engineStore}
           nodesById={nodesById}

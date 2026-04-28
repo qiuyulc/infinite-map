@@ -17,6 +17,22 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
   const selectedNodes = nodes.filter((n) => selected.has(n.id) && !n.hidden);
   if (selectedNodes.length === 0) return null;
 
+  // Engine 模式：节点拖拽 move 阶段不更新节点数据（只改 DOM），
+  // 选中框需要在屏幕空间跟随拖拽位移，否则会“停在原地”。
+  const drag = ctx.store.get<any>(STORE_KEYS.dragState);
+  let dragDxPx = 0;
+  let dragDyPx = 0;
+  if (drag?.startById && drag?.lastById) {
+    const anyId: string | undefined = drag.primaryId ?? drag.ids?.[0];
+    const s = anyId ? drag.startById[anyId] : null;
+    const l = anyId ? drag.lastById[anyId] : null;
+    if (s && l) {
+      const zoom = ctx.getCamera().zoom || 1;
+      dragDxPx = (l.x - s.x) * zoom;
+      dragDyPx = (l.y - s.y) * zoom;
+    }
+  }
+
   const boxStyle: CSSProperties = {
     position: 'absolute',
     borderRadius: 10,
@@ -218,9 +234,17 @@ export function SelectionOverlay({ ctx }: { ctx: MapContext }) {
     })();
 
   return (
-    <>
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        transform: dragDxPx || dragDyPx ? `translate3d(${dragDxPx}px, ${dragDyPx}px, 0)` : undefined,
+        willChange: dragDxPx || dragDyPx ? 'transform' : undefined,
+      }}
+    >
       {single ? rotatedSingle : selectedNodes.map((n) => renderRotatedBox(n))}
       {groupRotateHandle ?? null}
-    </>
+    </div>
   );
 }
