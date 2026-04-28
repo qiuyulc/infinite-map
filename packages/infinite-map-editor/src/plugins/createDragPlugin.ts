@@ -39,6 +39,13 @@ type DragState = {
   startPointerWorld: { x: number; y: number };
   startById: Record<string, { x: number; y: number }>;
   lastById: Record<string, { x: number; y: number }>;
+  /**
+   * Engine 模式：drag move 阶段不 applyPatches，而是直接改 DOM
+   * - 这里缓存每个节点原始 transform（用于叠加 translate，且 end 时恢复）
+   */
+  dom?: {
+    baseTransformById: Record<string, string>;
+  };
 };
  
 const DEFAULT_DRAG_KEY = STORE_KEYS.dragState;
@@ -103,6 +110,19 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
       startById,
       lastById,
     };
+
+    // Engine 模式：缓存 DOM 节点的 transform（用于 move 阶段纯视觉位移）
+    const engine = ctx.getService<{ store: unknown; cameraRef: unknown }>('engine');
+    const domSvc = ctx.getService<{ getEl: (id: string) => HTMLElement | null }>('dom-nodes');
+    if (engine && domSvc?.getEl) {
+      const baseTransformById: Record<string, string> = {};
+      for (const id of dragIds) {
+        const el = domSvc.getEl(id);
+        baseTransformById[id] = el?.style.transform ?? '';
+      }
+      st.dom = { baseTransformById };
+    }
+
     ctx.store.set(dragKey, st);
     ctx.bus.emit('drag:start', { id: effectiveHitId, startWorld: { ...e.world } });
     ctx.requestRender();
@@ -241,13 +261,32 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
  
     ctx.store.set(dragKey, st);
     ctx.bus.emit('drag:move', { id: st.primaryId, rawWorld: { ...e.world } });
-    ctx.applyPatches(patches, {
-      source: 'plugin',
-      plugin: 'drag',
-      reason: 'drag',
-      phase: 'move',
-      ids: st.ids,
-    });
+
+    // Engine 模式：move 阶段只做 DOM 视觉更新（不进入 React/patch 管线）
+    const engine = ctx.getService<{ store: unknown; cameraRef: unknown }>('engine');
+    const domSvc = ctx.getService<{ getEl: (id: string) => HTMLElement | null }>('dom-nodes');
+    if (engine && domSvc?.getEl && st.dom?.baseTransformById) {
+      for (const id of st.ids) {
+        const start = st.startById[id];
+        const last = st.lastById[id];
+        if (!start || !last) continue;
+        const dx = last.x - start.x;
+        const dy = last.y - start.y;
+        const el = domSvc.getEl(id);
+        if (!el) continue;
+        const base = st.dom.baseTransformById[id] ?? '';
+        const translate = `translate3d(${dx}px, ${dy}px, 0)`;
+        el.style.transform = base ? `${translate} ${base}` : translate;
+      }
+    } else {
+      ctx.applyPatches(patches, {
+        source: 'plugin',
+        plugin: 'drag',
+        reason: 'drag',
+        phase: 'move',
+        ids: st.ids,
+      });
+    }
  
     ctx.requestRender();
     return true;
@@ -263,6 +302,18 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
       if (!last) continue;
       patches.push({ type: 'move', id, x: last.x, y: last.y });
     }
+
+    // Engine 模式：恢复 DOM transform（数据以 end patch 为准）
+    const engine = ctx.getService<{ store: unknown; cameraRef: unknown }>('engine');
+    const domSvc = ctx.getService<{ getEl: (id: string) => HTMLElement | null }>('dom-nodes');
+    if (engine && domSvc?.getEl && st.dom?.baseTransformById) {
+      for (const id of st.ids) {
+        const el = domSvc.getEl(id);
+        if (!el) continue;
+        el.style.transform = st.dom.baseTransformById[id] ?? '';
+      }
+    }
+
     ctx.applyPatches(patches, { source: 'plugin', plugin: 'drag', reason: 'drag', phase: 'end', ids: st.ids });
     ctx.bus.emit('drag:end', { id: st.primaryId, endWorld: { ...e.world } });
     ctx.store.set(dragKey, null);

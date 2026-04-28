@@ -935,6 +935,13 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
   // 将 engine store 暴露给插件（供未来插件直接 subscribe）
   useEffect(() => {
     ctx.registerService('engine', { store: engineStore, cameraRef });
+    ctx.registerService('dom-nodes', {
+      getEl: (id: string) => {
+        const root = containerRef.current;
+        if (!root) return null;
+        return root.querySelector(`[data-im-node-id="${CSS.escape(id)}"]`) as HTMLElement | null;
+      },
+    });
   }, [ctx, engineStore]);
 
   // view config / pan enabled / edit enabled

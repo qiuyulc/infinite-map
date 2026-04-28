@@ -93,6 +93,7 @@ export function RenderDomNodes({
     return visibleNodes.map((n) => (
       <div
         key={n.id}
+        data-im-node-id={n.id}
         style={{
           position: 'absolute',
           left: n.x,

@@ -56,6 +56,11 @@ export type RulersOverlayProps = {
 };
 
 export const RulersOverlay = memo(function RulersOverlay({ ctx, thickness = 24 }: RulersOverlayProps) {
+  const engine = ctx.getService<{ store: any; cameraRef: any }>('engine');
+  if (engine) {
+    return <EngineRulersOverlay ctx={ctx} thickness={thickness} engine={engine} />;
+  }
+
   // 性能：在 DevTools 打开时，camera 更新会导致父组件高频 re-render，
   // SVG 标尺每次重算 ticks + 重建大量 DOM 会很卡。
   // 这里用 “事件驱动 + 节流” 来刷新：父组件重渲染时尽量不跟着更新，改为低频主动刷新。
@@ -231,3 +236,181 @@ export const RulersOverlay = memo(function RulersOverlay({ ctx, thickness = 24 }
     </>
   );
 });
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function EngineRulersOverlay({
+  ctx,
+  thickness = 24,
+  engine,
+}: {
+  ctx: MapContext;
+  thickness?: number;
+  engine: { store: { getState: () => any; subscribe: any } };
+}) {
+  const hSvgRef = useRef<SVGSVGElement | null>(null);
+  const vSvgRef = useRef<SVGSVGElement | null>(null);
+
+  // 仅渲染一次：后续完全由 subscribe 回调更新 DOM（拖拽过程中 React 0 renders）
+  useEffect(() => {
+    const now = () => ((globalThis as any).performance?.now ? (globalThis as any).performance.now() : Date.now());
+    let lastTs = 0;
+    let raf: number | null = null;
+    let pending: { cam: any; vp: any } | null = null;
+
+    const updateDom = () => {
+      raf = null;
+      if (!pending) return;
+      const { cam, vp } = pending;
+      pending = null;
+      const hSvg = hSvgRef.current;
+      const vSvg = vSvgRef.current;
+      if (!hSvg || !vSvg) return;
+      const z = cam.zoom || 1;
+      if (!(vp.w > 0 && vp.h > 0 && isFinite(z) && z > 0)) return;
+
+      // 对齐画布内容：标尺从 (thickness, thickness) 后开始
+      const viewStartX = cam.x + thickness / z;
+      const viewEndX = cam.x + vp.w / z;
+      const viewStartY = cam.y + thickness / z;
+      const viewEndY = cam.y + vp.h / z;
+
+      const { majorStepWorld, minorCount } = computeAdaptiveSteps(z);
+      const zoomFactor = Math.sqrt(z);
+      const labelMinGapPx = clamp(28 / zoomFactor, 16, 44);
+      const labelEveryMajor = Math.max(1, Math.ceil(labelMinGapPx / Math.max(majorStepWorld * z, 1e-6)));
+
+      const h = buildTicks(viewStartX, viewEndX, z, { majorStepWorld, minorCount, labelEveryMajor });
+      const v = buildTicks(viewStartY, viewEndY, z, { majorStepWorld, minorCount, labelEveryMajor });
+
+      const tickStroke = 'var(--im-ruler-tick, rgba(15,23,42,0.35))';
+      const textFill = 'var(--im-ruler-text, rgba(15,23,42,0.70))';
+      const fontSize = 9;
+      const labelAreaPx = fontSize + 6;
+      const tickMajorLen = Math.max(8, thickness - labelAreaPx);
+      const tickMinorLen = Math.max(5, tickMajorLen - 3);
+      const hLabelY = tickMajorLen + 2;
+      const vLabelX = Math.min(thickness - 2, tickMajorLen + 4);
+
+      // render horizontal
+      {
+        const frag = document.createDocumentFragment();
+        for (const t of h.ticks) {
+          const x = Math.round(t.posPx + thickness) + 0.5;
+          const y1 = 0.5;
+          const y2 = (t.major ? tickMajorLen : tickMinorLen) + 0.5;
+          const line = document.createElementNS(SVG_NS, 'line');
+          line.setAttribute('x1', String(x));
+          line.setAttribute('y1', String(y1));
+          line.setAttribute('x2', String(x));
+          line.setAttribute('y2', String(y2));
+          line.setAttribute('stroke', tickStroke);
+          line.setAttribute('stroke-width', '1');
+          line.setAttribute('shape-rendering', 'crispEdges');
+          frag.appendChild(line);
+        }
+        for (const t of h.ticks) {
+          if (!t.label) continue;
+          const x = Math.round(t.posPx + thickness) + 0.5;
+          if (x < thickness + 2) continue;
+          const text = document.createElementNS(SVG_NS, 'text');
+          text.setAttribute('x', String(x));
+          text.setAttribute('y', String(hLabelY));
+          text.setAttribute('font-size', String(fontSize));
+          text.setAttribute('fill', textFill);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('dominant-baseline', 'hanging');
+          text.textContent = t.label;
+          frag.appendChild(text);
+        }
+        // 清理并替换（避免大量 diff）
+        while (hSvg.firstChild) hSvg.removeChild(hSvg.firstChild);
+        hSvg.appendChild(frag);
+      }
+
+      // render vertical
+      {
+        const frag = document.createDocumentFragment();
+        for (const t of v.ticks) {
+          const y = Math.round(t.posPx + thickness) + 0.5;
+          const x1 = 0.5;
+          const x2 = (t.major ? tickMajorLen : tickMinorLen) + 0.5;
+          const line = document.createElementNS(SVG_NS, 'line');
+          line.setAttribute('x1', String(x1));
+          line.setAttribute('y1', String(y));
+          line.setAttribute('x2', String(x2));
+          line.setAttribute('y2', String(y));
+          line.setAttribute('stroke', tickStroke);
+          line.setAttribute('stroke-width', '1');
+          line.setAttribute('shape-rendering', 'crispEdges');
+          frag.appendChild(line);
+        }
+        for (const t of v.ticks) {
+          if (!t.label) continue;
+          const y = Math.round(t.posPx + thickness) + 0.5;
+          if (y < thickness + 2) continue;
+          const text = document.createElementNS(SVG_NS, 'text');
+          text.setAttribute('x', String(vLabelX));
+          text.setAttribute('y', String(y));
+          text.setAttribute('font-size', String(fontSize));
+          text.setAttribute('fill', textFill);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('dominant-baseline', 'hanging');
+          text.setAttribute('transform', `rotate(-90 ${vLabelX} ${y})`);
+          text.textContent = t.label;
+          frag.appendChild(text);
+        }
+        while (vSvg.firstChild) vSvg.removeChild(vSvg.firstChild);
+        vSvg.appendChild(frag);
+      }
+    };
+
+    const onAny = () => {
+      const t = now();
+      const panActive = ctx.store.get<boolean>(STORE_KEYS.viewPanActive) === true;
+      const minGap = panActive ? 50 : 16;
+      if (t - lastTs < minGap) return;
+      lastTs = t;
+      pending = { cam: engine.store.getState().view, vp: engine.store.getState().viewport };
+      if (raf != null) return;
+      raf = requestAnimationFrame(updateDom);
+    };
+
+    const un1 = engine.store.subscribe((s: any) => s.view, onAny, { equalityFn: () => false });
+    const un2 = engine.store.subscribe((s: any) => s.viewport, onAny, { equalityFn: () => false });
+    const un3 = ctx.store.subscribe(STORE_KEYS.viewPanActive, onAny);
+    // 首次绘制
+    onAny();
+
+    return () => {
+      un1?.();
+      un2?.();
+      un3?.();
+      if (raf != null) cancelAnimationFrame(raf);
+    };
+  }, [ctx, engine, thickness]);
+
+  const baseSvgStyle: CSSProperties = {
+    position: 'absolute',
+    pointerEvents: 'none',
+    background: 'var(--im-ruler-bg, rgba(255,255,255,0.75))',
+  };
+
+  return (
+    <>
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: thickness,
+          height: thickness,
+          background: 'var(--im-ruler-bg, rgba(255,255,255,0.75))',
+          pointerEvents: 'none',
+        }}
+      />
+      <svg ref={hSvgRef} width="100%" height={thickness} style={{ ...baseSvgStyle, left: 0, top: 0 }} aria-hidden="true" />
+      <svg ref={vSvgRef} width={thickness} height="100%" style={{ ...baseSvgStyle, left: 0, top: 0 }} aria-hidden="true" />
+    </>
+  );
+}
