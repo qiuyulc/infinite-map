@@ -8,8 +8,9 @@ type SnapGuides = {
 
 export function SnapGuidesOverlay({ ctx }: { ctx: MapContext }) {
   if (ctx.store.get<boolean>(STORE_KEYS.editEnabled) === false) return null;
-  const snapCfg = ctx.store.get<{ enabled?: boolean }>(STORE_KEYS.snapConfig);
+  const snapCfg = ctx.store.get<{ enabled?: boolean; guidesEnabled?: boolean }>(STORE_KEYS.snapConfig);
   if (snapCfg?.enabled === false) return null;
+  if (snapCfg?.guidesEnabled === false) return null;
   const guides = ctx.store.get<SnapGuides>(STORE_KEYS.snapGuides);
   if (!guides || ((!guides.v || guides.v.length === 0) && (!guides.h || guides.h.length === 0))) return null;
 

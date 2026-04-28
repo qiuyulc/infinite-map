@@ -3,6 +3,10 @@ import { SnapGuidesOverlay } from './SnapGuidesOverlay';
 
 export type SnapConfig = {
   enabled: boolean;
+  /**
+   * 是否显示辅助线（仅影响 guides overlay 与 guides 写入，不影响吸附计算）
+   */
+  guidesEnabled: boolean;
   gridSize: number | 'auto'; // world units（auto 会随 zoom 自适应）
   thresholdPx: number; // screen px
   /**
@@ -13,7 +17,7 @@ export type SnapConfig = {
 
 export type SnapGuidesPluginOptions = Partial<SnapConfig>;
 
-const DEFAULT_CONFIG: SnapConfig = { enabled: true, gridSize: 'auto', thresholdPx: 6, gridTargetPx: 84 };
+const DEFAULT_CONFIG: SnapConfig = { enabled: true, guidesEnabled: true, gridSize: 'auto', thresholdPx: 6, gridTargetPx: 84 };
 
 export function createSnapGuidesPlugin(opts: SnapGuidesPluginOptions = {}): InfiniteMapPlugin {
   return {

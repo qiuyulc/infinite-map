@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   InfiniteMap,
   applyPatchesToNodes,
   computeLayout,
+  STORE_KEYS,
+  type MapContext,
   type InfiniteMapApi,
   type NodePatch,
   type ChangeMeta,
@@ -76,6 +78,8 @@ export default function App() {
   const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
+  const [snapEnabled, setSnapEnabled] = useState(true);
+  const [guidesEnabled, setGuidesEnabled] = useState(true);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
   const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
@@ -104,20 +108,36 @@ export default function App() {
     return createResourceStore(initial);
   }, []);
 
+  const ctxRef = useRef<MapContext | null>(null);
+
   const plugins = useMemo(() => {
     return composePlugins([
       ...createDefaultEditorPluginsWithUI({
         rulers: { enabled: rulersEnabled },
         minimap: { enabled: minimapEnabled },
-        zoomDock: { enabled: zoomDockEnabled },
+        // Playground 里用侧边栏做“吸附/辅助线”两个开关，避免与 ZoomDock 重复
+        zoomDock: { enabled: zoomDockEnabled, snapToggleEnabled: false },
         toolbar: { enabled: toolbarEnabled },
         contextMenu: { enabled: contextMenuEnabled },
         marquee: { enabled: true, requireShift: false },
+        snap: { enabled: snapEnabled, guidesEnabled },
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
       createHudContributionExamplePlugin(),
+      // capture ctx for playground controls
+      { id: 'pg.capture', setup: (ctx) => void (ctxRef.current = ctx) },
     ]);
-  }, [contextMenuEnabled, minimapEnabled, rulersEnabled, toolbarEnabled, zoomDockEnabled]);
+  }, [contextMenuEnabled, guidesEnabled, minimapEnabled, rulersEnabled, snapEnabled, toolbarEnabled, zoomDockEnabled]);
+
+  // 运行时同步 snap 配置（避免 createSnapGuidesPlugin 只初始化一次导致开关无效）
+  useEffect(() => {
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    const prev = (ctx.store.get<any>(STORE_KEYS.snapConfig) ?? {}) as any;
+    ctx.store.set(STORE_KEYS.snapConfig, { ...prev, enabled: snapEnabled, guidesEnabled });
+    if (!snapEnabled || !guidesEnabled) ctx.store.set(STORE_KEYS.snapGuides, null);
+    ctx.requestRender();
+  }, [guidesEnabled, snapEnabled]);
 
   const apiRef = useRef<InfiniteMapApi | null>(null);
 
@@ -133,16 +153,17 @@ export default function App() {
   const onNodesChange =
     changeOutput === 'nodes' || changeOutput === 'both'
       ? (next: NodeData[]) => {
-          setNodes(next);
-        }
+        console.log('onNodesChange', next);
+        setNodes(next);
+      }
       : undefined;
 
   const onPatches =
     changeOutput === 'patches' || changeOutput === 'both'
       ? (patches: NodePatch[], meta: ChangeMeta) => {
-          setLastPatchesInfo({ count: patches.length, meta });
-          setNodes((prev) => applyPatchesToNodes(prev, patches));
-        }
+        setLastPatchesInfo({ count: patches.length, meta });
+        setNodes((prev) => applyPatchesToNodes(prev, patches));
+      }
       : undefined;
 
   return (
@@ -202,6 +223,14 @@ export default function App() {
               <input className="pg-check" type="checkbox" checked={contextMenuEnabled} onChange={(e) => setContextMenuEnabled(e.target.checked)} />
             </label>
             <label className="pg-row">
+              <span className="pg-row__label">吸附</span>
+              <input className="pg-check" type="checkbox" checked={snapEnabled} onChange={(e) => setSnapEnabled(e.target.checked)} />
+            </label>
+            <label className="pg-row">
+              <span className="pg-row__label">辅助线</span>
+              <input className="pg-check" type="checkbox" checked={guidesEnabled} onChange={(e) => setGuidesEnabled(e.target.checked)} />
+            </label>
+            <label className="pg-row">
               <span className="pg-row__label">虚拟化</span>
               <input className="pg-check" type="checkbox" checked={virtualizationEnabled} onChange={(e) => setVirtualizationEnabled(e.target.checked)} />
             </label>
@@ -245,8 +274,8 @@ export default function App() {
               last patches:{' '}
               {lastPatchesInfo
                 ? `${lastPatchesInfo.count}（source: ${String((lastPatchesInfo.meta as any).source ?? '-')}, phase: ${String(
-                    (lastPatchesInfo.meta as any).phase ?? '-'
-                  )}）`
+                  (lastPatchesInfo.meta as any).phase ?? '-'
+                )}）`
                 : '-'}
             </div>
           </div>
