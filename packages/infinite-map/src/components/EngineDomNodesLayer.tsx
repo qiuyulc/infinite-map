@@ -50,15 +50,10 @@ export const EngineDomNodesLayer = memo(function EngineDomNodesLayer({
     return out;
   }, [nodesById, visibleIds]);
 
-  // 该 camera 仅用于满足 RenderDomNodes 的类型；transform 已由外层 viewport DOM 负责
-  const dummyCamera: Camera = { x: 0, y: 0, zoom: 1 };
-
   return (
     <RenderDomNodes
-      camera={dummyCamera}
       cameraRef={cameraRef}
       visibleNodes={visibleNodes}
-      applyCameraTransform={false}
       zIndex={zIndex}
       onNodeDrag={onNodeDrag}
       renderNode={renderNode}
@@ -68,4 +63,3 @@ export const EngineDomNodesLayer = memo(function EngineDomNodesLayer({
     />
   );
 });
-

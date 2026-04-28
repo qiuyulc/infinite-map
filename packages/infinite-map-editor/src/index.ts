@@ -13,7 +13,8 @@ export { createDefaultEditorPluginsWithUI } from './createDefaultEditorPluginsWi
 export type { DefaultEditorWithUIOptions } from './createDefaultEditorPluginsWithUI';
 
 // UI：直接从编辑器包根入口导出（避免 `@qiuyulc/infinite-map-editor/ui`）
-export { BackgroundDots, BackgroundGrid, DefaultNode, InfiniteMapThemeProvider } from '@qiuyulc/infinite-map';
+// 注意：旧的 BackgroundDots/Grid（React 相机驱动背景）已移除，仅保留通用组件/主题。
+export { DefaultNode, InfiniteMapThemeProvider } from '@qiuyulc/infinite-map';
 export type { InfiniteMapTheme } from '@qiuyulc/infinite-map';
 export { lightTheme, darkTheme, mergeTheme, themeToCSSVars, themeOverrideToCSSVars } from '@qiuyulc/infinite-map';
 
