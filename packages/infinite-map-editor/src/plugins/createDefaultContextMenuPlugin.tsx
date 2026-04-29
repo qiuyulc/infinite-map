@@ -393,7 +393,10 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
                 ...(hovered && enabled
                   ? {
                       background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
-                      outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
+                      // 用 inset box-shadow 代替 outline：
+                      // - outline 会绘制在元素外侧，容易被父容器 overflow 裁切（菜单面板为圆角需要 overflow:hidden）
+                      // - inset 阴影绘制在内部，不会被裁切且视觉一致
+                      boxShadow: '0 0 0 1px var(--im-toolbar-btn-border, rgba(15,23,42,0.12)) inset',
                     }
                   : null),
                 ...(enabled ? null : itemDisabled),
