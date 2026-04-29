@@ -294,6 +294,8 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     height: 18,
     background: 'rgba(15,23,42,0.12)',
     margin: '0 2px',
+    flex: '0 0 1px',
+    alignSelf: 'center',
   };
 
   return (
