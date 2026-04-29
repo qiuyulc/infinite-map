@@ -308,8 +308,9 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
 
   const maxWidthPx = opts.maxWidthPx ?? 320;
   const maxHeightPx = opts.maxHeightPx ?? 420;
-  const padding = 6;
-  const innerMaxHeight = Math.max(120, maxHeightPx - padding * 2);
+  const padX = 6;
+  const padY = 6;
+  const innerMaxHeight = Math.max(120, maxHeightPx);
 
   const panel: CSSProperties = {
     position: 'absolute',
@@ -318,7 +319,8 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
     minWidth: 170,
     maxWidth: maxWidthPx,
     maxHeight: maxHeightPx,
-    padding,
+    // 仅保留左右 padding（上下 padding 交给内层滚动容器做“固定留白”，滚动时不贴边）
+    padding: `0 ${padX}px`,
     borderRadius: 10,
     // 与 toolbar tooltip/panel 保持一致：优先使用 im-panel-*，兼容旧的 im-menu-* 变量
     background: 'var(--im-panel-bg, var(--im-menu-bg, rgba(255,255,255,0.88)))',
@@ -365,7 +367,14 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
       {/* 内层滚动容器：滚动过程中保持左右“固定留白” */}
       <div
         className="im-scrollbar"
-        style={{ maxHeight: innerMaxHeight, overflowX: 'hidden', overflowY: 'auto' }}
+        style={{
+          maxHeight: innerMaxHeight,
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          // 上下留白：滚动时首/尾项不会贴着边框
+          padding: `${padY}px 0`,
+          boxSizing: 'border-box',
+        }}
         onWheelCapture={(e) => {
           // menu 面板内部需要滚动；阻止 wheel 冒泡到 InfiniteMap 容器，避免触发画布缩放/平移
           e.stopPropagation();
