@@ -1,5 +1,5 @@
 {
-  "name": "infinite-map-monorepo",
+  "name": "infinite-map",
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
