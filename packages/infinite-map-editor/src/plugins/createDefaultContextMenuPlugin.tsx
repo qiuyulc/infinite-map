@@ -308,6 +308,8 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
 
   const maxWidthPx = opts.maxWidthPx ?? 320;
   const maxHeightPx = opts.maxHeightPx ?? 420;
+  const padding = 6;
+  const innerMaxHeight = Math.max(120, maxHeightPx - padding * 2);
 
   const panel: CSSProperties = {
     position: 'absolute',
@@ -316,7 +318,7 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
     minWidth: 170,
     maxWidth: maxWidthPx,
     maxHeight: maxHeightPx,
-    padding: 4,
+    padding,
     borderRadius: 10,
     // 与 toolbar tooltip/panel 保持一致：优先使用 im-panel-*，兼容旧的 im-menu-* 变量
     background: 'var(--im-panel-bg, var(--im-menu-bg, rgba(255,255,255,0.88)))',
@@ -327,8 +329,7 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
     pointerEvents: 'auto',
     zIndex: 9999,
     boxSizing: 'border-box',
-    overflowX: 'hidden',
-    overflowY: 'auto',
+    overflow: 'hidden', // 滚动交给内层，外层只负责圆角/边框/定位
   };
 
   const item: CSSProperties = {
@@ -360,61 +361,66 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
       ref={ref}
       style={{ ...panel, overscrollBehavior: 'contain' }}
       data-im-ui
-      className="im-scrollbar"
-      onWheelCapture={(e) => {
-        // menu 面板内部需要滚动；阻止 wheel 冒泡到 InfiniteMap 容器，避免触发画布缩放/平移
-        e.stopPropagation();
-      }}
     >
-      {items.map((it, i) => {
-        if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
-        const enabled = it.enabled ? it.enabled(ctx, payload) : true;
-        const key = `${it.id}-${i}`;
-        const hovered = hoverKey === key;
-        return (
-          <button
-            key={it.id}
-            type="button"
-            style={{
-              ...item,
-              ...(hovered && enabled
-                ? {
-                    background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
-                    outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
-                  }
-                : null),
-              ...(enabled ? null : itemDisabled),
-            }}
-            disabled={!enabled}
-            onPointerEnter={() => setHoverKey(key)}
-            onPointerLeave={() => setHoverKey((prev) => (prev === key ? null : prev))}
-            onClick={() => {
-              if (!enabled) return;
-              run(ctx, it.id);
-              ctx.store.set(STORE_KEYS.contextMenuState, null);
-            }}
-          >
-            <span style={{ width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-              {it.icon ?? null}
-            </span>
-            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.label}</span>
-            {it.shortcut ? (
-              <span
-                style={{
-                  marginLeft: 12,
-                  fontSize: 12,
-                  opacity: 0.7,
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                }}
-              >
-                {it.shortcut}
+      {/* 内层滚动容器：滚动过程中保持左右“固定留白” */}
+      <div
+        className="im-scrollbar"
+        style={{ maxHeight: innerMaxHeight, overflowX: 'hidden', overflowY: 'auto' }}
+        onWheelCapture={(e) => {
+          // menu 面板内部需要滚动；阻止 wheel 冒泡到 InfiniteMap 容器，避免触发画布缩放/平移
+          e.stopPropagation();
+        }}
+      >
+        {items.map((it, i) => {
+          if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
+          const enabled = it.enabled ? it.enabled(ctx, payload) : true;
+          const key = `${it.id}-${i}`;
+          const hovered = hoverKey === key;
+          return (
+            <button
+              key={it.id}
+              type="button"
+              style={{
+                ...item,
+                ...(hovered && enabled
+                  ? {
+                      background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.75))',
+                      outline: '1px solid var(--im-toolbar-btn-border, rgba(15,23,42,0.12))',
+                    }
+                  : null),
+                ...(enabled ? null : itemDisabled),
+              }}
+              disabled={!enabled}
+              onPointerEnter={() => setHoverKey(key)}
+              onPointerLeave={() => setHoverKey((prev) => (prev === key ? null : prev))}
+              onClick={() => {
+                if (!enabled) return;
+                run(ctx, it.id);
+                ctx.store.set(STORE_KEYS.contextMenuState, null);
+              }}
+            >
+              <span style={{ width: 16, height: 16, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                {it.icon ?? null}
               </span>
-            ) : null}
-          </button>
-        );
-      })}
+              <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.label}</span>
+              {it.shortcut ? (
+                <span
+                  style={{
+                    marginLeft: 12,
+                    fontSize: 12,
+                    opacity: 0.7,
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  {it.shortcut}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 });
