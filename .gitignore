@@ -12,3 +12,5 @@ lib
 **/.turbo
 **/.cache
 **/*.log
+
+coverage

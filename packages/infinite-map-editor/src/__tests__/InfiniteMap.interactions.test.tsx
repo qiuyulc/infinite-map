@@ -92,6 +92,11 @@ describe('InfiniteMap integrations (jsdom)', () => {
       expect(el).toBeTruthy();
       return el!;
     });
+    const viewportDom = await waitFor(() => {
+      const el = container.querySelector('div[style*="will-change: transform"][style*="transform-origin: 0 0"]') as HTMLElement | null;
+      expect(el).toBeTruthy();
+      return el!;
+    });
 
     const before = ctxRef!.getCamera();
     // pan camera by emitting request event (engine 模式下由 useMapRuntimeEffects 处理)
@@ -106,10 +111,10 @@ describe('InfiniteMap integrations (jsdom)', () => {
     await new Promise((r) => setTimeout(r, 0));
     await new Promise((r) => setTimeout(r, 0));
 
-    // rerender 后，overlay 应该使用新的 camera 重新计算 left/top，因此 transform 不应残留旧的 pan 偏移
+    // rerender 后，selection overlay 仍应与 viewport 使用同一份 view.transform（避免缩放/平移时慢半拍）
     await waitFor(() => {
       expect(ctxRef!.getCamera().x).toBe(before.x + 100);
-      expect(overlayRoot.style.transform).toBe('');
+      expect(overlayRoot.style.transform).toBe(viewportDom.style.transform);
     });
   });
 
