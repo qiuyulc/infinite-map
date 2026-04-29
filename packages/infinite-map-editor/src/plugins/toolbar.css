@@ -1,13 +1,11 @@
-/* Toolbar tooltip（与 App.css 的 theme-btn tooltip 同款） */
-.im-toolbar-btn {
-  position: relative;
-}
+/* Toolbar tooltip
+ * 注意：不要用 ::after 这类 pseudo-element 来做 tooltip，
+ * 因为其“可滚动溢出区域”会参与 scrollWidth 计算，导致横向滚动末尾出现多余空白。
+ * 这里改为单独的 fixed tooltip 节点（见 createToolbarPlugin）。
+ */
 
-.im-toolbar-btn::after {
-  content: attr(data-tip);
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 10px);
+.im-toolbar-tooltip {
+  position: fixed;
   transform: translateX(-50%);
   font-size: 11px;
   line-height: 1;
@@ -17,19 +15,12 @@
   background: var(--im-panel-bg, rgba(255, 255, 255, 0.92));
   color: var(--im-text-strong, rgba(15, 23, 42, 0.9));
   white-space: nowrap;
-  opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease, transform 120ms ease;
-  z-index: 10;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 120ms ease;
 }
 
-.im-toolbar-btn:hover::after {
+.im-toolbar-tooltip[data-show='1'] {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-@media (hover: none) {
-  .im-toolbar-btn::after {
-    display: none;
-  }
 }
