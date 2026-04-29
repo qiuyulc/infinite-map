@@ -246,10 +246,7 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     top: 36,
     left: position === 'top-left' ? 30 : undefined,
     right: position === 'top-right' ? 30 : undefined,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '8px 14px',
+    padding: '8px 14px', // 外层固定 padding：滚动过程中也保持左右留白
     borderRadius: 12,
     background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
     border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
@@ -259,9 +256,18 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     userSelect: 'none',
     boxSizing: 'border-box',
     maxWidth: maxWidthPx,
+    overflow: 'hidden',
+  };
+
+  // 内层滚动容器：只负责横向滚动，不吃外层 padding
+  const scroll: CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
     overflowX: 'auto',
     overflowY: 'hidden',
     whiteSpace: 'nowrap',
+    maxWidth: '100%',
   };
 
   const btn: CSSProperties = {
@@ -299,48 +305,49 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
   };
 
   return (
-    <div
-      style={base}
-      data-im-ui
-      className="im-scrollbar"
-      onScroll={() => setTip(null)}
-      onWheelCapture={(e) => {
-        // toolbar 自身可滚动（overflow:auto），避免 wheel 冒泡导致地图缩放/平移
-        e.stopPropagation();
-      }}
-    >
-      {items.map((it, i) => {
-        if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
-        const enabled = it.enabled ? it.enabled(ctx) : true;
-        const iconOnly = it.icon != null && (it.iconOnly ?? true);
-        const tipText = it.title ?? it.label;
-        return (
-          <button
-            key={it.id}
-            type="button"
-            style={{ ...btn, ...(iconOnly ? btnIcon : null), ...(enabled ? null : btnDisabled) }}
-            disabled={!enabled}
-            title={tipText}
-            onPointerEnter={(e) => {
-              if (!enabled) return;
-              // fixed tooltip（不会影响 scrollWidth）
-              const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-              setTip({ text: tipText, left: r.left + r.width / 2, top: r.bottom + 10 });
-            }}
-            onPointerLeave={() => setTip(null)}
-            onClick={() => (enabled ? run(ctx, it.id) : null)}
-          >
-            {it.icon ? (
-              <>
-                {it.icon}
-                {iconOnly ? null : <span style={{ marginLeft: 6 }}>{it.label}</span>}
-              </>
-            ) : (
-              it.label
-            )}
-          </button>
-        );
-      })}
+    <div style={base} data-im-ui>
+      <div
+        style={scroll}
+        className="im-scrollbar"
+        onScroll={() => setTip(null)}
+        onWheelCapture={(e) => {
+          // 内层容器滚动时阻止冒泡，避免触发地图缩放/平移
+          e.stopPropagation();
+        }}
+      >
+        {items.map((it, i) => {
+          if (it.type === 'divider') return <div key={`d-${i}`} style={divider} />;
+          const enabled = it.enabled ? it.enabled(ctx) : true;
+          const iconOnly = it.icon != null && (it.iconOnly ?? true);
+          const tipText = it.title ?? it.label;
+          return (
+            <button
+              key={it.id}
+              type="button"
+              style={{ ...btn, ...(iconOnly ? btnIcon : null), ...(enabled ? null : btnDisabled) }}
+              disabled={!enabled}
+              title={tipText}
+              onPointerEnter={(e) => {
+                if (!enabled) return;
+                // fixed tooltip（不会影响 scrollWidth）
+                const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setTip({ text: tipText, left: r.left + r.width / 2, top: r.bottom + 10 });
+              }}
+              onPointerLeave={() => setTip(null)}
+              onClick={() => (enabled ? run(ctx, it.id) : null)}
+            >
+              {it.icon ? (
+                <>
+                  {it.icon}
+                  {iconOnly ? null : <span style={{ marginLeft: 6 }}>{it.label}</span>}
+                </>
+              ) : (
+                it.label
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {/* fixed tooltip：避免 pseudo-element 导致滚动末尾出现多余空白 */}
       <div className="im-toolbar-tooltip" data-show={tip ? '1' : '0'} style={{ left: tip?.left ?? -9999, top: tip?.top ?? -9999 }}>
