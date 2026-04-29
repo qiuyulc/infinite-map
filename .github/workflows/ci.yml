@@ -15,8 +15,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        # 仅使用 package.json 里的 packageManager 字段指定 pnpm 版本
+        # 避免与 action-setup 的 version 配置冲突（ERR_PNPM_BAD_PM_VERSION）
 
       - name: Setup Node
         uses: actions/setup-node@v4
