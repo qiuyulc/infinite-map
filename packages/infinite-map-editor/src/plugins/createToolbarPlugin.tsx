@@ -249,7 +249,7 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    padding: '8px 8px',
+    padding: '8px 14px',
     borderRadius: 12,
     background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
     border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
