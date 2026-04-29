@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import type { ContextMenuPayload } from './createContextMenuPlugin';
 import { createContextMenuPlugin } from './createContextMenuPlugin';
+import './scrollbar.css';
 
 export type ContextMenuItem =
   | {
@@ -359,6 +360,7 @@ const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; 
       ref={ref}
       style={{ ...panel, overscrollBehavior: 'contain' }}
       data-im-ui
+      className="im-scrollbar"
       onWheelCapture={(e) => {
         // menu 面板内部需要滚动；阻止 wheel 冒泡到 InfiniteMap 容器，避免触发画布缩放/平移
         e.stopPropagation();

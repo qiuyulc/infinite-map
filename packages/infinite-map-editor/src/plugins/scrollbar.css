@@ -1,0 +1,39 @@
+/* 统一滚动条样式（尽量在 Windows / macOS 上一致）
+ * 说明：
+ * - WebKit 系（Chrome/Edge/Safari）用 ::-webkit-scrollbar 系列
+ * - Firefox 用 scrollbar-width / scrollbar-color
+ * - macOS 若系统设置为“自动隐藏滚动条”，滚动条可能仍然不常驻显示（系统行为，无法完全强制）
+ */
+
+.im-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--im-scrollbar-thumb, rgba(15, 23, 42, 0.28)) var(--im-scrollbar-track, transparent);
+}
+
+.im-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.im-scrollbar::-webkit-scrollbar-track {
+  background: var(--im-scrollbar-track, transparent);
+  border-radius: 999px;
+}
+
+.im-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--im-scrollbar-thumb, rgba(15, 23, 42, 0.28));
+  border-radius: 999px;
+  border: 2px solid var(--im-scrollbar-thumb-border, transparent);
+  background-clip: content-box;
+}
+
+.im-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--im-scrollbar-thumb-hover, rgba(15, 23, 42, 0.38));
+  border: 2px solid var(--im-scrollbar-thumb-border, transparent);
+  background-clip: content-box;
+}
+
+.im-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+

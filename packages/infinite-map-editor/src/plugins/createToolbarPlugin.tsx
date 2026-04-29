@@ -3,6 +3,7 @@ import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CSSProperties } from 'react';
 import { STORE_KEYS, type InfiniteMapPlugin, type MapContext } from '@qiuyulc/infinite-map';
 import './toolbar.css';
+import './scrollbar.css';
 
 export type ToolbarItem =
   | {
@@ -298,6 +299,7 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     <div
       style={base}
       data-im-ui
+      className="im-scrollbar"
       onWheelCapture={(e) => {
         // toolbar 自身可滚动（overflow:auto），避免 wheel 冒泡导致地图缩放/平移
         e.stopPropagation();
