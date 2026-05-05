@@ -171,6 +171,50 @@ describe('createDragPlugin', () => {
     expect(patchesApplied.some((x) => x.meta.phase === 'move')).toBe(true);
   });
 
+  it('snaps to rulers guides when present', () => {
+    const bus = createEventBus();
+    const store = createStore();
+    store.set(STORE_KEYS.keyboardSpace, false);
+    store.set(STORE_KEYS.snapConfig, { enabled: true, thresholdPx: 20, gridSize: 50 });
+    store.set(STORE_KEYS.minimapInViewCount, 2);
+    store.set('rulers:guides', { v: [100], h: [] });
+
+    let nodes: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10 }];
+
+    const ctx: MapContext = {
+      getCamera: () => ({ x: 0, y: 0, zoom: 1 } satisfies Camera),
+      getViewport: () => ({ w: 800, h: 600 }),
+      getNodes: () => nodes,
+      getVisibleNodes: () => nodes,
+      queryNodesInWorldRect: () => nodes,
+      screenToWorld: (p) => p,
+      worldToScreen: (p) => p,
+      rectScreenToWorld: (r) => r,
+      rectWorldToScreen: (r) => r,
+      bus,
+      store,
+      services: {},
+      registerService: () => void 0,
+      getService: () => undefined,
+      requestRender: () => void 0,
+      applyPatches: (patches: NodePatch[], _meta: ChangeMeta) => {
+        nodes = applyPatchesToNodes(nodes, patches);
+      },
+    } as MapContext;
+
+    const drag = createDragPlugin();
+    const g = drag.gestures![0];
+    const down = makePointerEvent('down', { x: 0, y: 0 }, 11);
+    // dx=93 => left=93 close to 100 => should snap +7 => 100
+    const move = makePointerEvent('move', { x: 93, y: 0 }, 11);
+    const up = makePointerEvent('up', { x: 93, y: 0 }, 11);
+
+    g.onStart(down, ctx, { kind: 'node', id: 'a' } as any);
+    g.onMove(move, ctx);
+    g.onEnd(up, ctx);
+    expect(nodes.find((n) => n.id === 'a')?.x).toBe(100);
+  });
+
   it('selectOnDrag=true selects the hit node when dragging unselected node', () => {
     const bus = createEventBus();
     const store = createStore();

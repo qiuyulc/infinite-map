@@ -148,6 +148,25 @@ describe('createResizePlugin', () => {
     expect(a.width).toBe(100);
   });
 
+  it('snaps resize edge to rulers vertical guide', () => {
+    const { ctx, store, getNodes } = makeCtx([{ id: 'a', x: 0, y: 0, width: 80, height: 40 }]);
+    store.set(STORE_KEYS.selectionIds, ['a']);
+    store.set(STORE_KEYS.snapConfig, { enabled: true, thresholdPx: 20, gridSize: 50 });
+    store.set('rulers:guides', { v: [100], h: [] });
+
+    const plugin = createResizePlugin();
+    const gesture = plugin.gestures![0];
+
+    const down = pe('down', { world: { x: 80, y: 20 }, originalEvent: { target: { dataset: { handle: 'e' } } } as any });
+    gesture.onStart(down, ctx, { kind: 'handle', owner: 'resize', id: 'a', handle: 'e' } satisfies HitTestTarget);
+    // right edge near 100 => width should snap to 100
+    gesture.onMove(pe('move', { world: { x: 95, y: 20 } }), ctx);
+    gesture.onEnd(pe('up', { world: { x: 95, y: 20 } }), ctx);
+
+    const a = getNodes().find((n) => n.id === 'a')!;
+    expect(a.width).toBe(100);
+  });
+
   it('snaps resize to grid when no alignment target', () => {
     const { ctx, store, getNodes } = makeCtx([{ id: 'a', x: 0, y: 0, width: 80, height: 40 }]);
     store.set(STORE_KEYS.selectionIds, ['a']);

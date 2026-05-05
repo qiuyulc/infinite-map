@@ -208,6 +208,21 @@ export function createDragPlugin(opts: DragPluginOptions = {}): InfiniteMapPlugi
           }
         }
  
+        // 参考线（rulers guides）也作为吸附目标
+        const rulerGuides = ctx.store.get<{ v?: number[]; h?: number[] }>('rulers:guides');
+        const gv = Array.isArray(rulerGuides?.v) ? rulerGuides!.v! : [];
+        const gh = Array.isArray(rulerGuides?.h) ? rulerGuides!.h! : [];
+        for (const tx of gv) {
+          tryX(tx, left);
+          tryX(tx, cx);
+          tryX(tx, right);
+        }
+        for (const ty of gh) {
+          tryY(ty, top);
+          tryY(ty, cy);
+          tryY(ty, bottom);
+        }
+
         // 若“严格 in view（minimap 统计）”只有 1 个节点：允许吸附到“视口中心线”
         const inViewCount = ctx.store.get<number>(STORE_KEYS.minimapInViewCount) ?? 0;
         if (inViewCount === 1) {

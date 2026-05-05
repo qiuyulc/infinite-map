@@ -117,6 +117,74 @@ function defaultItems(): ContextMenuItem[] {
         <rect x="5" y="3" width="14" height="4" rx="1" />
       </Icon>
     ),
+    alignLeft: (
+      <Icon>
+        <path d="M5 4v16" />
+        <path d="M8 7h12" />
+        <path d="M8 12h9" />
+        <path d="M8 17h12" />
+      </Icon>
+    ),
+    alignHCenter: (
+      <Icon>
+        <path d="M12 4v16" />
+        <path d="M6 7h12" />
+        <path d="M7.5 12h9" />
+        <path d="M6 17h12" />
+      </Icon>
+    ),
+    alignRight: (
+      <Icon>
+        <path d="M19 4v16" />
+        <path d="M4 7h12" />
+        <path d="M7 12h9" />
+        <path d="M4 17h12" />
+      </Icon>
+    ),
+    alignTop: (
+      <Icon>
+        <path d="M4 5h16" />
+        <path d="M7 8v12" />
+        <path d="M12 8v9" />
+        <path d="M17 8v12" />
+      </Icon>
+    ),
+    alignVCenter: (
+      <Icon>
+        <path d="M4 12h16" />
+        <path d="M7 6v12" />
+        <path d="M12 7.5v9" />
+        <path d="M17 6v12" />
+      </Icon>
+    ),
+    alignBottom: (
+      <Icon>
+        <path d="M4 19h16" />
+        <path d="M7 4v12" />
+        <path d="M12 7v9" />
+        <path d="M17 4v12" />
+      </Icon>
+    ),
+    distributeH: (
+      <Icon>
+        <rect x="4" y="9" width="3" height="6" rx="1" />
+        <rect x="10.5" y="9" width="3" height="6" rx="1" />
+        <rect x="17" y="9" width="3" height="6" rx="1" />
+        <path d="M8 12h8" />
+        <path d="M10 10l-2 2 2 2" />
+        <path d="M14 10l2 2-2 2" />
+      </Icon>
+    ),
+    distributeV: (
+      <Icon>
+        <rect x="9" y="4" width="6" height="3" rx="1" />
+        <rect x="9" y="10.5" width="6" height="3" rx="1" />
+        <rect x="9" y="17" width="6" height="3" rx="1" />
+        <path d="M12 8v8" />
+        <path d="M10 10l2-2 2 2" />
+        <path d="M10 14l2 2 2-2" />
+      </Icon>
+    ),
     fit: (
       <Icon>
         <path d="M4 9V6a2 2 0 0 1 2-2h3" />
@@ -171,6 +239,17 @@ function defaultItems(): ContextMenuItem[] {
     { type: 'command', id: 'z.bringForward', label: '上移一层', icon: Icons.upOne, enabled: (_c, s) => s.selectionIds.length > 0 },
     { type: 'command', id: 'z.sendBackward', label: '下移一层', icon: Icons.downOne, enabled: (_c, s) => s.selectionIds.length > 0 },
     { type: 'command', id: 'z.sendToBack', label: '置于底层', icon: Icons.back, enabled: (_c, s) => s.selectionIds.length > 0 },
+    { type: 'divider' },
+    // 对齐/分布（需要 align-distribute 插件注册 commands）
+    { type: 'command', id: 'edit.alignLeft', label: '对齐：左', icon: Icons.alignLeft, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'command', id: 'edit.alignHCenter', label: '对齐：水平居中', icon: Icons.alignHCenter, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'command', id: 'edit.alignRight', label: '对齐：右', icon: Icons.alignRight, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'command', id: 'edit.alignTop', label: '对齐：上', icon: Icons.alignTop, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'command', id: 'edit.alignVCenter', label: '对齐：垂直居中', icon: Icons.alignVCenter, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'command', id: 'edit.alignBottom', label: '对齐：下', icon: Icons.alignBottom, enabled: (_c, s) => s.selectionIds.length >= 2 },
+    { type: 'divider' },
+    { type: 'command', id: 'edit.distributeH', label: '分布：水平等间距', icon: Icons.distributeH, enabled: (_c, s) => s.selectionIds.length >= 3 },
+    { type: 'command', id: 'edit.distributeV', label: '分布：垂直等间距', icon: Icons.distributeV, enabled: (_c, s) => s.selectionIds.length >= 3 },
     { type: 'divider' },
     { type: 'command', id: 'view.fitView', label: '适配视图', icon: Icons.fit },
     { type: 'command', id: 'view.centerView', label: '居中到原点', icon: Icons.center },

@@ -11,7 +11,8 @@ export function createRulersPlugin(opts: RulersPluginOptions = {}): InfiniteMapP
     id: 'rulers',
     provides: ['rulers'],
     slot: 'hud',
-    overlayPointerEvents: 'none',
+    // 标尺需要接收 pointer events（拖拽平移/拖出参考线）
+    overlayPointerEvents: 'auto',
     overlay: ({ ctx }) => <RulersOverlay ctx={ctx} thickness={thickness} />,
   };
 }
