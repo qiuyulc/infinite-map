@@ -98,3 +98,21 @@ if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
 ```bash
 pnpm -C docs dev
 ```
+
+## 发布 npm 包
+
+本仓库已接入 `Changesets + GitHub Actions` 自动发布流程。
+
+常用命令：
+
+```bash
+# 新建一条发版记录
+pnpm changeset
+
+# 查看待发版状态
+pnpm changeset:status
+```
+
+完整流程与 GitHub Secret 配置见：
+
+- `RELEASING.md`

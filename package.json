@@ -11,9 +11,14 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "verify:exports": "node scripts/verify-exports.mjs",
-    "check": "pnpm typecheck && pnpm build && pnpm test && pnpm verify:exports"
+    "check": "pnpm typecheck && pnpm build && pnpm test && pnpm verify:exports",
+    "changeset": "changeset",
+    "changeset:status": "changeset status --verbose",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "pnpm check && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@rolldown/binding-linux-arm64-gnu": "1.0.0-rc.16",
     "@rollup/rollup-linux-arm64-gnu": "4.60.2",
     "@types/node": "^25.6.0",
