@@ -219,7 +219,7 @@ export type InfiniteMapApi = {
   /**
    * 执行一个命令（用于自定义工具栏/菜单/快捷键面板）
    */
-  runCommand: (id: string, payload?: { source?: 'api' | 'toolbar' | 'menu' | 'keyboard'; [k: string]: unknown }) => boolean;
+  runCommand: (id: string, payload?: { source?: 'api' | 'toolbar' | 'menu' | 'keyboard';[k: string]: unknown }) => boolean;
   /**
    * 获取当前已注册的命令列表（由 plugins.commands 汇总）
    */

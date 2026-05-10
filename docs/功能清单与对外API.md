@@ -5,9 +5,16 @@
 > - `packages/infinite-map-editor`（编辑器插件集合 + HUD/UI）
 > 的对外导出与实现现状。
 
+> 补充阅读：
+> - [NodeData 字段参考](/library/node-data)
+> - [组件 API](/library/component-api)
+> - [InfiniteMapApi 参考](/library/api-ref)
+> - [插件配置](/library/plugin-config)
+> - [主题定制](/library/theming)
+
 ---
 
-## 1. 我们现在做了哪些功能（面向使用者的“能力”）
+## 1. 我们现在做了哪些功能（面向使用者的"能力"）
 
 ### 1.1 画布/视口（基础能力）
 - 无限画布（世界坐标系）+ 相机模型：`Camera = { x, y, zoom }`
@@ -19,15 +26,17 @@
 - 背景渲染：
   - 点阵背景（`backgroundMode='dots'`）
   - 网格背景（`backgroundMode='grid'`）
+  - 无背景（`backgroundMode='none'`）
   - 自适应网格步进（`dotSpacing/gridSpacing='auto'` 与 `computeAdaptiveSteps` 体系）
-- 鼠标附近高亮层（Canvas overlay，高性能）
+- 鼠标附近高亮层（Canvas overlay，高性能，通过 `highlightRadiusPx` 控制）
 
 ### 1.2 节点渲染与性能
 - DOM 节点渲染（每个节点绝对定位在 world layer）
 - 可选虚拟化（空间索引）：
   - 视口内节点筛选 + overscan
-  - `keepAlive` 支持（对“重组件”避免频繁卸载/重建）
-- **隐藏节点（hidden）不渲染**，并且隐藏会“向下传递”（祖先 hidden => 后代视为 hidden）
+  - `keepAlive` 支持（对"重组件"避免频繁卸载/重建）
+  - `panKeepAlive`（pan 期间保持离场节点）
+- **隐藏节点（hidden）不渲染**，并且隐藏会"向下传递"（祖先 hidden => 后代视为 hidden）
 
 ### 1.3 编辑器（插件系统）能力（默认编辑器已集成）
 
@@ -45,15 +54,26 @@
 - 3D 旋转（Alt/Option + 拖拽：`rotationX/rotationY`）
 - 过程中支持 snapping（对齐线/网格吸附）+ 辅助线 overlay
 
+#### 键盘微调（Nudge）
+- 方向键微调选中节点：`↑ ↓ ← →`（默认 1px）
+- 大步微调：`Shift + ↑ ↓ ← →`（默认 10px）
+
 #### 对齐吸附（snapping）
 - 对齐线吸附（与可视范围内节点对齐）
 - 网格吸附（grid）
 - 吸附引导线（SnapGuidesOverlay）
+- 参考线吸附（从标尺拖出的 guides）
+
+#### 对齐/分布（Align / Distribute）
+- 对齐：左/水平居中/右/顶/垂直居中/底
+- 分布：水平等间距 / 垂直等间距
+- 命令：`edit.alignLeft` ~ `edit.alignBottom`、`edit.distributeH` / `edit.distributeV`
+- UI：已挂到右键菜单（对齐需 ≥2 选中，分布需 ≥3 选中）
 
 #### 历史（Undo/Redo）
 - `history.undo` / `history.redo`
 - move 阶段合并（drag/resize/rotate 等在 `phase=move/end` 下会合并成一次历史记录）
-- undo/redo 时会取消正在进行的交互（避免状态“拉扯”）
+- undo/redo 时会取消正在进行的交互（避免状态"拉扯"）
 
 #### 剪贴板
 - Copy / Cut / Paste / Duplicate / Delete
@@ -69,13 +89,17 @@
 
 #### 锁定/隐藏（Lock/Hide）
 - `locked?: boolean`
-  - **锁定可以被“点击选中”（用于解锁），但不可拖拽/缩放/旋转、不可框选**
-  - **锁定传递**：祖先 locked => 后代“有效锁定”
+  - **锁定可以被"点击选中"（用于解锁），但不可拖拽/缩放/旋转、不可框选**
+  - **锁定传递**：祖先 locked => 后代"有效锁定"
 - `hidden?: boolean`
   - **隐藏不渲染/不命中/不参与选择与编辑**
-  - **隐藏传递**：祖先 hidden => 后代“有效隐藏”
+  - **隐藏传递**：祖先 hidden => 后代"有效隐藏"
 - `edit.lock` / `edit.unlock` / `edit.hide` / `edit.showAll`
   - `showAll` 用于恢复 hidden 节点（因为 hidden 节点不可命中）
+
+#### 导出 PNG（Export PNG）
+- 命令：`file.exportPng`
+- 触发 `export:png` 事件（骨架，宿主自行实现截图）
 
 #### HUD（可选启用的 UI）
 - ZoomDock（默认启用）：右下角缩放滑杆
@@ -85,7 +109,7 @@
 - Minimap（默认启用）：小地图
 
 #### 预览/只读模式（重要）
-当满足以下任一条件时，编辑器会自动退化为“预览/只读”（不会出现选中框、缩放点、对齐线、右键菜单、工具栏、框选等编辑 UI）：
+当满足以下任一条件时，编辑器会自动退化为"预览/只读"（不会出现选中框、缩放点、对齐线、右键菜单、工具栏、框选等编辑 UI）：
 - `editMode="readonly"` 或 `editable={false}`
 - `editMode="auto"`（默认）且 **未提供变更出口**（`onNodesChange/onPatches` 都不传）
 
@@ -153,12 +177,13 @@
 - editor utils：`groupUtils` / `snapUtils`
 - 便于只安装一个包：再导出 core 合同类型 `InfiniteMapPlugin/MapContext/NodePatch/ChangeMeta`
 
-> 备注：`DefaultEditorOptions` 现在按“插件名分组”提供配置（例如 `snap/view/shortcuts/drag/resize/...`），便于透传到对应插件工厂。
+> 备注：`DefaultEditorOptions` 现在按"插件名分组"提供配置（例如 `snap/view/shortcuts/drag/resize/...`），便于透传到对应插件工厂。
 
 ### 2.1.3 Editor UI（仍从包根入口导出）
 - HUD plugins：`createToolbarPlugin` / `createDefaultContextMenuPlugin` / `createMinimapPlugin` / `createRulersPlugin` / `createZoomDockPlugin`
+- Visual plugins：`createHoverHighlightPlugin`
 
-> 备注：`DefaultEditorWithUIOptions` 同样按插件名分组提供 `toolbar/minimap/rulers/zoomDock/contextMenu` 等配置对象，并可通过 `enabled` 字段控制是否挂载对应 HUD 插件。
+> 备注：`DefaultEditorWithUIOptions` 同样按插件名分组提供 `toolbar/minimap/rulers/zoomDock/contextMenu/hoverHighlight` 等配置对象，并可通过 `enabled` 字段控制是否挂载对应插件。
 
 ### 2.1.4 demo 子入口导出（`@qiuyulc/infinite-map/demo`）
 - `makeDemoNodes()`
@@ -191,10 +216,11 @@
 
 #### 相机与交互
 - `initialCamera?: Camera`
-- `onNodeDrag?: (id, pos, phase) => void`（DOM 模式下的节点拖动回调）
+- `panEnabled?: boolean`（默认 `true`；false 则禁用平移，包括 Space 模式与触控板平移）
+- `onNodeDrag?: (id, pos, phase) => void`（节点拖动回调）
 
 #### 背景/缩放
-- `backgroundMode?: 'dots' | 'grid'`
+- `backgroundMode?: 'dots' | 'grid' | 'none'`
 - `dotSpacing?: number | 'auto'`
 - `dotRadiusPx?: number`
 - `dotAlpha?: number`
@@ -205,19 +231,14 @@
 - `minZoom?` / `maxZoom?` / `zoomSpeed?` / `pinchZoomFactor?`
 
 #### 虚拟化
-- `virtualization?: { enabled?: boolean; overscanPx?: number; keepAlive?: (node) => boolean }`
+- `virtualization?: { enabled?: boolean; overscanPx?: number; keepAlive?: (node) => boolean; panKeepAlive?: boolean | { maxNodes?: number } }`
 - `overscanPx?: number`（兼容旧字段）
 - `cellSize?: number`（空间索引网格大小）
 
-#### Minimap
-- `minimapWidth?` / `minimapHeight?` / `minimapCachePadding?` / `minimapNeedsRedraw?: unknown`
-  - 这些字段会写入 store（`STORE_KEYS.minimapConfig/minimapNeedsRedraw`），用于“自定义 minimap overlay/插件”场景
-  - editor 包内置的 `createMinimapPlugin` 已改为以插件 options 为准（`MinimapPluginOptions`），不再依赖组件写入的 store 值
-  - `createMinimapPlugin` 额外提供 `needsRedraw?: unknown`（插件参数）用于外部强制刷新 minimap（任意值变化即可）
-
-#### 主题
+#### 主题 / 调试
 - `themeBase?: 'light' | 'dark'`
 - `theme?: Partial<InfiniteMapTheme>`
+- `debug?: boolean`（默认 `false`，打开后写入 debug:* store 键）
 
 ---
 
@@ -232,12 +253,18 @@
 - `runCommand(id, payload?): boolean`
 - `getCommands(): Command[]`
 - `getCommand(id): Command | undefined`
+- `subscribe(type, handler)`：订阅事件总线（`'camera:changed'`、`'selection:change'`、`'drag:start/move/end'`、`'patches:applied'` 等）
 - `getSelectionIds(): string[]`
+- `setSelectionIds(ids: string[]): void`
 - `subscribeSelection(listener): () => void`
+- `getNodeRect(id): Rect | null`（世界坐标包围盒）
+- `getSelectionRect(): Rect | null`
 - `getCamera(): Camera`
 - `setCamera(next, opts?): void`
 - `subscribeCamera(listener): () => void`
 - `getNodes(): NodeData[]`
+- `serializeDoc(meta?): InfiniteMapDoc`
+- `parseDoc(doc, opts?): void`
 
 ---
 
@@ -269,7 +296,7 @@
 - `setup/teardown`
 - `input`（wheel/key/contextmenu 等非指针输入）
 - `hitTests`（命中贡献者；统一 node/handle 命中）
-- `pointerDownProcessors`（hitTest 之后、gesture 之前；用于 selection 等“非互斥逻辑”，可返回 `{stop}` 阻断后续手势，或返回 `{hit}` 覆盖本次有效命中）
+- `pointerDownProcessors`（hitTest 之后、gesture 之前；用于 selection 等"非互斥逻辑"，可返回 `{stop}` 阻断后续手势，或返回 `{hit}` 覆盖本次有效命中）
 - `gestures`（互斥手势：drag/resize/rotate/marquee/pan…；pointer 统一走 hitTest→processors→gestures）
 - `inputHooks`（`onBefore/AfterHitTest`、`onHoverChange`、`onBefore/AfterGesture`）
 - `overlay`（React 组件）
@@ -297,6 +324,11 @@
 - `createGroupPlugin`
 - `createLockHidePlugin`
 
+#### edit
+- `createAlignDistributePlugin`
+- `createNudgePlugin`
+- `createExportPngPlugin`
+
 #### selection
 - `createSelectionPlugin`
 - `createMarqueeSelectPlugin`
@@ -312,6 +344,9 @@
 
 #### clipboard
 - `createClipboardPlugin`
+
+#### visual
+- `createHoverHighlightPlugin`
 
 #### hud
 - `createContextMenuPlugin`
@@ -334,22 +369,26 @@
 5. history
 6. view commands
 7. z-index
-8. snap guides
-9. rotate3d（Alt + 拖）
-10. group
-11. lock/hide
-12. selection
-13. clipboard（可关）
-14. rotate
-15. resize
-16. drag
-17. marquee（默认开，且始终追加到最后）
+8. export-png
+9. snap guides
+10. rotate3d（Alt + 拖）
+11. group
+12. lock/hide
+13. selection
+14. nudge
+15. align-distribute
+16. clipboard（可关）
+17. rotate
+18. resize
+19. drag
+20. marquee（默认开，且始终追加到最后）
 
 > 备注：
 > - snap 默认值已回归到 `createSnapGuidesPlugin` 内部默认（gridSize='auto' 等），默认组装不再写死 gridSize=48
 > - view 的默认值（minZoom/maxZoom/zoomStep/paddingPx）已统一由 `createViewCommandsPlugin` 写入 `STORE_KEYS.viewConfig`
 
 ### 3.2 `createDefaultEditorPluginsWithUI(opts?)`（在 3.1 基础上追加 HUD）
+- `createHoverHighlightPlugin`（默认开，放在最前面）
 - `createToolbarPlugin`（默认关）
 - `createZoomDockPlugin`（默认开）
 - `createDefaultContextMenuPlugin`（默认关）
@@ -398,6 +437,14 @@
 - `z.sendToBack`
 - `z.normalize`
 
+### 4.7 align / distribute
+- `edit.alignLeft` / `edit.alignHCenter` / `edit.alignRight`
+- `edit.alignTop` / `edit.alignVCenter` / `edit.alignBottom`
+- `edit.distributeH` / `edit.distributeV`
+
+### 4.8 export
+- `file.exportPng`
+
 ---
 
 ## 5. NodeData（节点数据结构）现状摘要
@@ -421,3 +468,5 @@
 - `parentId?: string`
 - `locked?: boolean`（锁定传递）
 - `hidden?: boolean`（隐藏传递）
+
+> 详细字段说明见：[NodeData 字段参考](/library/node-data)

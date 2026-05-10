@@ -28,6 +28,7 @@ export function useViewportSize(containerRef: RefObject<HTMLElement | null>) {
         rafRef.current = null;
         const p = viewportRef.current;
         if (next.w === p.w && next.h === p.h) return;
+        viewportRef.current = next;
         setViewport(next);
       });
     });

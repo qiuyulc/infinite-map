@@ -122,14 +122,18 @@ function EngineRulersOverlay({
       raf = null;
       if (!pending) return;
       const { cam, vp } = pending;
-      pending = null;
 
       const hSvg = hSvgRef.current;
       const vSvg = vSvgRef.current;
       if (!hSvg || !vSvg) return;
 
       const z = cam.zoom || 1;
-      if (!(vp.w > 0 && vp.h > 0 && isFinite(z) && z > 0)) return;
+      if (!(vp.w > 0 && vp.h > 0 && isFinite(z) && z > 0)) {
+        // viewport 尚未就绪，保留 pending 重试
+        raf = requestAnimationFrame(updateDom);
+        return;
+      }
+      pending = null;
 
       const viewStartX = cam.x + thickness / z;
       const viewEndX = cam.x + vp.w / z;
@@ -247,10 +251,14 @@ function EngineRulersOverlay({
       const t = now();
       const panActive = ctx.store.get<boolean>(STORE_KEYS.viewPanActive) === true;
       const minGap = panActive ? 50 : 16;
-      if (t - lastTs < minGap) return;
-      lastTs = t;
+
+      // 总是更新 pending（即使被节流/raf 去重拦截），
+      // 确保已调度的 rAF 回调拿到的是最新数据。
       const st = engine.store.getState();
       pending = { cam: st.view, vp: st.viewport };
+
+      if (t - lastTs < minGap) return;
+      lastTs = t;
       if (raf != null) return;
       raf = requestAnimationFrame(updateDom);
     };

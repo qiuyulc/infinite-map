@@ -1,10 +1,13 @@
 # 组件 API（InfiniteMap）
 
-本页聚焦“怎么用”：列出接入时最常用的 props / apiRef 能力与典型用法。
+本页列出 `<InfiniteMap>` 所有 props 及其默认值和用法。
 
-> 更细的能力列表见：[全量功能清单与对外 API](/功能清单与对外API)
+> 补充阅读：
+> - [NodeData 字段参考](/library/node-data)
+> - [插件配置](/library/plugin-config)
+> - [InfiniteMapApi 参考](/library/api-ref)
 
-## 1）核心 Props
+## 核心 Props
 
 ### nodes（必填）
 
@@ -12,7 +15,7 @@
 nodes: NodeData[]
 ```
 
-Infinite Map 本身不持有 nodes 状态；你传什么它渲染什么。
+InfiniteMap 本身不持有 nodes 状态；你传什么它渲染什么。
 
 ### plugins（可选）
 
@@ -20,19 +23,23 @@ Infinite Map 本身不持有 nodes 状态；你传什么它渲染什么。
 plugins?: InfiniteMapPlugin[]
 ```
 
-- 不传：只渲染（预览）
-- 传入 editor 插件集合：启用 selection/drag/history/clipboard/HUD 等能力
+- 不传：只渲染（预览模式）
+- 传入编辑器插件集合：启用 selection/drag/history/clipboard/HUD 等能力
+
+推荐用 `createDefaultEditorPluginsWithUI()` 一键创建。
 
 ### editMode / editable（推荐用 editMode）
 
 ```ts
-editMode?: 'auto' | 'readonly' | 'controlled'
+editMode?: 'auto' | 'readonly' | 'controlled'  // 默认 'auto'
 editable?: boolean
 ```
 
-- `auto`：默认。若没有变更出口（`onNodesChange/onPatches` 都不传），编辑能力会自动关闭（表现为预览）。
-- `readonly`：强制只读（编辑类 UI/手势/菜单等禁用）。
+- `auto`：默认。若没有变更出口（`onNodesChange` / `onPatches` 都不传），编辑能力自动关闭。
+- `readonly`：强制只读（编辑 UI/手势/菜单禁用，pan/zoom 仍可用）。
 - `controlled`：受控编辑，要求提供 `onNodesChange` 或 `onPatches`。
+
+`editable` 是语法糖：`false`=readonly，`true`=controlled。
 
 ### onNodesChange / onPatches（变更出口）
 
@@ -44,98 +51,176 @@ onPatches?: (patches: NodePatch[], meta: ChangeMeta) => void
 - `onNodesChange`：直接给你 nextNodes（简单）
 - `onPatches`：给你差量 patches（适合协作/落库/审计；推荐）
 
-### apiRef（宿主侧高频调用）
+### apiRef
 
 ```ts
 apiRef?: React.MutableRefObject<InfiniteMapApi | null>
 ```
 
-## 2）渲染相关 Props
+暴露编辑器 API，用于程序化控制画布。详见 [InfiniteMapApi 参考](/library/api-ref)。
 
-### renderNode / renderNodeContent
+---
 
-- `renderNode(node)`：完全自定义节点
-- `renderNodeContent(node)`：推荐用法，只自定义内容区，外壳沿用默认 Node 样式（更省心）
+## 渲染相关
 
-### virtualization（虚拟化）
+### 节点自定义
+
+| Prop | 类型 | 说明 |
+|---|---|---|
+| `renderNode(node)` | `(node: NodeData) => ReactNode` | 完全自定义节点渲染 |
+| `renderNodeContent(node)` | `(node: NodeData) => ReactNode` | 推荐：只自定义内容区，外壳沿用 DefaultNode |
+| `getDefaultNodeProps(node)` | `(node: NodeData) => { className?, style? }` | 自定义节点容器的 className/style |
+| `defaultNodeShowMeta` | `boolean`（默认 `false`） | 是否显示内置坐标信息（调试用） |
+| `onNodeDrag` | `(id, pos, phase) => void` | 节点拖动回调（phase: `'move'` / `'end'`） |
+
+### 虚拟化
 
 ```ts
 virtualization?: {
-  enabled?: boolean
-  overscanPx?: number
-  keepAlive?: (node: NodeData) => boolean
+  enabled?: boolean           // 默认 true
+  overscanPx?: number         // 视口四周额外渲染 px
+  keepAlive?: (node: NodeData) => boolean  // 防止"重组件节点"频繁卸载
+  panKeepAlive?: boolean | { maxNodes?: number }  // pan 期间保持离场节点
 }
 ```
 
-适合大节点量场景；`keepAlive` 用于“重组件节点”避免频繁卸载/重建。
+适合大节点量场景。`keepAlive` 对图表/视频/富文本等重组件节点返回 `true`。
 
-## 3）相机与视图
+### 兼容旧字段
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `overscanPx` | `number` | `900` | 节点虚拟化 overscan（兼容旧字段，建议用 `virtualization.overscanPx`） |
+| `cellSize` | `number` | `900` | 空间索引网格大小（世界单位） |
+
+---
+
+## 相机与视图
 
 ### initialCamera
 
 ```ts
-initialCamera?: Camera
+initialCamera?: Camera  // 默认 { x: -400, y: -250, zoom: 1 }
 ```
 
-> 更常见的方式是用 `apiRef.getCamera()/setCamera()` 控制。
+更常见的方式是用 `apiRef.getCamera()/setCamera()` 控制。
 
-### 常用：让某个节点铺满屏幕
-
-见：[视图控制（铺满/居中/锁定）](/library/view)。
-
-### panEnabled（锁定画布拖动）
+### panEnabled
 
 ```ts
-panEnabled?: boolean
+panEnabled?: boolean  // 默认 true
 ```
 
-- `false`：禁止“拖动平移画布”（包括空白拖拽平移、Space 平移模式）
-- 同时会禁用触控板两指平移（wheel pan）
-- 默认 `true`
+`false` 时禁止拖动平移画布（包括空白拖拽、Space 平移模式、触控板两指平移）。
 
-### 背景与缩放配置
+### 缩放控制
 
-- `backgroundMode?: 'dots' | 'grid'`
-- `minZoom/maxZoom/zoomSpeed/pinchZoomFactor`
-- `gridSpacing/dotSpacing` 支持 `'auto'`
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `minZoom` | `number` | `0.25` | 最小缩放倍率 |
+| `maxZoom` | `number` | `2.5` | 最大缩放倍率 |
+| `zoomSpeed` | `number` | `0.0012` | 滚轮缩放灵敏度（建议 0.001~0.002） |
+| `pinchZoomFactor` | `number` | `0.6` | 触控板捏合缩放强度（>1 更敏感） |
 
-## 4）主题
+---
 
-- `themeBase?: 'light' | 'dark'`
-- `theme?: Partial<InfiniteMapTheme>`（只覆盖少量 CSS vars）
+## 背景与视觉
 
-## 5）InfiniteMapApi（通过 apiRef 暴露）
-
-### selection
+### 背景模式
 
 ```ts
+backgroundMode?: 'dots' | 'grid' | 'none'  // 默认 'dots'
+```
+
+### 点阵背景
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `dotSpacing` | `number \| 'auto'` | `48` | 点阵间距（世界单位），`'auto'` 自适应 |
+| `dotRadiusPx` | `number` | `1.35` | 点半径（屏幕像素） |
+| `dotAlpha` | `number` | `0.18` | 点基础透明度 |
+
+### 网格背景
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `gridSpacing` | `number \| 'auto'` | `'auto'` | 网格间距（世界单位） |
+| `gridAlpha` | `number` | `0.14` | 网格线透明度 |
+
+### 鼠标光晕
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `highlightRadiusPx` | `number` | `140` | 鼠标周围光晕半径（屏幕像素），设为 `0` 关闭 |
+| `wheelPulseStrength` | `number` | `0.55` | 滚轮缩放时光晕脉冲强度 |
+
+---
+
+## 编辑器 Hooks
+
+```ts
+editorHooks?: {
+  onBeforeCommand?: (id, info) => boolean | void
+  onAfterCommand?: (id, info) => void
+  onBeforeApplyPatches?: (patches, meta) => NodePatch[] | void
+  onAfterApplyPatches?: (patches, meta) => void
+}
+```
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `hookMode` | `'observe' \| 'intercept'` | `'observe'` | `observe`：只观察；`intercept`：可阻止/覆盖 |
+| `onEditorError` | `(err, info) => void` | — | 全局错误收集（避免单插件崩溃导致整树卸载） |
+
+---
+
+## 高级配置
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `commandConflictPolicy` | `'keep-first' \| 'override' \| 'error'` | `'keep-first'` | 多插件注册同名命令时的处理策略 |
+| `warnOnCommandConflict` | `boolean` | `true` | 命令冲突时是否在 DEV 下打印警告 |
+| `debug` | `boolean` | `false` | 调试模式（写入 debug:* store 键） |
+
+---
+
+## 主题
+
+| Prop | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `themeBase` | `'light' \| 'dark'` | `'light'` | 基础主题 |
+| `theme` | `Partial<InfiniteMapTheme>` | — | 覆盖部分颜色 token |
+
+> 完整主题定制见：[主题定制](/library/theming)。
+
+---
+
+## InfiniteMapApi（通过 apiRef 暴露）
+
+`apiRef` 提供程序化控制画布的能力。完整方法参考见 [InfiniteMapApi 参考](/library/api-ref)。
+
+常用方法速览：
+
+```ts
+// 相机
+api.getCamera()
+api.setCamera({ x, y, zoom }, { immediate?: boolean })
+
+// 选择
 api.getSelectionIds()
 api.setSelectionIds(ids)
-api.subscribe('selection:change', ({ ids }) => {})
-```
 
-### camera
+// 命令
+api.runCommand('history.undo', { source: 'api' })
 
-```ts
-api.getCamera()
-api.setCamera(next, { immediate?: boolean })
-api.subscribe('camera:set', (camera) => {})
-```
+// 历史
+api.undo() / api.redo()
+api.canUndo() / api.canRedo()  // boolean
 
-### doc（保存/加载）
-
-```ts
+// Doc
 api.serializeDoc(meta?)
 api.parseDoc(doc, { immediate?: boolean })
+
+// 事件
+api.subscribe('selection:change', ({ ids }) => {})
 ```
-
-> 注意：`api.serializeDoc()` 不会自动携带业务侧的 resources；resources 应由宿主自行拼装。见：[保存/加载](/library/persistence)。
-
-### commands
-
-```ts
-api.runCommand?.('history.undo', { source: 'api' })
-api.getCommands?.()
-```
-
-命令列表见：[命令速查表](/library/commands)。
