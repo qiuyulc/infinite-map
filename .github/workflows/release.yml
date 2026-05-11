@@ -13,6 +13,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,27 +29,19 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          registry-url: "https://registry.npmjs.org"
+          registry-url: https://registry.npmjs.org
 
       - name: Install
         run: pnpm install --frozen-lockfile
-
-      - name: Verify and Setup npm Auth
-        # 这一步通过脚本强制创建 .npmrc，确保所有底层工具都能读到
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          echo "Checking identity..."
-          npm whoami
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           version: pnpm version-packages
-          # 强制指定 public 访问权限，绕过所有配置同步问题
-          publish: pnpm exec changeset publish --access public
+          publish: pnpm release
+          title: "chore: release packages"
+          commit: "chore: release packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
