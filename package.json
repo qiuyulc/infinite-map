@@ -12,10 +12,10 @@
     "typecheck": "turbo run typecheck",
     "verify:exports": "node scripts/verify-exports.mjs",
     "check": "pnpm typecheck && pnpm build && pnpm test && pnpm verify:exports",
-    "changeset": "changeset",
-    "changeset:status": "changeset status --verbose",
-    "version-packages": "changeset version && pnpm install --lockfile-only",
-    "release": "pnpm check && changeset publish"
+    "changeset": "pnpm exec changeset",
+    "changeset:status": "pnpm exec changeset status --verbose",
+    "version-packages": "pnpm exec changeset version && pnpm install --lockfile-only",
+    "release": "pnpm check && pnpm exec changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",

@@ -46,6 +46,7 @@ const baseConfig: Options = {
     'src/**/*.tsx',
     '!src/**/*.test.*',
     '!src/**/*.spec.*',
+    '!src/__tests__/**',
   ],
   // npm 发布通常不需要 sourcemap，避免产物冗余；本地 watch 时开启便于调试
   sourcemap: process.argv.includes('--watch'),

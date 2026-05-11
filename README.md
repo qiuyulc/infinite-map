@@ -14,6 +14,28 @@
   - 内置插件工厂：selection/drag/resize/rotate/marquee/history/minimap/toolbar/…
   - `composePlugins()`：依赖校验 + 拓扑排序
 
+## 引入方式
+
+两个包都支持 ESM / CJS / TypeScript，通过 `package.json` 的 `exports` 字段自动解析：
+
+```ts
+// ESM（推荐）—— 默认入口
+import { InfiniteMap } from '@qiuyulc/infinite-map'
+import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor'
+
+// CJS
+const { InfiniteMap } = require('@qiuyulc/infinite-map')
+
+// 子路径导出
+import { DefaultNode } from '@qiuyulc/infinite-map/ui'
+import { makeDemoNodes } from '@qiuyulc/infinite-map/demo'
+
+// 按需深路径（tree-shaking 友好）
+import { createDragPlugin } from '@qiuyulc/infinite-map-editor/es/plugins/createDragPlugin'
+```
+
+TypeScript 类型声明随包附带，无需额外安装 `@types/*`。CSS 已通过 `sideEffects` 声明，bundler 不会误删。
+
 ## 本地开发
 
 ```bash
@@ -85,13 +107,13 @@ if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
 ## 文档（VitePress）
 
 推荐阅读路径：
-- `docs/library/quickstart.md`（快速上手）
+- `docs/infinite-map-editor/quickstart.md`（编辑器快速上手）
+- `docs/infinite-map-editor/plugin-config.md`（插件配置）
+- `docs/infinite-map-editor/editing.md`（编辑与变更流）
+- `docs/infinite-map-editor/plugin-development.md`（插件开发指南）
 - `docs/library/component-api.md`（组件 API）
-- `docs/library/editing.md`（编辑与变更流：onPatches）
-- `docs/library/view.md`（视图控制：铺满/居中/锁定）
-- `docs/library/persistence.md`（保存/加载：Doc & Resources）
+- `docs/library/persistence.md`（保存/加载）
 - `docs/library/collaboration.md`（多人协作接入）
-- `docs/library/commands.md`（命令/快捷键速查）
 
 本地启动：
 

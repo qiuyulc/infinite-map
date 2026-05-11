@@ -40,7 +40,7 @@ async function removeFilesByExt(dir: string, exts: Set<string>) {
 }
 
 const baseConfig: Options = {
-  entry: ['src/**/*.ts', 'src/**/*.tsx', '!src/**/*.test.*', '!src/**/*.spec.*'],
+  entry: ['src/**/*.ts', 'src/**/*.tsx', '!src/**/*.test.*', '!src/**/*.spec.*', '!src/__tests__/**'],
   sourcemap: process.argv.includes('--watch'),
   clean: true,
   external: ['react', 'react-dom'],

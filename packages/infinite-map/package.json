@@ -1,8 +1,15 @@
 {
   "name": "@qiuyulc/infinite-map",
-  "version": "0.1.0",
-  "description": "Infinite canvas editor (React) with plugins: minimap, rulers, snapping, etc.",
+  "version": "0.0.1",
+  "description": "Infinite canvas renderer for React — world coordinates, spatial index, plugin protocol, document serialization.",
   "license": "MIT",
+  "keywords": [
+    "infinite-canvas",
+    "whiteboard",
+    "canvas",
+    "react",
+    "renderer"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/qiuyulc/infinite-map.git"

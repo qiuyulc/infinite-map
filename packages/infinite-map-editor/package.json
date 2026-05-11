@@ -1,8 +1,19 @@
 {
   "name": "@qiuyulc/infinite-map-editor",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Editor plugins & UI kit for @qiuyulc/infinite-map",
   "license": "MIT",
+  "keywords": [
+    "infinite-canvas",
+    "whiteboard",
+    "editor",
+    "react",
+    "plugins"
+  ],
+  "homepage": "https://github.com/qiuyulc/infinite-map",
+  "bugs": {
+    "url": "https://github.com/qiuyulc/infinite-map/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/qiuyulc/infinite-map.git"
@@ -43,11 +54,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@qiuyulc/infinite-map": "^0.1.0",
+    "@qiuyulc/infinite-map": "workspace:*",
     "zustand": "^5.0.12"
   },
   "peerDependencies": {
-    "@qiuyulc/infinite-map": "^0.1.0",
+    "@qiuyulc/infinite-map": ">=0.0.1",
     "react": ">=18",
     "react-dom": ">=18"
   },
