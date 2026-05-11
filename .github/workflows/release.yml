@@ -32,19 +32,20 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      # --- 补充：校验登录状态 ---
-      - name: Verify npm Auth
+      - name: Verify and Setup npm Auth
+        # 这一步通过脚本强制创建 .npmrc，确保所有底层工具都能读到
         run: |
-          echo "Verifying npm credentials..."
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          echo "Checking identity..."
           npm whoami
         env:
-          # setup-node 会生成配置指向这个环境变量
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           version: pnpm version-packages
+          # 强制指定 public 访问权限，绕过所有配置同步问题
           publish: pnpm exec changeset publish --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
