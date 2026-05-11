@@ -24,6 +24,7 @@ export { createDefaultContextMenuPlugin } from './plugins/createDefaultContextMe
 export { createMinimapPlugin } from './plugins/createMinimapPlugin';
 export { createRulersPlugin } from './plugins/createRulersPlugin';
 export { createZoomDockPlugin } from './plugins/createZoomDockPlugin';
+export { createDropToCreatePlugin } from './plugins/createDropToCreatePlugin';
 
 // 常用 Options/类型（便于使用者配置默认组装）
 export type { SnapConfig, SnapGuidesPluginOptions } from './plugins/createSnapGuidesPlugin';
@@ -42,6 +43,7 @@ export type { ContextMenuItem, DefaultContextMenuOptions } from './plugins/creat
 export type { MinimapPluginOptions } from './plugins/createMinimapPlugin';
 export type { RulersPluginOptions } from './plugins/createRulersPlugin';
 export type { ZoomDockPluginOptions } from './plugins/createZoomDockPlugin';
+export type { DropToCreatePluginOptions } from './plugins/createDropToCreatePlugin';
 
 // editor utils（供插件/上层使用）
 export * from './editor/groupUtils';

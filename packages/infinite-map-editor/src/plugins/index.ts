@@ -38,6 +38,10 @@ export type { SnapConfig, SnapGuidesPluginOptions } from './createSnapGuidesPlug
 export { createHoverHighlightPlugin } from './createHoverHighlightPlugin';
 export type { HoverHighlightPluginOptions } from './createHoverHighlightPlugin';
 
+// drag & drop
+export { createDropToCreatePlugin } from './createDropToCreatePlugin';
+export type { DropToCreatePluginOptions } from './createDropToCreatePlugin';
+
 export { createClipboardPlugin } from './createClipboardPlugin';
 export type { ClipboardPluginOptions } from './createClipboardPlugin';
 

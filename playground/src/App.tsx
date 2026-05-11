@@ -11,6 +11,7 @@ import {
 import { composePlugins, InfiniteMapThemeProvider, createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
 import { makeDemoNodes } from '@qiuyulc/infinite-map/demo';
 import { createHudContributionExamplePlugin } from './plugins/createHudContributionExamplePlugin';
+import { createDropToCreatePlugin } from '@qiuyulc/infinite-map-editor';
 import './App.css';
 
 type ResourceStore<T> = {
@@ -78,6 +79,7 @@ export default function App() {
   const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [guidesEnabled, setGuidesEnabled] = useState(true);
+  const [dropToCreateEnabled, setDropToCreateEnabled] = useState(true);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
   const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
@@ -107,6 +109,7 @@ export default function App() {
   }, []);
 
   const plugins = useMemo(() => {
+    const genId2 = () => `drp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     return composePlugins([
       ...createDefaultEditorPluginsWithUI({
         rulers: { enabled: rulersEnabled },
@@ -120,8 +123,23 @@ export default function App() {
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
       createHudContributionExamplePlugin(),
+      ...(dropToCreateEnabled
+        ? [
+            createDropToCreatePlugin({
+              resolveType: (e: DragEvent) => e.dataTransfer?.getData('application/x-node-type') ?? null,
+              createNode: (type: string, pos: { x: number; y: number }) => ({
+                id: genId2(),
+                x: pos.x - 70,
+                y: pos.y - 35,
+                width: 140,
+                height: 70,
+                label: type,
+              }),
+            }),
+          ]
+        : []),
     ]);
-  }, [contextMenuEnabled, guidesEnabled, minimapEnabled, rulersEnabled, snapEnabled, toolbarEnabled, zoomDockEnabled]);
+  }, [contextMenuEnabled, guidesEnabled, minimapEnabled, rulersEnabled, snapEnabled, toolbarEnabled, zoomDockEnabled, dropToCreateEnabled]);
 
   const apiRef = useRef<InfiniteMapApi | null>(null);
 
@@ -222,6 +240,43 @@ export default function App() {
               <span className="pg-row__label">keepAlive(图表)</span>
               <input className="pg-check" type="checkbox" checked={keepAliveEnabled} onChange={(e) => setKeepAliveEnabled(e.target.checked)} />
             </label>
+            <label className="pg-row">
+              <span className="pg-row__label">拖拽添加节点</span>
+              <input className="pg-check" type="checkbox" checked={dropToCreateEnabled} onChange={(e) => setDropToCreateEnabled(e.target.checked)} />
+            </label>
+          </div>
+
+          <div className="pg-section">
+            <div className="pg-section__title">拖拽节点类型</div>
+            <div className="pg-hint" style={{ marginBottom: 8 }}>
+              拖拽下面的卡片到画布上可创建新节点（需开启"拖拽添加节点"）
+            </div>
+            {[
+              { type: '矩形', emoji: '▬' },
+              { type: '圆形', emoji: '●' },
+              { type: '图片', emoji: '🖼' },
+            ].map(({ type, emoji }) => (
+              <div
+                key={type}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/x-node-type', type)
+                  e.dataTransfer.effectAllowed = 'copy'
+                }}
+                style={{
+                  padding: '8px 12px',
+                  marginBottom: 6,
+                  background: 'var(--im-node-bg, rgba(255,255,255,0.8))',
+                  border: '1px solid var(--im-toolbar-border, rgba(0,0,0,0.12))',
+                  borderRadius: 6,
+                  cursor: 'grab',
+                  fontSize: 13,
+                  userSelect: 'none',
+                }}
+              >
+                {emoji} {type}
+              </div>
+            ))}
           </div>
 
           <div className="pg-section">

@@ -1,22 +1,44 @@
 # Infinite Map
 
-Infinite Map 是一个 **可扩展的无限画布组件库**，用于构建：
-- 白板/画布/流程图/看板等“节点在二维平面编辑”的应用
-- 需要高性能渲染与虚拟化的大型节点集合
-- 需要把编辑行为抽象成“可重放的 Patch 变更流”的业务（便于持久化与多人协作）
+一个可扩展的无限画布组件库：渲染引擎 + 编辑器插件 + Patch 变更流。
 
-它主要解决的问题：
-- **渲染与交互底座**：世界坐标系 + 相机（pan/zoom）+ 背景（网格/点阵）+ 叠层（overlay）
-- **性能**：空间索引 + 可选虚拟化 + keepAlive（适合“重组件节点”）
-- **编辑器能力可组合**：通过插件系统组合 selection/drag/resize/history/clipboard/HUD 等能力
-- **变更流**：通过 `onPatches` 输出细粒度变更，业务侧可做协作/审计/落库
+---
 
-## 从哪里开始
+## 快速开始
 
-- [快速上手](/library/quickstart)
-- [组件 API](/library/component-api)
-- [Demo 与本地测试面板](/library/demos)
-- [全量功能清单](/功能清单与对外API)
+```bash
+pnpm add @qiuyulc/infinite-map @qiuyulc/infinite-map-editor
+```
+
+```tsx
+import { InfiniteMap } from '@qiuyulc/infinite-map';
+import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
+
+<InfiniteMap nodes={nodes} plugins={createDefaultEditorPluginsWithUI()} onNodesChange={setNodes} />
+```
+
+→ [编辑器快速上手](/infinite-map-editor/quickstart)
+
+---
+
+## 文档导航
+
+| 想做什么 | 从这里开始 |
+|---|---|
+| 接入编辑器 | [快速上手](/infinite-map-editor/quickstart) |
+| 配置编辑器行为 | [插件配置](/infinite-map-editor/plugin-config) |
+| 查快捷键 / 操作 | [操作与快捷键](/infinite-map-editor/shortcuts-and-operations) |
+| 理解变更机制 | [编辑与变更流](/infinite-map-editor/editing) |
+| 定制工具栏/右键菜单 | [编辑器定制](/infinite-map-editor/customization) |
+| 写自定义插件 | [插件开发指南](/infinite-map-editor/plugin-development) |
+| 查插件 API | [插件 API 参考](/infinite-map-editor/plugin-reference) |
+| 深入核心渲染引擎 | [infinite-map 架构总览](/infinite-map/overview) |
+| 查 NodeData 字段 | [NodeData 节点数据](/library/node-data) |
+| 查组件 Props | [InfiniteMap 组件 API](/library/component-api) |
+| 主题 / 持久化 / 协作 | 见侧边栏「编辑器使用」 |
+| 全量功能清单 | [功能清单与对外 API](/功能清单与对外API) |
+
+---
 
 ## 本地启动文档
 
