@@ -72,6 +72,7 @@ export default defineConfig({
           text: '附录',
           collapsed: true,
           items: [
+            { text: '发布指南', link: '/releasing' },
             { text: 'Demo 与本地测试面板', link: '/library/demos' },
             { text: '常见问题', link: '/library/faq' },
           ],
