@@ -9,21 +9,9 @@ export type ToolbarItem =
   | {
       type: 'command';
       id: string;
-      /**
-       * 按钮文案（用于 tooltip / 无 icon 回退）
-       */
       label: string;
-      /**
-       * tooltip 文案（未提供时回退 label）
-       */
       title?: string;
-      /**
-       * 可选图标（推荐）
-       */
       icon?: ReactNode;
-      /**
-       * 是否只显示图标（默认 true；更像编辑器）
-       */
       iconOnly?: boolean;
       enabled?: (ctx: MapContext) => boolean;
     }
@@ -32,18 +20,16 @@ export type ToolbarItem =
 export type ToolbarPluginOptions = {
   /**
    * 自定义工具栏按钮
-   * - 默认包含：undo/redo、zoom、fit/center、delete
+   * - 不传：使用默认全套
+   * - 传 string[]：按 key 排列（'|' = divider），内置 key 见文档
+   * - 传 (string | ToolbarItem)[]：混合内置 key 和自定义项
    */
-  items?: ToolbarItem[];
+  items?: (string | ToolbarItem)[];
   position?: 'top-left' | 'top-right';
-  /**
-   * 最大宽度（像素），超出时横向滚动（默认 520）
-   */
   maxWidthPx?: number;
 };
 
 function run(ctx: MapContext, id: string) {
-  // 优先走 command runner；否则退化为直接从 registry 取命令执行（避免 “runner 未 setup” 导致无响应）
   if (ctx.runCommand) {
     ctx.runCommand(id, { source: 'toolbar' });
     return;
@@ -75,7 +61,7 @@ function Icon({ children, size = 16 }: { children: ReactNode; size?: number }) {
   );
 }
 
-// 简单内置 icon：避免引入额外依赖
+// ---- 内置图标 ----
 const Icons = {
   undo: (
     <Icon>
@@ -106,7 +92,6 @@ const Icons = {
   ),
   resetZoom: (
     <Icon>
-      {/* 重置缩放（100%）：放大镜 + 回环箭头，避免与“新增/加号”混淆 */}
       <circle cx="11" cy="11" r="7" />
       <path d="M21 21l-4.3-4.3" />
       <path d="M9 11a2.5 2.5 0 1 1 1.1 2" />
@@ -141,44 +126,126 @@ const Icons = {
   ),
 } as const;
 
+// ---- 内置按钮定义（commandId → ToolbarItem）----
+const BUILTIN_ITEMS: Record<string, ToolbarItem> = {
+  'history.undo': {
+    type: 'command',
+    id: 'history.undo',
+    label: '撤销',
+    title: '撤销（Ctrl/⌘+Z）',
+    icon: Icons.undo,
+    iconOnly: true,
+    enabled: (ctx) => (ctx.store.get<unknown[]>(STORE_KEYS.historyUndoStack)?.length ?? 0) > 0,
+  },
+  'history.redo': {
+    type: 'command',
+    id: 'history.redo',
+    label: '重做',
+    title: '重做（Ctrl/⌘+Shift+Z）',
+    icon: Icons.redo,
+    iconOnly: true,
+    enabled: (ctx) => (ctx.store.get<unknown[]>(STORE_KEYS.historyRedoStack)?.length ?? 0) > 0,
+  },
+  'view.zoomOut': {
+    type: 'command',
+    id: 'view.zoomOut',
+    label: '缩小',
+    title: '缩小',
+    icon: Icons.zoomOut,
+    iconOnly: true,
+  },
+  'view.zoomIn': {
+    type: 'command',
+    id: 'view.zoomIn',
+    label: '放大',
+    title: '放大',
+    icon: Icons.zoomIn,
+    iconOnly: true,
+  },
+  'view.resetZoom': {
+    type: 'command',
+    id: 'view.resetZoom',
+    label: '100%',
+    title: '重置缩放（100%）',
+    icon: Icons.resetZoom,
+    iconOnly: true,
+  },
+  'view.fitView': {
+    type: 'command',
+    id: 'view.fitView',
+    label: '适配',
+    title: '适配视图（让全部节点进入视口）',
+    icon: Icons.fit,
+    iconOnly: true,
+  },
+  'view.centerView': {
+    type: 'command',
+    id: 'view.centerView',
+    label: '居中',
+    title: '原点居中（让 0,0 在视口中心）',
+    icon: Icons.center,
+    iconOnly: true,
+  },
+  'edit.delete': {
+    type: 'command',
+    id: 'edit.delete',
+    label: '删除',
+    title: '删除（Backspace/Delete）',
+    icon: Icons.trash,
+    iconOnly: true,
+    enabled: (ctx) => (ctx.getService<{ getIds: () => string[] }>('selection')?.getIds()?.length ?? 0) > 0,
+  },
+};
+
+const DIVIDER: ToolbarItem = { type: 'divider' };
+
+function resolveItems(input: (string | ToolbarItem)[]): ToolbarItem[] {
+  const out: ToolbarItem[] = [];
+  for (const it of input) {
+    if (typeof it === 'string') {
+      if (it === '|') {
+        out.push(DIVIDER);
+        continue;
+      }
+      const builtin = BUILTIN_ITEMS[it];
+      if (builtin) {
+        out.push(builtin);
+        continue;
+      }
+      // unknown key — silently skip
+      continue;
+    }
+    out.push(it);
+  }
+  // trim leading/trailing dividers + collapse consecutive dividers
+  const clean: ToolbarItem[] = [];
+  for (const it of out) {
+    if (it.type === 'divider') {
+      if (clean.length === 0) continue;
+      if (clean[clean.length - 1]?.type === 'divider') continue;
+      clean.push(it);
+      continue;
+    }
+    clean.push(it);
+  }
+  if (clean[clean.length - 1]?.type === 'divider') clean.pop();
+  return clean;
+}
+
 function defaultItems(): ToolbarItem[] {
-  return [
-    {
-      type: 'command',
-      id: 'history.undo',
-      label: '撤销',
-      title: '撤销（Ctrl/⌘+Z）',
-      icon: Icons.undo,
-      iconOnly: true,
-      enabled: (ctx) => (ctx.store.get<unknown[]>(STORE_KEYS.historyUndoStack)?.length ?? 0) > 0,
-    },
-    {
-      type: 'command',
-      id: 'history.redo',
-      label: '重做',
-      title: '重做（Ctrl/⌘+Shift+Z）',
-      icon: Icons.redo,
-      iconOnly: true,
-      enabled: (ctx) => (ctx.store.get<unknown[]>(STORE_KEYS.historyRedoStack)?.length ?? 0) > 0,
-    },
-    { type: 'divider' },
-    { type: 'command', id: 'view.zoomOut', label: '缩小', title: '缩小', icon: Icons.zoomOut, iconOnly: true },
-    { type: 'command', id: 'view.zoomIn', label: '放大', title: '放大', icon: Icons.zoomIn, iconOnly: true },
-    { type: 'command', id: 'view.resetZoom', label: '100%', title: '重置缩放（100%）', icon: Icons.resetZoom, iconOnly: true },
-    { type: 'divider' },
-    { type: 'command', id: 'view.fitView', label: '适配', title: '适配视图（让全部节点进入视口）', icon: Icons.fit, iconOnly: true },
-    { type: 'command', id: 'view.centerView', label: '居中', title: '原点居中（让 0,0 在视口中心）', icon: Icons.center, iconOnly: true },
-    { type: 'divider' },
-    {
-      type: 'command',
-      id: 'edit.delete',
-      label: '删除',
-      title: '删除（Backspace/Delete）',
-      icon: Icons.trash,
-      iconOnly: true,
-      enabled: (ctx) => (ctx.getService<{ getIds: () => string[] }>('selection')?.getIds()?.length ?? 0) > 0,
-    },
-  ];
+  return resolveItems([
+    'history.undo',
+    'history.redo',
+    '|',
+    'view.zoomOut',
+    'view.zoomIn',
+    'view.resetZoom',
+    '|',
+    'view.fitView',
+    'view.centerView',
+    '|',
+    'edit.delete',
+  ]);
 }
 
 function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
@@ -188,7 +255,7 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
   const push = (it: ToolbarItem) => {
     if (it.type === 'command') {
       const idx = indexById.get(it.id);
-      if (idx != null) out[idx] = it; // 允许覆盖默认项（同 id 覆盖）
+      if (idx != null) out[idx] = it;
       else {
         indexById.set(it.id, out.length);
         out.push(it);
@@ -198,7 +265,6 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
     out.push(it);
   };
   base.forEach(push);
-  // base 与 extra 之间自动补一个 divider（避免挤在一起）
   const needDivider =
     base.length > 0 &&
     extra.length > 0 &&
@@ -206,7 +272,6 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
     extra[0]?.type !== 'divider';
   if (needDivider) out.push({ type: 'divider' });
   extra.forEach(push);
-  // 规范化 divider：去掉首尾 divider + 合并连续 divider
   const normalized: ToolbarItem[] = [];
   for (const it of out) {
     if (it.type === 'divider') {
@@ -224,18 +289,19 @@ function mergeToolbarItems(base: ToolbarItem[], extra: ToolbarItem[]) {
 const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapContext; opts: ToolbarPluginOptions }) {
   const position = opts.position ?? 'top-left';
   const maxWidthPx = opts.maxWidthPx ?? 520;
-  const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const baseItems = useMemo(
+    () => (opts.items ? resolveItems(opts.items) : defaultItems()),
+    [opts.items],
+  );
   const extraItems = ctx.store.get<ToolbarItem[]>(STORE_KEYS.toolbarItems) ?? [];
   const items = useMemo(() => mergeToolbarItems(baseItems, extraItems), [baseItems, extraItems]);
   const [tip, setTip] = useState<null | { text: string; left: number; top: number }>(null);
 
-  // 订阅 enable 状态变化（history + selection）
   const [, bump] = useState(0);
   useEffect(() => {
     const unsubs: Array<() => void> = [];
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyUndoStack, () => bump((v) => v + 1)));
     unsubs.push(ctx.store.subscribe(STORE_KEYS.historyRedoStack, () => bump((v) => v + 1)));
-    // items registry 变化时刷新（便于插件在运行时动态注入/热更新）
     unsubs.push(ctx.store.subscribe(STORE_KEYS.toolbarItems, () => bump((v) => v + 1)));
     unsubs.push(ctx.bus.on('selection:change', () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
@@ -246,7 +312,7 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     top: 36,
     left: position === 'top-left' ? 30 : undefined,
     right: position === 'top-right' ? 30 : undefined,
-    padding: '8px 14px', // 外层固定 padding：滚动过程中也保持左右留白
+    padding: '8px 14px',
     borderRadius: 12,
     background: 'var(--im-toolbar-bg, rgba(255,255,255,0.72))',
     border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
@@ -259,7 +325,6 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
     overflow: 'hidden',
   };
 
-  // 内层滚动容器：只负责横向滚动，不吃外层 padding
   const scroll: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -311,7 +376,6 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
         className="im-scrollbar"
         onScroll={() => setTip(null)}
         onWheelCapture={(e) => {
-          // 内层容器滚动时阻止冒泡，避免触发地图缩放/平移
           e.stopPropagation();
         }}
       >
@@ -329,7 +393,6 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
               title={tipText}
               onPointerEnter={(e) => {
                 if (!enabled) return;
-                // fixed tooltip（不会影响 scrollWidth）
                 const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
                 setTip({ text: tipText, left: r.left + r.width / 2, top: r.bottom + 10 });
               }}
@@ -349,7 +412,6 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
         })}
       </div>
 
-      {/* fixed tooltip：避免 pseudo-element 导致滚动末尾出现多余空白 */}
       <div className="im-toolbar-tooltip" data-show={tip ? '1' : '0'} style={{ left: tip?.left ?? -9999, top: tip?.top ?? -9999 }}>
         {tip?.text ?? ''}
       </div>
@@ -357,10 +419,6 @@ const ToolbarOverlay = memo(function ToolbarOverlay({ ctx, opts }: { ctx: MapCon
   );
 });
 
-/**
- * 默认工具栏（可选加载）
- * - 使用 commands 驱动：同一套命令可被快捷键/菜单复用
- */
 export function createToolbarPlugin(opts: ToolbarPluginOptions = {}): InfiniteMapPlugin {
   return {
     id: 'toolbar',

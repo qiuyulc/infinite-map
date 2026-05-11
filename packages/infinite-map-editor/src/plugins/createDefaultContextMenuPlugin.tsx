@@ -23,10 +23,12 @@ export type ContextMenuItem =
 
 export type DefaultContextMenuOptions = {
   /**
-   * 自定义菜单项（作为 base items）
-   * - 插件贡献的 items（STORE_KEYS.contextMenuItems）会在 base 后合并
+   * 自定义菜单项
+   * - 不传：使用默认全套
+   * - 传 string[]：按 key 排列（'|' = divider）
+   * - 传 (string | ContextMenuItem)[]：混合内置 key 和自定义项
    */
-  items?: ContextMenuItem[];
+  items?: (string | ContextMenuItem)[];
   /**
    * 最大宽度（像素），超出时内容省略/滚动（默认 320）
    */
@@ -307,10 +309,49 @@ function mergeMenuItems(base: ContextMenuItem[], extra: ContextMenuItem[]) {
   return normalized;
 }
 
+// ---- Key-based items resolution ----
+const BUILTIN_ITEMS: Record<string, ContextMenuItem> = {
+  'edit.copy':       { type: 'command', id: 'edit.copy', label: '复制', shortcut: 'Mod+C' },
+  'edit.cut':        { type: 'command', id: 'edit.cut', label: '剪切', shortcut: 'Mod+X' },
+  'edit.paste':      { type: 'command', id: 'edit.paste', label: '粘贴', shortcut: 'Mod+V' },
+  'edit.duplicate':  { type: 'command', id: 'edit.duplicate', label: '创建副本', shortcut: 'Mod+D' },
+  'edit.delete':     { type: 'command', id: 'edit.delete', label: '删除', shortcut: '⌫' },
+  'z.bringToFront':  { type: 'command', id: 'z.bringToFront', label: '置于顶层' },
+  'z.bringForward':  { type: 'command', id: 'z.bringForward', label: '上移一层' },
+  'z.sendBackward':  { type: 'command', id: 'z.sendBackward', label: '下移一层' },
+  'z.sendToBack':    { type: 'command', id: 'z.sendToBack', label: '置于底层' },
+  'edit.group':      { type: 'command', id: 'edit.group', label: '编组', shortcut: 'Mod+G' },
+  'edit.ungroup':    { type: 'command', id: 'edit.ungroup', label: '解组', shortcut: 'Shift+Mod+G' },
+  'edit.lock':       { type: 'command', id: 'edit.lock', label: '锁定' },
+  'edit.unlock':     { type: 'command', id: 'edit.unlock', label: '解锁' },
+  'edit.hide':       { type: 'command', id: 'edit.hide', label: '隐藏' },
+  'edit.showAll':    { type: 'command', id: 'edit.showAll', label: '显示全部' },
+  'view.fitView':    { type: 'command', id: 'view.fitView', label: '适配视图' },
+  'view.centerView': { type: 'command', id: 'view.centerView', label: '居中到原点' },
+  'view.fitSelection':    { type: 'command', id: 'view.fitSelection', label: '适配选中' },
+  'view.centerSelection': { type: 'command', id: 'view.centerSelection', label: '选中居中' },
+};
+
+const DIVIDER: ContextMenuItem = { type: 'divider' };
+
+function resolveItems(input: (string | ContextMenuItem)[]): ContextMenuItem[] {
+  const out: ContextMenuItem[] = [];
+  for (const it of input) {
+    if (typeof it === 'string') {
+      if (it === '|') { out.push(DIVIDER); continue; }
+      const builtin = BUILTIN_ITEMS[it];
+      if (builtin) { out.push(builtin); }
+      continue;
+    }
+    out.push(it);
+  }
+  return out;
+}
+
 const MenuOverlay = memo(function MenuOverlay({ ctx, opts }: { ctx: MapContext; opts: DefaultContextMenuOptions }) {
   const editEnabled = ctx.store.get<boolean>(STORE_KEYS.editEnabled);
   const payload = ctx.store.get<ContextMenuPayload>(STORE_KEYS.contextMenuState) ?? null;
-  const baseItems = useMemo(() => opts.items ?? defaultItems(), [opts.items]);
+  const baseItems = useMemo(() => opts.items ? resolveItems(opts.items) : defaultItems(), [opts.items]);
   const extraItems = ctx.store.get<ContextMenuItem[]>(STORE_KEYS.contextMenuItems) ?? [];
   const items = useMemo(() => mergeMenuItems(baseItems, extraItems), [baseItems, extraItems]);
   const ref = useRef<HTMLDivElement | null>(null);

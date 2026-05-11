@@ -48,15 +48,19 @@ const plugins = createDefaultEditorPluginsWithUI({
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `false` | 是否启用工具栏 |
-| `items` | `ToolbarItem[]` | 内置默认项 | 自定义工具栏按钮 |
+| `items` | `(string \| ToolbarItem)[]` | 内置默认项 | 自定义按钮。传字符串数组按 key 排列（`'\|'` = 分隔线） |
 | `position` | `'top-left' \| 'top-right'` | `'top-left'` | 工具栏位置 |
+
+内置 key：`history.undo` `history.redo` `view.zoomOut` `view.zoomIn` `view.resetZoom` `view.fitView` `view.centerView` `edit.delete`
 
 ### contextMenu — 右键菜单
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `false` | 是否启用右键菜单 |
-| `items` | `MenuItem[]` | 内置默认项 | 自定义菜单项 |
+| `items` | `(string \| ContextMenuItem)[]` | 内置默认项 | 自定义菜单项。传字符串数组按 key 排列（`'\|'` = 分隔线） |
+
+内置 key：`edit.copy` `edit.cut` `edit.paste` `edit.duplicate` `edit.delete` `z.bringToFront` `z.bringForward` `z.sendBackward` `z.sendToBack` `edit.group` `edit.ungroup` `edit.lock` `edit.unlock` `edit.hide` `edit.showAll` `view.fitView` `view.centerView` `view.fitSelection` `view.centerSelection`
 
 ### hoverHighlight — 鼠标光晕
 

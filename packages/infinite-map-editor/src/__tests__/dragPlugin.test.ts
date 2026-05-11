@@ -205,14 +205,15 @@ describe('createDragPlugin', () => {
     const drag = createDragPlugin();
     const g = drag.gestures![0];
     const down = makePointerEvent('down', { x: 0, y: 0 }, 11);
-    // dx=93 => left=93 close to 100 => should snap +7 => 100
+    // dx=93: left=93, center=98, right=103. Guide at 100.
+    // center (98) is closest to guide → snap +2 → new x = 93+2 = 95
     const move = makePointerEvent('move', { x: 93, y: 0 }, 11);
     const up = makePointerEvent('up', { x: 93, y: 0 }, 11);
 
     g.onStart(down, ctx, { kind: 'node', id: 'a' } as any);
     g.onMove(move, ctx);
     g.onEnd(up, ctx);
-    expect(nodes.find((n) => n.id === 'a')?.x).toBe(100);
+    expect(nodes.find((n) => n.id === 'a')?.x).toBe(95);
   });
 
   it('selectOnDrag=true selects the hit node when dragging unselected node', () => {

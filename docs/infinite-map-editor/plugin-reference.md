@@ -360,7 +360,7 @@
 ### `toolbar`
 
 **ID**: `toolbar`  
-**功能**: 顶部工具栏。默认包含 undo/redo、zoom、fit/center、delete。支持外部插件贡献按钮。  
+**功能**: 顶部工具栏。支持按 key 排列按钮，混合自定义项。  
 **Provides**: —  
 **Requires**: —  
 **Options**: `ToolbarPluginOptions`
@@ -368,12 +368,13 @@
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `false` | 是否启用 |
-| `items` | `ToolbarItem[]` | 内置默认项 | 自定义工具栏按钮 |
+| `items` | `(string \| ToolbarItem)[]` | 内置默认项 | 自定义按钮。字符串按 key 展开（`'\|'` = 分隔线） |
 | `position` | `'top-left' \| 'top-right'` | `'top-left'` | 工具栏位置 |
 
+内置 key：`history.undo` `history.redo` `view.zoomOut` `view.zoomIn` `view.resetZoom` `view.fitView` `view.centerView` `edit.delete`
+
 **Overlay**: `ToolbarOverlay`, slot=`hud`  
-**Store Key**: 读取 `toolbar:items`（外部贡献项）  
-**默认按钮**: undo / redo / zoom in / zoom out / 100% / fit view / center view / delete
+**Store Key**: 读取 `toolbar:items`（外部贡献项）
 
 ---
 
@@ -397,7 +398,7 @@
 ### `default-context-menu`
 
 **ID**: `default-context-menu`  
-**功能**: 默认右键菜单 UI。含剪贴板、层级、视图、删除、对齐分布等命令。支持外部插件贡献菜单项。  
+**功能**: 默认右键菜单 UI。支持按 key 排列菜单项，混合自定义项。  
 **Provides**: —  
 **Requires**: —  
 **Options**: `DefaultContextMenuOptions`
@@ -405,7 +406,9 @@
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `false` | 是否启用 |
-| `items` | `ContextMenuItem[]` | 内置默认项 | 自定义菜单项 |
+| `items` | `(string \| ContextMenuItem)[]` | 内置默认项 | 自定义菜单项。字符串按 key 展开（`'\|'` = 分隔线） |
+
+内置 key：`edit.copy` `edit.cut` `edit.paste` `edit.duplicate` `edit.delete` `z.bringToFront` `z.bringForward` `z.sendBackward` `z.sendToBack` `edit.group` `edit.ungroup` `edit.lock` `edit.unlock` `edit.hide` `edit.showAll` `view.fitView` `view.centerView` `view.fitSelection` `view.centerSelection`
 
 **Overlay**: 右键菜单 UI，slot=`hud`  
 **Store Key**: 读取 `contextmenu:state`、`contextmenu:items`

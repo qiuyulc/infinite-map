@@ -18,10 +18,46 @@
 
 ## 1. 定制工具栏
 
-启用工具栏后，可以通过 `items` 配置完全自定义按钮列表：
+### 按 key 快速排列
+
+不需要导入任何类型，传字符串数组即可（`'|'` = 分隔线）：
 
 ```tsx
-import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
+const plugins = createDefaultEditorPluginsWithUI({
+  toolbar: {
+    enabled: true,
+    items: ['history.undo', 'history.redo', '|', 'view.zoomIn', 'view.zoomOut', '|', 'edit.delete'],
+  },
+});
+```
+
+内置 key：`history.undo` `history.redo` `view.zoomOut` `view.zoomIn` `view.resetZoom` `view.fitView` `view.centerView` `edit.delete`
+
+### 混合自定义项
+
+字符串和 ToolbarItem 对象可以混用：
+
+```tsx
+import type { ToolbarItem } from '@qiuyulc/infinite-map-editor';
+
+const plugins = createDefaultEditorPluginsWithUI({
+  toolbar: {
+    enabled: true,
+    items: [
+      'history.undo',
+      'history.redo',
+      '|',
+      { type: 'command', id: 'my.export', label: '导出', icon: <ExportIcon /> },
+      '|',
+      'edit.delete',
+    ],
+  },
+});
+```
+
+### 完整自定义
+
+```tsx
 import type { ToolbarItem } from '@qiuyulc/infinite-map-editor';
 
 const customItems: ToolbarItem[] = [
@@ -98,6 +134,21 @@ type ToolbarItem =
 ---
 
 ## 2. 定制右键菜单
+
+### 按 key 快速排列
+
+```tsx
+const plugins = createDefaultEditorPluginsWithUI({
+  contextMenu: {
+    enabled: true,
+    items: ['edit.copy', 'edit.paste', 'edit.duplicate', '|', 'edit.delete'],
+  },
+});
+```
+
+内置 key：`edit.copy` `edit.cut` `edit.paste` `edit.duplicate` `edit.delete` `z.bringToFront` `z.bringForward` `z.sendBackward` `z.sendToBack` `edit.group` `edit.ungroup` `edit.lock` `edit.unlock` `edit.hide` `edit.showAll` `view.fitView` `view.centerView` `view.fitSelection` `view.centerSelection`
+
+### 完整自定义
 
 ```tsx
 import type { ContextMenuItem } from '@qiuyulc/infinite-map-editor';
