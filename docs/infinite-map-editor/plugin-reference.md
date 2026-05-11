@@ -372,7 +372,8 @@
 | `position` | `'top-left' \| 'top-right'` | `'top-left'` | 工具栏位置 |
 
 **Overlay**: `ToolbarOverlay`, slot=`hud`  
-**Store Key**: 读取 `toolbar:items`（外部贡献项）
+**Store Key**: 读取 `toolbar:items`（外部贡献项）  
+**默认按钮**: undo / redo / zoom in / zoom out / 100% / fit view / center view / delete
 
 ---
 
@@ -461,7 +462,6 @@
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `true` | 是否启用 |
-| `snapToggleEnabled` | `boolean` | `true` | 是否显示吸附开关 |
 
 **Overlay**: `ZoomDockOverlay`，slot=`hud`
 

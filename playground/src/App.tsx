@@ -115,7 +115,7 @@ export default function App() {
         rulers: { enabled: rulersEnabled },
         minimap: { enabled: minimapEnabled },
         // Playground 里用侧边栏做“吸附/辅助线”两个开关，避免与 ZoomDock 重复
-        zoomDock: { enabled: zoomDockEnabled, snapToggleEnabled: false },
+        zoomDock: { enabled: zoomDockEnabled, },
         toolbar: { enabled: toolbarEnabled },
         contextMenu: { enabled: contextMenuEnabled },
         marquee: { enabled: true, requireShift: false },
@@ -125,18 +125,18 @@ export default function App() {
       createHudContributionExamplePlugin(),
       ...(dropToCreateEnabled
         ? [
-            createDropToCreatePlugin({
-              resolveType: (e: DragEvent) => e.dataTransfer?.getData('application/x-node-type') ?? null,
-              createNode: (type: string, pos: { x: number; y: number }) => ({
-                id: genId2(),
-                x: pos.x - 70,
-                y: pos.y - 35,
-                width: 140,
-                height: 70,
-                label: type,
-              }),
+          createDropToCreatePlugin({
+            resolveType: (e: DragEvent) => e.dataTransfer?.getData('application/x-node-type') ?? null,
+            createNode: (type: string, pos: { x: number; y: number }) => ({
+              id: genId2(),
+              x: pos.x - 70,
+              y: pos.y - 35,
+              width: 140,
+              height: 70,
+              label: type,
             }),
-          ]
+          }),
+        ]
         : []),
     ]);
   }, [contextMenuEnabled, guidesEnabled, minimapEnabled, rulersEnabled, snapEnabled, toolbarEnabled, zoomDockEnabled, dropToCreateEnabled]);

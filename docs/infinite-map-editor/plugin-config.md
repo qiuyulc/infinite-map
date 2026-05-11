@@ -42,7 +42,6 @@ const plugins = createDefaultEditorPluginsWithUI({
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `enabled` | `boolean` | `true` | 是否启用缩放条 |
-| `snapToggleEnabled` | `boolean` | `true` | 是否显示吸附开关（在缩放条旁） |
 
 ### toolbar — 工具栏
 

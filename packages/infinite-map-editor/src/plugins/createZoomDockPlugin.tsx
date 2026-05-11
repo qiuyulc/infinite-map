@@ -21,10 +21,6 @@ export type ZoomDockPluginOptions = {
    * dock 高度（默认 36）
    */
   heightPx?: number;
-  /**
-   * 是否显示“吸附/辅助线”开关（默认 true）
-   */
-  snapToggleEnabled?: boolean;
 };
 
 function clamp(n: number, a: number, b: number) {
@@ -36,7 +32,6 @@ const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapC
   const sliderWidth = opts.sliderWidth ?? 140;
   const gapPx = opts.gapPx ?? 10;
   const heightPx = opts.heightPx ?? 36;
-  const snapToggleEnabled = opts.snapToggleEnabled ?? true;
 
   const [, bump] = useState(0);
   const lastRef = useRef(0);
@@ -54,7 +49,6 @@ const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapC
       })
     );
     unsubs.push(ctx.store.subscribe(STORE_KEYS.viewConfig, () => bump((v) => v + 1)));
-    unsubs.push(ctx.store.subscribe(STORE_KEYS.snapConfig, () => bump((v) => v + 1)));
     return () => unsubs.forEach((u) => u());
   }, [ctx]);
 
@@ -62,7 +56,6 @@ const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapC
 
   const cam = ctx.getCamera();
   const { minZoom, maxZoom } = getViewLimits(ctx);
-  const snapCfg = ctx.store.get<{ enabled: boolean }>(STORE_KEYS.snapConfig);
 
   // slider 用对数映射（更符合缩放直觉）
   const logMin = Math.log(minZoom);
@@ -126,44 +119,8 @@ const ZoomDockOverlay = memo(function ZoomDockOverlay({ ctx, opts }: { ctx: MapC
     lineHeight: 1,
   };
 
-  const snapBtn: CSSProperties = {
-    height: 28,
-    padding: '0 10px',
-    borderRadius: 10,
-    border: '1px solid var(--im-toolbar-border, rgba(15,23,42,0.12))',
-    background: 'var(--im-toolbar-btn-bg, rgba(255,255,255,0.70))',
-    color: 'var(--im-toolbar-btn-text, rgba(15,23,42,0.85))',
-    fontSize: 12,
-    lineHeight: '28px',
-    cursor: 'pointer',
-    userSelect: 'none',
-  };
-
-  const toggleSnap = () => {
-    if (!snapCfg) return;
-    const next = !snapCfg.enabled;
-    ctx.store.set(STORE_KEYS.snapConfig, { ...snapCfg, enabled: next });
-    if (!next) ctx.store.set(STORE_KEYS.snapGuides, null);
-    ctx.requestRender();
-  };
-
   return (
     <div style={dock} data-im-ui>
-      {snapToggleEnabled && snapCfg ? (
-        <button
-          type="button"
-          data-im-snap-toggle
-          aria-pressed={snapCfg.enabled === true}
-          title={snapCfg.enabled ? '关闭吸附/辅助线' : '开启吸附/辅助线'}
-          style={{
-            ...snapBtn,
-            opacity: snapCfg.enabled ? 1 : 0.65,
-          }}
-          onClick={toggleSnap}
-        >
-          吸附
-        </button>
-      ) : null}
       <div style={sliderWrap}>
         <Slider
           value={zoomToSlider(cam.zoom || 1)}
