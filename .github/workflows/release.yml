@@ -46,7 +46,7 @@ jobs:
         with:
           version: pnpm version-packages
           # 强制指定 public 访问权限，绕过所有配置同步问题
-          publish: pnpm exec changeset publish --access public
+          publish: pnpm exec changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
