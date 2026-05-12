@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/04-render-pipeline
+---
+
 # 4. 渲染管线
 
 > 涉及的源文件：`components/InfiniteMap.tsx`、`components/EngineBackgroundLayer.tsx`、`components/EngineDomNodesLayer.tsx`、`components/RenderPluginOverlays.tsx`

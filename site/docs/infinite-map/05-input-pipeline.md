@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/05-input-pipeline
+---
+
 # 5. 输入管线
 
 > 涉及的源文件：`hooks/usePluginInputDispatch.ts`

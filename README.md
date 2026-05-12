@@ -104,21 +104,21 @@ if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
 
 `parseDoc` 仅接受当前 schemaVersion=1 的 doc（不做历史版本兼容）。
 
-## 文档（VitePress）
+## 文档（Docusaurus）
 
 推荐阅读路径：
-- `docs/infinite-map-editor/quickstart.md`（编辑器快速上手）
-- `docs/infinite-map-editor/plugin-config.md`（插件配置）
-- `docs/infinite-map-editor/editing.md`（编辑与变更流）
-- `docs/infinite-map-editor/plugin-development.md`（插件开发指南）
-- `docs/library/component-api.md`（组件 API）
-- `docs/library/persistence.md`（保存/加载）
-- `docs/library/collaboration.md`（多人协作接入）
+- `site/docs/infinite-map-editor/quickstart.md`（编辑器快速上手）
+- `site/docs/infinite-map-editor/plugin-config.md`（插件配置）
+- `site/docs/infinite-map-editor/editing.md`（编辑与变更流）
+- `site/docs/infinite-map-editor/plugin-development.md`（插件开发指南）
+- `site/docs/library/component-api.md`（组件 API）
+- `site/docs/library/persistence.md`（保存/加载）
+- `site/docs/library/collaboration.md`（多人协作接入）
 
 本地启动：
 
 ```bash
-pnpm -C docs dev
+pnpm dev:docs
 ```
 
 ## 发布 npm 包

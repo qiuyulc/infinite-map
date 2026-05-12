@@ -1,3 +1,10 @@
+---
+slug: /infinite-map-editor/quickstart
+---
+
+import { QuickstartPreviewDemo } from '@site/src/demos/QuickstartPreviewDemo';
+import { QuickstartEditorDemo } from '@site/src/demos/QuickstartEditorDemo';
+
 # 编辑器快速上手
 
 本文带你 5 分钟接入 Infinite Map 编辑器。
@@ -19,31 +26,39 @@ pnpm add @qiuyulc/infinite-map @qiuyulc/infinite-map-editor
 如果只需要渲染节点，不需要任何编辑交互：
 
 ```tsx
-import { InfiniteMap, type NodeData } from '@qiuyulc/infinite-map';
+import { InfiniteMap, type NodeData } from "@qiuyulc/infinite-map";
 
 const nodes: NodeData[] = [
-  { id: '1', x: 100, y: 100, width: 200, height: 120, label: 'Hello' },
+  { id: "1", x: 100, y: 100, width: 200, height: 120, label: "Hello" },
 ];
 
-<InfiniteMap nodes={nodes} />
+<InfiniteMap nodes={nodes} />;
 ```
 
-此时可以 pan/zoom 浏览，但没有任何编辑能力。
+<!-- 此时可以 pan/zoom 浏览，但没有任何编辑能力。 -->
+
+<QuickstartPreviewDemo />
+
+> 👆 可以拖拽平移、滚轮缩放。但无法编辑节点。
 
 ---
 
 ## 启用完整编辑器
 
+<QuickstartEditorDemo />
+
+> 👆 **点击选中节点 → 拖拽移动 → 拖动角点缩放 → 旋转手柄旋转。** 试试看！
+
 ```tsx
-import { useState } from 'react';
-import { InfiniteMap } from '@qiuyulc/infinite-map';
-import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor';
-import type { NodeData } from '@qiuyulc/infinite-map';
+import { useState } from "react";
+import { InfiniteMap } from "@qiuyulc/infinite-map";
+import { createDefaultEditorPluginsWithUI } from "@qiuyulc/infinite-map-editor";
+import type { NodeData } from "@qiuyulc/infinite-map";
 
 export default function App() {
   const [nodes, setNodes] = useState<NodeData[]>([
-    { id: '1', x: 100, y: 100, width: 200, height: 120, label: 'Hello' },
-    { id: '2', x: 400, y: 200, width: 200, height: 120, label: 'World' },
+    { id: "1", x: 100, y: 100, width: 200, height: 120, label: "Hello" },
+    { id: "2", x: 400, y: 200, width: 200, height: 120, label: "World" },
   ]);
 
   const plugins = createDefaultEditorPluginsWithUI({
@@ -52,12 +67,8 @@ export default function App() {
   });
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <InfiniteMap
-        nodes={nodes}
-        plugins={plugins}
-        onNodesChange={setNodes}
-      />
+    <div style={{ width: "100vw", height: "100vh" }}>
+      <InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={setNodes} />
     </div>
   );
 }
@@ -72,7 +83,7 @@ export default function App() {
 如果不需要工具栏/右键菜单/小地图等 HUD，只想要纯编辑手势：
 
 ```tsx
-import { createDefaultEditorPlugins } from '@qiuyulc/infinite-map-editor';
+import { createDefaultEditorPlugins } from "@qiuyulc/infinite-map-editor";
 
 const plugins = createDefaultEditorPlugins({
   snap: { enabled: true },
@@ -109,15 +120,15 @@ const plugins = createDefaultEditorPlugins({
 ### onPatches（推荐）
 
 ```tsx
-import { applyPatchesToNodes } from '@qiuyulc/infinite-map';
+import { applyPatchesToNodes } from "@qiuyulc/infinite-map";
 
 <InfiniteMap
   nodes={nodes}
   plugins={plugins}
   onPatches={(patches) => {
-    setNodes(prev => applyPatchesToNodes(prev, patches));
+    setNodes((prev) => applyPatchesToNodes(prev, patches));
   }}
-/>
+/>;
 ```
 
 `onPatches` 输出细粒度差量变更（`NodePatch[]`），适合高频编辑和多人协作。详见 [编辑与变更流](/infinite-map-editor/editing)。
@@ -129,22 +140,22 @@ import { applyPatchesToNodes } from '@qiuyulc/infinite-map';
 ```tsx
 const plugins = createDefaultEditorPluginsWithUI({
   // HUD 开关
-  rulers:       { enabled: true, thickness: 24 },
-  minimap:      { enabled: true, width: 260, height: 160 },
-  zoomDock:     { enabled: true },
-  toolbar:      { enabled: true },
-  contextMenu:  { enabled: true },
+  rulers: { enabled: true, thickness: 24 },
+  minimap: { enabled: true, width: 260, height: 160 },
+  zoomDock: { enabled: true },
+  toolbar: { enabled: true },
+  contextMenu: { enabled: true },
 
   // 编辑行为
-  marquee:      { enabled: true, requireShift: false },
-  snap:         { enabled: true, guidesEnabled: true },
-  clipboard:    { enabled: true },
+  marquee: { enabled: true, requireShift: false },
+  snap: { enabled: true, guidesEnabled: true },
+  clipboard: { enabled: true },
 
   // 快捷键覆盖
   shortcuts: {
     commandShortcuts: {
-      'history.undo': 'Mod+Z',
-      'edit.delete': null,
+      "history.undo": "Mod+Z",
+      "edit.delete": null,
     },
   },
 
@@ -163,7 +174,7 @@ const plugins = createDefaultEditorPluginsWithUI({
 不想用默认组装的话，可以手动挑选：
 
 ```tsx
-import { composePlugins, EditorPlugins } from '@qiuyulc/infinite-map-editor';
+import { composePlugins, EditorPlugins } from "@qiuyulc/infinite-map-editor";
 
 const plugins = composePlugins([
   EditorPlugins.createKeyboardStatePlugin(),

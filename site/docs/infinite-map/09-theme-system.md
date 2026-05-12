@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/09-theme-system
+---
+
 # 9. 主题系统
 
 > 涉及的源文件：`theme.ts`、`components/InfiniteMapThemeProvider.tsx`、`theme-base.css`

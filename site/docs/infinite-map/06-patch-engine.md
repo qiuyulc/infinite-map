@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/06-patch-engine
+---
+
 # 6. Patch 引擎
 
 > 涉及的源文件：`hooks/usePatchEngine.ts`、`editor/runtime.ts`（applyPatchesToNodes）

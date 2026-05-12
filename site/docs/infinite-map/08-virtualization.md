@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/08-virtualization
+---
+
 # 8. 虚拟化
 
 > 涉及的源文件：`core/spatialIndex.ts`、`hooks/useVisibleNodes.ts`

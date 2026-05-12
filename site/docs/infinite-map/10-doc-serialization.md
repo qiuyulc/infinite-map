@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/10-doc-serialization
+---
+
 # 10. Doc 序列化
 
 > 涉及的源文件：`editor/document.ts`

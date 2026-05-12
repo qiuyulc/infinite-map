@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/03-plugin-protocol
+---
+
 # 3. 插件协议
 
 > 涉及的源文件：`editor/types.ts`、`editor/runtime.ts`、`editor/keys.ts`

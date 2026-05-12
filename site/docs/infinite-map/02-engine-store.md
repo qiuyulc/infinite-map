@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/02-engine-store
+---
+
 # 2. Engine Store
 
 > 涉及的源文件：`engine/engineStore.ts`、`engine/useEngineSelector.tsx`、`engine/index.ts`

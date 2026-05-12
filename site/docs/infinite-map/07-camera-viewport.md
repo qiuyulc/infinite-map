@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/07-camera-viewport
+---
+
 # 7. 坐标 & Camera
 
 > 涉及的源文件：`hooks/useCoordinateTransforms.ts`、`hooks/useViewportSize.ts`、`hooks/useWheelControls.ts`

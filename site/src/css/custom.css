@@ -1,0 +1,12 @@
+/* 自定义 CSS */
+/* Docusaurus 默认主题已包含暗色模式支持，这里只做微调 */
+
+:root {
+  --ifont-code-font-size: 95%;
+}
+
+/* live code block 的编辑器区域需要高度限制，防止画布撑爆页面 */
+.playgroundEditor {
+  max-width: 100%;
+  overflow: auto;
+}

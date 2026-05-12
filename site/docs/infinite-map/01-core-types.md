@@ -1,3 +1,7 @@
+---
+slug: /infinite-map/01-core-types
+---
+
 # 1. 核心类型 & 几何
 
 > 涉及的源文件：`core/types.ts`、`core/spatialIndex.ts`、`core/steps.ts`、`core/utils.ts`
