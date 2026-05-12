@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="zh-CN" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-infinite-map-editor/plugin-reference" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.1">
+<title data-rh="true">插件 API 参考 | Infinite Map</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"><meta data-rh="true" property="og:locale" content="zh_CN"><meta data-rh="true" name="docusaurus_locale" content="zh-CN"><meta data-rh="true" name="docsearch:language" content="zh-CN"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="插件 API 参考 | Infinite Map"><meta data-rh="true" name="description" content="本文档是 @qiuyulc/infinite-map-editor 全部 24 个内置插件的详细参考。"><meta data-rh="true" property="og:description" content="本文档是 @qiuyulc/infinite-map-editor 全部 24 个内置插件的详细参考。"><link data-rh="true" rel="icon" href="/infinite-map/img/logo.png"><link data-rh="true" rel="canonical" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"><link data-rh="true" rel="alternate" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference" hreflang="zh-CN"><link data-rh="true" rel="alternate" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"插件 API 参考","item":"https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"}]}</script><link rel="stylesheet" href="/infinite-map/assets/css/styles.bfeae030.css">
+<script src="/infinite-map/assets/js/runtime~main.b09af6ce.js" defer="defer"></script>
+<script src="/infinite-map/assets/js/main.a983e259.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"light"),document.documentElement.setAttribute("data-theme-choice",t||"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><link rel="preload" as="image" href="/infinite-map/img/logo.png"><div role="region" aria-label="跳到主要内容"><a class="skipToContent_qvcu" href="#__docusaurus_skipToContent_fallback">跳到主要内容</a></div><nav aria-label="主导航" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="切换导航栏" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/infinite-map/"><div class="navbar__logo"><img src="/infinite-map/img/logo.png" alt="Infinite Map" class="themedComponent_Ue2r themedComponent--light_UAEj"><img src="/infinite-map/img/logo.png" alt="Infinite Map" class="themedComponent_Ue2r themedComponent--dark_Qp3d"></div></a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a class="navbar__item navbar__link" href="/infinite-map/infinite-map-editor/quickstart">文档</a><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_OxXE"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_rlOb colorModeToggle_XiFj"><button class="clean-btn toggleButton_ef_c toggleButtonDisabled_TpgK" type="button" disabled="" title="system mode" aria-label="切换浅色/暗黑模式（当前为system mode）"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_fSvZ lightToggleIcon_S5VG"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_fSvZ darkToggleIcon_aWMh"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_fSvZ systemToggleIcon_X5xJ"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_eOpk"><div class="navbar__search searchBarContainer_i1mj" dir="ltr"><input placeholder="搜索" aria-label="Search" class="navbar__search-input searchInput_qBYw" value=""><div class="loadingRing_rR7V searchBarLoadingRing_QUU6"><div></div><div></div><div></div><div></div></div></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_ffvR"><div class="docsWrapper_rQoW"><button aria-label="回到顶部" class="clean-btn theme-back-to-top-button backToTopButton_UzRk" type="button"></button><div class="docRoot_NvAa"><aside class="theme-doc-sidebar-container docSidebarContainer_J6rJ"><div class="sidebarViewport_JMRg"><div class="sidebar_VjdO"><nav aria-label="文档侧边栏" class="menu thin-scrollbar menu_Ue_A"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/infinite-map/infinite-map-editor/quickstart"><span title="infinite-map-editor 使用" class="categoryLinkLabel_VXL_">infinite-map-editor 使用</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/quickstart"><span title="编辑器快速上手" class="linkLabel_t29o">编辑器快速上手</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/plugin-config"><span title="插件配置" class="linkLabel_t29o">插件配置</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/shortcuts-and-operations"><span title="操作与快捷键" class="linkLabel_t29o">操作与快捷键</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/editing"><span title="编辑与变更流（onPatches）" class="linkLabel_t29o">编辑与变更流（onPatches）</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/library/view"><span title="视图控制（铺满/居中/锁定）" class="linkLabel_t29o">视图控制（铺满/居中/锁定）</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/library/persistence"><span title="保存/加载（Doc &amp; Resources）" class="linkLabel_t29o">保存/加载（Doc &amp; Resources）</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/library/theming"><span title="主题定制" class="linkLabel_t29o">主题定制</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/library/collaboration"><span title="多人协作接入（业务侧）" class="linkLabel_t29o">多人协作接入（业务侧）</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/infinite-map/library/node-data"><span title="API 参考" class="categoryLinkLabel_VXL_">API 参考</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/infinite-map/infinite-map/overview"><span title="架构与开发" class="categoryLinkLabel_VXL_">架构与开发</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/infinite-map/infinite-map/overview"><span title="infinite-map 核心引擎" class="categoryLinkLabel_VXL_">infinite-map 核心引擎</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/infinite-map/infinite-map-editor/overview"><span title="infinite-map-editor 插件开发" class="categoryLinkLabel_VXL_">infinite-map-editor 插件开发</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/overview"><span title="@qiuyulc/infinite-map-editor — 架构总览" class="linkLabel_t29o">@qiuyulc/infinite-map-editor — 架构总览</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/plugin-development"><span title="插件开发指南" class="linkLabel_t29o">插件开发指南</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/infinite-map/infinite-map-editor/plugin-reference"><span title="插件 API 参考" class="linkLabel_t29o">插件 API 参考</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/infinite-map-editor/customization"><span title="编辑器定制" class="linkLabel_t29o">编辑器定制</span></a></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/infinite-map/library/project-structure"><span title="项目目录结构与职责" class="linkLabel_t29o">项目目录结构与职责</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_zHHj menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/infinite-map/releasing"><span title="附录" class="categoryLinkLabel_VXL_">附录</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_c9UJ"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_kSov"><div class="docItemContainer_vNTF"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_C61V" aria-label="页面路径"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="主页面" class="breadcrumbs__link" href="/infinite-map/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_I7iM"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">架构与开发</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">infinite-map-editor 插件开发</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">插件 API 参考</span></li></ul></nav><div class="tocCollapsible_U9Ss theme-doc-toc-mobile tocMobile_wlPH"><button type="button" class="clean-btn tocCollapsibleButton_ZOe5">本页总览</button></div><div class="theme-doc-markdown markdown"><header><h1>插件 API 参考</h1></header>
+<p>本文档是 <code>@qiuyulc/infinite-map-editor</code> 全部 24 个内置插件的详细参考。</p>
+<p>每个插件包含：插件 ID、功能描述、声明式依赖、配置选项、注册的命令、使用的 Store Key 和事件。</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="目录">目录<a href="#目录" class="hash-link" aria-label="目录的直接链接" title="目录的直接链接" translate="no">​</a></h2>
+<ul>
+<li class=""><a href="#%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E7%B1%BB" class="">基础设施类</a></li>
+<li class=""><a href="#%E9%80%89%E6%8B%A9%E7%B1%BB" class="">选择类</a></li>
+<li class=""><a href="#%E5%8F%98%E6%8D%A2%E7%B1%BB" class="">变换类</a></li>
+<li class=""><a href="#%E7%BC%96%E8%BE%91%E7%B1%BB" class="">编辑类</a></li>
+<li class=""><a href="#hud-%E7%B1%BB" class="">HUD 类</a></li>
+<li class=""><a href="#%E8%A7%86%E8%A7%89%E7%B1%BB" class="">视觉类</a></li>
+<li class=""><a href="#%E6%89%A9%E5%B1%95%E7%B1%BB" class="">扩展类</a></li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="基础设施类">基础设施类<a href="#基础设施类" class="hash-link" aria-label="基础设施类的直接链接" title="基础设施类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="keyboard-state"><code>keyboard-state</code><a href="#keyboard-state" class="hash-link" aria-label="keyboard-state的直接链接" title="keyboard-state的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>keyboard-state</code><br>
+<strong>功能</strong>: 监听 <code>keydown</code>/<code>keyup</code>，维护 <code>Space</code> 键按下状态到 Store。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>KeyboardStatePluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>spaceKey</code></td><td><code>string</code></td><td><code>STORE_KEYS.keyboardSpace</code></td><td>Space 键状态的 store key</td></tr></tbody></table>
+<p><strong>Store Key</strong>: <code>keyboard:space</code> (boolean)<br>
+<strong>Input</strong>: <code>onKeyDown</code> / <code>onKeyUp</code>（处理 Space 键）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="core-services"><code>core-services</code><a href="#core-services" class="hash-link" aria-label="core-services的直接链接" title="core-services的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>core-services</code><br>
+<strong>功能</strong>: 注册核心服务到 <code>ctx.services</code>：<code>camera</code>（相机驱动）、<code>document</code>（统一 patches 入口）、<code>hud</code>（Toolbar/ContextMenu 贡献注册表）。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: 无</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="command-runner"><code>command-runner</code><a href="#command-runner" class="hash-link" aria-label="command-runner的直接链接" title="command-runner的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>command-runner</code><br>
+<strong>功能</strong>: 命令执行引擎。收集所有插件的 <code>commands</code> 到 <code>store.commands:registry</code>，提供统一的 <code>ctx.runCommand(id, payload)</code> 入口。<br>
+<strong>Provides</strong>: <code>commands</code><br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: 无</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="shortcuts"><code>shortcuts</code><a href="#shortcuts" class="hash-link" aria-label="shortcuts的直接链接" title="shortcuts的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>shortcuts</code><br>
+<strong>功能</strong>: 将快捷键映射到命令。支持 <code>commandShortcuts</code> 覆盖（<code>null</code> = 禁用）。仅在画布聚焦时生效。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: <code>ShortcutsPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>commandShortcuts</code></td><td><code>Record&lt;string, string | null&gt;</code></td><td>—</td><td>命令快捷覆盖（<code>null</code> 禁用）</td></tr></tbody></table>
+<p><strong>Input</strong>: <code>onKeyDown</code>（触发快捷键映射）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="history"><code>history</code><a href="#history" class="hash-link" aria-label="history的直接链接" title="history的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>history</code><br>
+<strong>功能</strong>: Undo/Redo 历史栈。监听 <code>patches:applied</code> 事件生成逆向 patch，支持 move-phase 合并。<br>
+<strong>Provides</strong>: <code>history</code><br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: <code>HistoryPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>limit</code></td><td><code>number</code></td><td><code>200</code></td><td>历史栈最大长度</td></tr></tbody></table>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>history.undo</code>（<code>Mod+Z</code>）</li>
+<li class=""><code>history.redo</code>（<code>Mod+Shift+Z</code>）</li>
+</ul>
+<p><strong>Store Keys</strong>: <code>history:undoStack</code>、<code>history:redoStack</code>、<code>history:pending</code>、<code>history:version</code><br>
+<strong>Bus Events</strong>: 监听 <code>patches:applied</code>、<code>history:undo</code>、<code>history:redo</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="view-commands"><code>view-commands</code><a href="#view-commands" class="hash-link" aria-label="view-commands的直接链接" title="view-commands的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>view-commands</code><br>
+<strong>功能</strong>: 视图控制命令（zoom/fit/center）。同时写入 <code>view:config</code> 供其他插件读取。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: <code>ViewCommandsPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>paddingPx</code></td><td><code>number</code></td><td><code>48</code></td><td>fit 时的 padding（屏幕像素）</td></tr><tr><td><code>zoomStep</code></td><td><code>number</code></td><td><code>1.2</code></td><td>zoom 步进倍率</td></tr><tr><td><code>minZoom</code></td><td><code>number</code></td><td><code>0.25</code></td><td>最小缩放</td></tr><tr><td><code>maxZoom</code></td><td><code>number</code></td><td><code>2.5</code></td><td>最大缩放</td></tr></tbody></table>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>view.zoomIn</code>（<code>Mod+=</code>）</li>
+<li class=""><code>view.zoomOut</code>（<code>Mod+-</code>）</li>
+<li class=""><code>view.resetZoom</code></li>
+<li class=""><code>view.fitView</code></li>
+<li class=""><code>view.centerView</code></li>
+<li class=""><code>view.fitSelection</code></li>
+<li class=""><code>view.centerSelection</code></li>
+</ul>
+<p><strong>Store Key</strong>: <code>view:config</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="z-index"><code>z-index</code><a href="#z-index" class="hash-link" aria-label="z-index的直接链接" title="z-index的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>z-index</code><br>
+<strong>功能</strong>: 层级（zIndex）命令：置顶/置底/上移一层/下移一层/归位。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: 无</p>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>z.bringToFront</code></li>
+<li class=""><code>z.bringForward</code></li>
+<li class=""><code>z.sendBackward</code></li>
+<li class=""><code>z.sendToBack</code></li>
+<li class=""><code>z.normalize</code></li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="export-png"><code>export-png</code><a href="#export-png" class="hash-link" aria-label="export-png的直接链接" title="export-png的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>export-png</code><br>
+<strong>功能</strong>: 导出 PNG 命令（骨架）。触发 <code>export:png</code> 事件，由宿主实现截图逻辑。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: <code>ExportPngPluginOptions</code></p>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>file.exportPng</code></li>
+</ul>
+<p><strong>Bus Events</strong>: 触发 <code>export:png</code></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="选择类">选择类<a href="#选择类" class="hash-link" aria-label="选择类的直接链接" title="选择类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="selection"><code>selection</code><a href="#selection" class="hash-link" aria-label="selection的直接链接" title="selection的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>selection</code><br>
+<strong>功能</strong>: 选择服务。提供 hitTest（节点命中）、pointerDownProcessor（选中逻辑）、overlay（选中框+缩放手柄）。<br>
+<strong>Provides</strong>: <code>selection</code><br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>SelectionPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>storeKey</code></td><td><code>string</code></td><td>—</td><td>自定义 selection store key</td></tr><tr><td><code>clearOnBlankClick</code></td><td><code>boolean</code></td><td>—</td><td>点击空白是否清空选择</td></tr></tbody></table>
+<p><strong>Store Key</strong>: <code>selection:ids</code> (string[])<br>
+<strong>Bus Events</strong>: 触发 <code>selection:change</code><br>
+<strong>HitTests</strong>: 节点命中检测<br>
+<strong>PointerDownProcessors</strong>: 点击选中/多选/清空逻辑<br>
+<strong>Overlay</strong>: <code>SelectionOverlay</code>（选中框 + 8 个缩放手柄），slot=<code>overlay</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="marquee-select"><code>marquee-select</code><a href="#marquee-select" class="hash-link" aria-label="marquee-select的直接链接" title="marquee-select的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>marquee-select</code><br>
+<strong>功能</strong>: 框选。空白拖拽时渲染矩形选框，松手后框内节点被选中。默认放最后以避免与 drag/pan 冲突。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>selection</code><br>
+<strong>Options</strong>: <code>MarqueeSelectPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr><tr><td><code>requireShift</code></td><td><code>boolean</code></td><td><code>false</code></td><td>是否需要 Shift 才能框选</td></tr><tr><td><code>storeKey</code></td><td><code>string</code></td><td>—</td><td>自定义 store key</td></tr><tr><td><code>selectionKey</code></td><td><code>string</code></td><td>—</td><td>自定义 selection key</td></tr><tr><td><code>minDragPx</code></td><td><code>number</code></td><td>—</td><td>形成框选的最小拖动距离</td></tr></tbody></table>
+<p><strong>Store Key</strong>: <code>marquee:state</code><br>
+<strong>Gesture</strong>: marquee 手势（<code>canStart</code> 判断是否空白区域）<br>
+<strong>Overlay</strong>: <code>MarqueeOverlay</code>（框选矩形），slot=<code>overlay</code></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="变换类">变换类<a href="#变换类" class="hash-link" aria-label="变换类的直接链接" title="变换类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="drag"><code>drag</code><a href="#drag" class="hash-link" aria-label="drag的直接链接" title="drag的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>drag</code><br>
+<strong>功能</strong>: 拖拽移动。支持多选整体移动、吸附（对齐线/网格/参考线/视口中心线）、Engine 模式（move 阶段直写 DOM）。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>DragPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>dragKey</code></td><td><code>string</code></td><td>—</td><td>自定义 drag store key</td></tr><tr><td><code>selectOnDrag</code></td><td><code>boolean</code></td><td><code>true</code></td><td>拖拽未选中节点时是否先选中</td></tr><tr><td><code>selectionKey</code></td><td><code>string</code></td><td>—</td><td>自定义 selection key</td></tr></tbody></table>
+<p><strong>Store Key</strong>: <code>drag:state</code><br>
+<strong>Bus Events</strong>: 触发 <code>drag:start</code> / <code>drag:move</code> / <code>drag:end</code><br>
+<strong>Gesture</strong>: drag 手势（priority=100）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="resize"><code>resize</code><a href="#resize" class="hash-link" aria-label="resize的直接链接" title="resize的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>resize</code><br>
+<strong>功能</strong>: 8 点缩放手柄。通过 hitTest 检测手柄命中，gesture 执行缩放。支持等比缩放（Shift）。仅单选时显示。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>ResizePluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>selectionKey</code></td><td><code>string</code></td><td>—</td><td>自定义 selection key</td></tr><tr><td><code>spaceKey</code></td><td><code>string</code></td><td>—</td><td>自定义 space key</td></tr><tr><td><code>hitRadiusPx</code></td><td><code>number</code></td><td>—</td><td>手柄命中半径（px）</td></tr><tr><td><code>minSize</code></td><td><code>number</code></td><td>—</td><td>最小宽高（世界单位）</td></tr></tbody></table>
+<p><strong>Store Key</strong>: <code>resize:state</code><br>
+<strong>HitTests</strong>: 8 个缩放手柄命中检测<br>
+<strong>Gesture</strong>: resize 手势（priority=100）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="rotate"><code>rotate</code><a href="#rotate" class="hash-link" aria-label="rotate的直接链接" title="rotate的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>rotate</code><br>
+<strong>功能</strong>: 2D 旋转。选中节点后显示旋转 handle，拖拽旋转。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: 无（使用 SelectionOverlay 的 handle）</p>
+<p><strong>Store Key</strong>: <code>rotate:state</code><br>
+<strong>HitTests</strong>: 旋转 handle 命中检测<br>
+<strong>Gesture</strong>: rotate 手势（priority=100）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="rotate3d"><code>rotate3d</code><a href="#rotate3d" class="hash-link" aria-label="rotate3d的直接链接" title="rotate3d的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>rotate3d</code><br>
+<strong>功能</strong>: 3D 旋转。<code>Alt + 拖拽</code> 修改 <code>rotationX/rotationY</code>。通过独立 handle 检测避免与 2D 旋转冲突。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: 无</p>
+<p><strong>Store Key</strong>: <code>rotate3d:state</code><br>
+<strong>HitTests</strong>: 3D 旋转区域命中检测<br>
+<strong>Gesture</strong>: rotate3d 手势</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="编辑类">编辑类<a href="#编辑类" class="hash-link" aria-label="编辑类的直接链接" title="编辑类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="clipboard"><code>clipboard</code><a href="#clipboard" class="hash-link" aria-label="clipboard的直接链接" title="clipboard的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>clipboard</code><br>
+<strong>功能</strong>: 复制/剪切/粘贴/删除/副本。支持 group 结构（复制时 remap id + 修正 parentId），连续粘贴偏移。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code>, <code>selection</code>, <code>history</code><br>
+<strong>Options</strong>: <code>ClipboardPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr><tr><td><code>offsetWorld</code></td><td><code>number</code></td><td>—</td><td>paste/duplicate 偏移量（世界单位）</td></tr></tbody></table>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>edit.copy</code>（<code>Mod+C</code>）</li>
+<li class=""><code>edit.paste</code>（<code>Mod+V</code>）</li>
+<li class=""><code>edit.cut</code>（<code>Mod+X</code>）</li>
+<li class=""><code>edit.duplicate</code>（<code>Mod+D</code>）</li>
+<li class=""><code>edit.delete</code>（<code>Delete</code> / <code>Backspace</code>）</li>
+</ul>
+<p><strong>Store Key</strong>: <code>clipboard:data</code>、<code>clipboard:pasteCount</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="group"><code>group</code><a href="#group" class="hash-link" aria-label="group的直接链接" title="group的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>group</code><br>
+<strong>功能</strong>: 编组/解组。选中多个节点后 <code>edit.group</code> 创建 group 节点（<code>kind=&#x27;group&#x27;</code>），成员 <code>parentId</code> 指向 group。解组时删除 group，成员 <code>parentId</code> 清空。<br>
+<strong>Provides</strong>: <code>group</code><br>
+<strong>Requires</strong>: <code>commands</code>, <code>selection</code>, <code>document</code><br>
+<strong>Options</strong>: 无</p>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>edit.group</code>（<code>Mod+G</code>）</li>
+<li class=""><code>edit.ungroup</code>（<code>Shift+Mod+G</code>）</li>
+</ul>
+<p><strong>Service</strong>: <code>group</code> — 提供 <code>expandIds(ids)</code> 方法供 drag 等插件展开 group 后代</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="lock-hide"><code>lock-hide</code><a href="#lock-hide" class="hash-link" aria-label="lock-hide的直接链接" title="lock-hide的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>lock-hide</code><br>
+<strong>功能</strong>: 锁定/隐藏节点。锁定传递（祖先 locked → 后代视为 locked），隐藏传递（祖先 hidden → 后代视为 hidden）。<code>showAll</code> 恢复所有隐藏节点。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code><br>
+<strong>Options</strong>: 无</p>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>edit.lock</code></li>
+<li class=""><code>edit.unlock</code></li>
+<li class=""><code>edit.hide</code></li>
+<li class=""><code>edit.showAll</code></li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="align-distribute"><code>align-distribute</code><a href="#align-distribute" class="hash-link" aria-label="align-distribute的直接链接" title="align-distribute的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>align-distribute</code><br>
+<strong>功能</strong>: 对齐/分布。计算选中节点集合的包围盒，按左/中/右/上/中/下对齐或水平/垂直等间距分布。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>commands</code>, <code>selection</code>, <code>document</code><br>
+<strong>Options</strong>: 无</p>
+<p><strong>Commands</strong>:</p>
+<ul>
+<li class=""><code>edit.alignLeft</code> / <code>edit.alignHCenter</code> / <code>edit.alignRight</code></li>
+<li class=""><code>edit.alignTop</code> / <code>edit.alignVCenter</code> / <code>edit.alignBottom</code></li>
+<li class=""><code>edit.distributeH</code> / <code>edit.distributeV</code></li>
+</ul>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="nudge"><code>nudge</code><a href="#nudge" class="hash-link" aria-label="nudge的直接链接" title="nudge的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>nudge</code><br>
+<strong>功能</strong>: 键盘微调。<code>↑↓←→</code> 移动 1px，<code>Shift+↑↓←→</code> 移动 10px。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: <code>selection</code><br>
+<strong>Options</strong>: <code>NudgePluginOptions</code></p>
+<p><strong>Input</strong>: <code>onKeyDown</code>（处理方向键）</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="hud-类">HUD 类<a href="#hud-类" class="hash-link" aria-label="HUD 类的直接链接" title="HUD 类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="toolbar"><code>toolbar</code><a href="#toolbar" class="hash-link" aria-label="toolbar的直接链接" title="toolbar的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>toolbar</code><br>
+<strong>功能</strong>: 顶部工具栏。支持按 key 排列按钮，混合自定义项。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>ToolbarPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>是否启用</td></tr><tr><td><code>items</code></td><td><code>(string | ToolbarItem)[]</code></td><td>内置默认项</td><td>自定义按钮。字符串按 key 展开（<code>&#x27;|&#x27;</code> = 分隔线）</td></tr><tr><td><code>position</code></td><td><code>&#x27;top-left&#x27; | &#x27;top-right&#x27;</code></td><td><code>&#x27;top-left&#x27;</code></td><td>工具栏位置</td></tr></tbody></table>
+<p>内置 key：<code>history.undo</code> <code>history.redo</code> <code>view.zoomOut</code> <code>view.zoomIn</code> <code>view.resetZoom</code> <code>view.fitView</code> <code>view.centerView</code> <code>edit.delete</code></p>
+<p><strong>Overlay</strong>: <code>ToolbarOverlay</code>, slot=<code>hud</code><br>
+<strong>Store Key</strong>: 读取 <code>toolbar:items</code>（外部贡献项）</p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="context-menu"><code>context-menu</code><a href="#context-menu" class="hash-link" aria-label="context-menu的直接链接" title="context-menu的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>context-menu</code><br>
+<strong>功能</strong>: 右键菜单事件处理。检测右键命中，处理&quot;命中 group 后代时选中最外层 group&quot;逻辑。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>ContextMenuPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>storeKey</code></td><td><code>string</code></td><td>—</td><td>自定义 store key</td></tr></tbody></table>
+<p><strong>Input</strong>: <code>onContextMenu</code><br>
+<strong>Store Key</strong>: <code>contextmenu:state</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="default-context-menu"><code>default-context-menu</code><a href="#default-context-menu" class="hash-link" aria-label="default-context-menu的直接链接" title="default-context-menu的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>default-context-menu</code><br>
+<strong>功能</strong>: 默认右键菜单 UI。支持按 key 排列菜单项，混合自定义项。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>DefaultContextMenuOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>是否启用</td></tr><tr><td><code>items</code></td><td><code>(string | ContextMenuItem)[]</code></td><td>内置默认项</td><td>自定义菜单项。字符串按 key 展开（<code>&#x27;|&#x27;</code> = 分隔线）</td></tr></tbody></table>
+<p>内置 key：<code>edit.copy</code> <code>edit.cut</code> <code>edit.paste</code> <code>edit.duplicate</code> <code>edit.delete</code> <code>z.bringToFront</code> <code>z.bringForward</code> <code>z.sendBackward</code> <code>z.sendToBack</code> <code>edit.group</code> <code>edit.ungroup</code> <code>edit.lock</code> <code>edit.unlock</code> <code>edit.hide</code> <code>edit.showAll</code> <code>view.fitView</code> <code>view.centerView</code> <code>view.fitSelection</code> <code>view.centerSelection</code></p>
+<p><strong>Overlay</strong>: 右键菜单 UI，slot=<code>hud</code><br>
+<strong>Store Key</strong>: 读取 <code>contextmenu:state</code>、<code>contextmenu:items</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="minimap"><code>minimap</code><a href="#minimap" class="hash-link" aria-label="minimap的直接链接" title="minimap的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>minimap</code><br>
+<strong>功能</strong>: 小地图。渲染节点缩略图和视口框（Canvas 2D 绘制）。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>MinimapPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr><tr><td><code>width</code></td><td><code>number</code></td><td><code>260</code></td><td>宽度（px）</td></tr><tr><td><code>height</code></td><td><code>number</code></td><td><code>160</code></td><td>高度（px）</td></tr><tr><td><code>cachePadding</code></td><td><code>number</code></td><td><code>120</code></td><td>缓存区 padding</td></tr><tr><td><code>includeOrigin</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否强制包含原点</td></tr><tr><td><code>showStats</code></td><td><code>boolean</code></td><td><code>false</code></td><td>是否显示调试统计</td></tr></tbody></table>
+<p><strong>Overlay</strong>: <code>MinimapOverlay</code>（Canvas 绘制），slot=<code>hud</code><br>
+<strong>Store Keys</strong>: <code>minimap:config</code>、<code>minimap:inViewCount</code>、<code>minimap:needsRedraw</code>、<code>minimap:enabled</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="rulers"><code>rulers</code><a href="#rulers" class="hash-link" aria-label="rulers的直接链接" title="rulers的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>rulers</code><br>
+<strong>功能</strong>: 标尺。顶部/左侧显示世界坐标刻度，自适应 zoom。支持标尺拖拽平移和参考线拖放。使用 imperative SVG DOM 操作。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>RulersPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr><tr><td><code>thickness</code></td><td><code>number</code></td><td><code>24</code></td><td>标尺宽度/高度（px）</td></tr></tbody></table>
+<p><strong>Overlay</strong>: <code>RulersOverlay</code>（SVG 动态绘制），slot=<code>hud</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="zoom-dock"><code>zoom-dock</code><a href="#zoom-dock" class="hash-link" aria-label="zoom-dock的直接链接" title="zoom-dock的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>zoom-dock</code><br>
+<strong>功能</strong>: 右下角缩放滑杆。slider + 吸附开关。通过 <code>runCommand</code> 驱动缩放。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>ZoomDockPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr></tbody></table>
+<p><strong>Overlay</strong>: <code>ZoomDockOverlay</code>，slot=<code>hud</code></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="视觉类">视觉类<a href="#视觉类" class="hash-link" aria-label="视觉类的直接链接" title="视觉类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="hover-highlight"><code>hover-highlight</code><a href="#hover-highlight" class="hash-link" aria-label="hover-highlight的直接链接" title="hover-highlight的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>hover-highlight</code><br>
+<strong>功能</strong>: 鼠标周围光晕效果。通过 <code>inputHooks.onBeforeHitTest</code> 追踪鼠标位置，Canvas 渲染径向渐变 + 点阵高亮（滚轮时有脉冲动画）。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>HoverHighlightPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr></tbody></table>
+<p><strong>InputHooks</strong>: <code>onBeforeHitTest</code><br>
+<strong>Overlay</strong>: Canvas highlight overlay，slot=<code>background</code></p>
+<hr>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="snap-guides"><code>snap-guides</code><a href="#snap-guides" class="hash-link" aria-label="snap-guides的直接链接" title="snap-guides的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>snap-guides</code><br>
+<strong>功能</strong>: 吸附引导线。从 <code>store.snap:guides</code> 读取吸附位置，渲染对齐线和 overlay。同时提供 <code>snap:config</code> 供 drag/resize 等插件读取。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>SnapGuidesPluginOptions</code></p>
+<table><thead><tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否启用</td></tr><tr><td><code>guidesEnabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>是否显示辅助线</td></tr><tr><td><code>gridSize</code></td><td><code>number | &#x27;auto&#x27;</code></td><td><code>&#x27;auto&#x27;</code></td><td>网格吸附大小（世界单位）</td></tr><tr><td><code>thresholdPx</code></td><td><code>number</code></td><td>—</td><td>吸附阈值（屏幕像素）</td></tr></tbody></table>
+<p><strong>Store Keys</strong>: <code>snap:config</code>（写入）、<code>snap:guides</code>（读取）<br>
+<strong>Overlay</strong>: <code>SnapGuidesOverlay</code>（对齐线渲染），slot=<code>overlay</code></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="扩展类">扩展类<a href="#扩展类" class="hash-link" aria-label="扩展类的直接链接" title="扩展类的直接链接" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_AYB9" id="drop-to-create"><code>drop-to-create</code><a href="#drop-to-create" class="hash-link" aria-label="drop-to-create的直接链接" title="drop-to-create的直接链接" translate="no">​</a></h3>
+<p><strong>ID</strong>: <code>drop-to-create</code><br>
+<strong>功能</strong>: 拖拽创建节点。监听 <code>document</code> 的 <code>dragover</code>/<code>drop</code> 事件，通过 <code>ctx.screenToWorld</code> 计算世界坐标创建节点。包含 ghost 预览 overlay。<br>
+<strong>Provides</strong>: —<br>
+<strong>Requires</strong>: —<br>
+<strong>Options</strong>: <code>DropToCreatePluginOptions</code></p>
+<p><strong>Overlay</strong>: ghost 预览组件，slot=<code>overlay</code></p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_AYB9" id="默认插件组装">默认插件组装<a href="#默认插件组装" class="hash-link" aria-label="默认插件组装的直接链接" title="默认插件组装的直接链接" translate="no">​</a></h2>
+<p><code>createDefaultEditorPlugins</code>（无 UI）包含上述插件的大部分（不含 HUD 类）。<br>
+<code>createDefaultEditorPluginsWithUI</code> 在前者基础上叠加 HUD 类插件。</p>
+<p>完整顺序和依赖关系见 <a class="" href="/infinite-map/infinite-map-editor/overview">架构总览</a>。</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_etgw"><a href="https://github.com/qiuyulc/infinite-map/edit/main/site/docs/infinite-map-editor/plugin-reference.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_o5qw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>编辑此页</a></div><div class="col lastUpdated_HrdP"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="文件选项卡"><a class="pagination-nav__link pagination-nav__link--prev" href="/infinite-map/infinite-map-editor/plugin-development"><div class="pagination-nav__sublabel">上一页</div><div class="pagination-nav__label">插件开发指南</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/infinite-map/infinite-map-editor/customization"><div class="pagination-nav__sublabel">下一页</div><div class="pagination-nav__label">编辑器定制</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_BYuE thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#目录" class="table-of-contents__link toc-highlight">目录</a></li><li><a href="#基础设施类" class="table-of-contents__link toc-highlight">基础设施类</a><ul><li><a href="#keyboard-state" class="table-of-contents__link toc-highlight"><code>keyboard-state</code></a></li><li><a href="#core-services" class="table-of-contents__link toc-highlight"><code>core-services</code></a></li><li><a href="#command-runner" class="table-of-contents__link toc-highlight"><code>command-runner</code></a></li><li><a href="#shortcuts" class="table-of-contents__link toc-highlight"><code>shortcuts</code></a></li><li><a href="#history" class="table-of-contents__link toc-highlight"><code>history</code></a></li><li><a href="#view-commands" class="table-of-contents__link toc-highlight"><code>view-commands</code></a></li><li><a href="#z-index" class="table-of-contents__link toc-highlight"><code>z-index</code></a></li><li><a href="#export-png" class="table-of-contents__link toc-highlight"><code>export-png</code></a></li></ul></li><li><a href="#选择类" class="table-of-contents__link toc-highlight">选择类</a><ul><li><a href="#selection" class="table-of-contents__link toc-highlight"><code>selection</code></a></li><li><a href="#marquee-select" class="table-of-contents__link toc-highlight"><code>marquee-select</code></a></li></ul></li><li><a href="#变换类" class="table-of-contents__link toc-highlight">变换类</a><ul><li><a href="#drag" class="table-of-contents__link toc-highlight"><code>drag</code></a></li><li><a href="#resize" class="table-of-contents__link toc-highlight"><code>resize</code></a></li><li><a href="#rotate" class="table-of-contents__link toc-highlight"><code>rotate</code></a></li><li><a href="#rotate3d" class="table-of-contents__link toc-highlight"><code>rotate3d</code></a></li></ul></li><li><a href="#编辑类" class="table-of-contents__link toc-highlight">编辑类</a><ul><li><a href="#clipboard" class="table-of-contents__link toc-highlight"><code>clipboard</code></a></li><li><a href="#group" class="table-of-contents__link toc-highlight"><code>group</code></a></li><li><a href="#lock-hide" class="table-of-contents__link toc-highlight"><code>lock-hide</code></a></li><li><a href="#align-distribute" class="table-of-contents__link toc-highlight"><code>align-distribute</code></a></li><li><a href="#nudge" class="table-of-contents__link toc-highlight"><code>nudge</code></a></li></ul></li><li><a href="#hud-类" class="table-of-contents__link toc-highlight">HUD 类</a><ul><li><a href="#toolbar" class="table-of-contents__link toc-highlight"><code>toolbar</code></a></li><li><a href="#context-menu" class="table-of-contents__link toc-highlight"><code>context-menu</code></a></li><li><a href="#default-context-menu" class="table-of-contents__link toc-highlight"><code>default-context-menu</code></a></li><li><a href="#minimap" class="table-of-contents__link toc-highlight"><code>minimap</code></a></li><li><a href="#rulers" class="table-of-contents__link toc-highlight"><code>rulers</code></a></li><li><a href="#zoom-dock" class="table-of-contents__link toc-highlight"><code>zoom-dock</code></a></li></ul></li><li><a href="#视觉类" class="table-of-contents__link toc-highlight">视觉类</a><ul><li><a href="#hover-highlight" class="table-of-contents__link toc-highlight"><code>hover-highlight</code></a></li><li><a href="#snap-guides" class="table-of-contents__link toc-highlight"><code>snap-guides</code></a></li></ul></li><li><a href="#扩展类" class="table-of-contents__link toc-highlight">扩展类</a><ul><li><a href="#drop-to-create" class="table-of-contents__link toc-highlight"><code>drop-to-create</code></a></li></ul></li><li><a href="#默认插件组装" class="table-of-contents__link toc-highlight">默认插件组装</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">文档</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/infinite-map/infinite-map-editor/quickstart">快速上手</a></li><li class="footer__item"><a class="footer__link-item" href="/infinite-map/library/component-api">API 参考</a></li></ul></div></div></div></footer></div>
+</body>
+</html>
