@@ -23,12 +23,12 @@ import { serializeDoc } from '@qiuyulc/infinite-map'
 const doc = serializeDoc({ nodes, camera, resources, meta })
 ```
 
-见：[保存/加载（Doc & Resources）](/library/persistence)。
+见：[保存/加载（Doc & Resources）](/docs/library/persistence)。
 
 ## 4）如何做多人协作？
 
 Infinite Map 输出 `onPatches` 作为协作操作流，业务侧负责网络同步与顺序控制。
-见：[多人协作接入](/library/collaboration)。
+见：[多人协作接入](/docs/library/collaboration)。
 
 ## 5）为什么 Cmd/Ctrl+C 会影响整个页面？
 

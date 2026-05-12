@@ -81,6 +81,6 @@ type ChangeMeta = {
 
 ## 下一步
 
-- [操作与快捷键](/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 所有内置插件详解
-- [多人协作接入](/library/collaboration) — patches 在协作场景的应用
+- [操作与快捷键](/docs/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
+- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 所有内置插件详解
+- [多人协作接入](/docs/library/collaboration) — patches 在协作场景的应用

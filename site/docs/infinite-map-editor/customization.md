@@ -263,7 +263,7 @@ const plugins = createDefaultEditorPluginsWithUI({
 
 快捷键语法：`Mod+Key` 格式（`Mod` 在 Mac 上为 `Cmd`，Windows 上为 `Ctrl`）。支持用逗号分隔多个快捷键绑定同一个命令。
 
-所有内置命令 ID 见 [命令速查表](/library/commands)。
+所有内置命令 ID 见 [命令速查表](/docs/library/commands)。
 
 ---
 
@@ -415,7 +415,7 @@ const plugins = composePlugins([
 - `renderNode`：控制节点的包裹容器（可以加自定义背景、边框等）
 - `renderNodeContent`：控制节点内部内容
 
-详见 [组件 API](/library/component-api)。
+详见 [组件 API](/docs/library/component-api)。
 
 ---
 
@@ -469,12 +469,12 @@ import { InfiniteMapThemeProvider } from '@qiuyulc/infinite-map-editor';
 </InfiniteMapThemeProvider>
 ```
 
-主题结构见 [主题定制](/library/theming)。
+主题结构见 [主题定制](/docs/library/theming)。
 
 ---
 
 ## 下一步
 
-- [插件开发指南](/infinite-map-editor/plugin-development) — 编写自定义插件
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 所有内置插件详解
-- [架构总览](/infinite-map-editor/overview) — 理解 editor 包整体设计
+- [插件开发指南](/docs/infinite-map-editor/plugin-development) — 编写自定义插件
+- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 所有内置插件详解
+- [架构总览](/docs/infinite-map-editor/overview) — 理解 editor 包整体设计

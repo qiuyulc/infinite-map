@@ -184,6 +184,6 @@ const plugins = createDefaultEditorPlugins({
 
 ## 下一步
 
-- [编辑器定制](/infinite-map-editor/customization) — 深入定制工具栏/右键菜单
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 每个插件的详细 API
-- [插件开发指南](/infinite-map-editor/plugin-development) — 编写自定义插件
+- [编辑器定制](/docs/infinite-map-editor/customization) — 深入定制工具栏/右键菜单
+- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 每个插件的详细 API
+- [插件开发指南](/docs/infinite-map-editor/plugin-development) — 编写自定义插件

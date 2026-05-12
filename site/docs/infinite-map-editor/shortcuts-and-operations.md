@@ -145,6 +145,6 @@ apiRef.current?.runCommand?.(id, { source: 'api' })
 
 ## 下一步
 
-- [编辑与变更流](/infinite-map-editor/editing) — 深入理解 patches 机制
-- [插件配置](/infinite-map-editor/plugin-config) — 所有可配置项
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 每个插件的详细 API
+- [编辑与变更流](/docs/infinite-map-editor/editing) — 深入理解 patches 机制
+- [插件配置](/docs/infinite-map-editor/plugin-config) — 所有可配置项
+- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 每个插件的详细 API

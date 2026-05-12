@@ -80,7 +80,7 @@ export function App() {
 
 ## 下一步
 
-- [组件 API](/library/component-api)
-- [编辑与变更流（onPatches）](/library/editing)
-- [Demo 与本地测试面板](/library/demos)
+- [组件 API](/docs/library/component-api)
+- [编辑与变更流（onPatches）](/docs/library/editing)
+- [Demo 与本地测试面板](/docs/library/demos)
 

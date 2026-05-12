@@ -3,9 +3,9 @@
 本页列出 `<InfiniteMap>` 所有 props 及其默认值和用法。
 
 > 补充阅读：
-> - [NodeData 字段参考](/library/node-data)
-> - [插件配置](/library/plugin-config)
-> - [InfiniteMapApi 参考](/library/api-ref)
+> - [NodeData 字段参考](/docs/library/node-data)
+> - [插件配置](/docs/library/plugin-config)
+> - [InfiniteMapApi 参考](/docs/library/api-ref)
 
 ## 核心 Props
 
@@ -57,7 +57,7 @@ onPatches?: (patches: NodePatch[], meta: ChangeMeta) => void
 apiRef?: React.MutableRefObject<InfiniteMapApi | null>
 ```
 
-暴露编辑器 API，用于程序化控制画布。详见 [InfiniteMapApi 参考](/library/api-ref)。
+暴露编辑器 API，用于程序化控制画布。详见 [InfiniteMapApi 参考](/docs/library/api-ref)。
 
 ---
 
@@ -191,13 +191,13 @@ editorHooks?: {
 | `themeBase` | `'light' \| 'dark'` | `'light'` | 基础主题 |
 | `theme` | `Partial<InfiniteMapTheme>` | — | 覆盖部分颜色 token |
 
-> 完整主题定制见：[主题定制](/library/theming)。
+> 完整主题定制见：[主题定制](/docs/library/theming)。
 
 ---
 
 ## InfiniteMapApi（通过 apiRef 暴露）
 
-`apiRef` 提供程序化控制画布的能力。完整方法参考见 [InfiniteMapApi 参考](/library/api-ref)。
+`apiRef` 提供程序化控制画布的能力。完整方法参考见 [InfiniteMapApi 参考](/docs/library/api-ref)。
 
 常用方法速览：
 

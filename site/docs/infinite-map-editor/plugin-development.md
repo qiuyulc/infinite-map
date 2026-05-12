@@ -641,6 +641,6 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
 
 ## 下一步
 
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 所有内置插件的详细说明
-- [编辑器定制](/infinite-map-editor/customization) — 扩展工具栏/右键菜单
-- [架构总览](/infinite-map-editor/overview) — 理解 editor 包的整体设计
+- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 所有内置插件的详细说明
+- [编辑器定制](/docs/infinite-map-editor/customization) — 扩展工具栏/右键菜单
+- [架构总览](/docs/infinite-map-editor/overview) — 理解 editor 包的整体设计
