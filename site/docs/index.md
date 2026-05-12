@@ -51,7 +51,7 @@ import { createDefaultEditorPluginsWithUI } from "@qiuyulc/infinite-map-editor";
 | 定制工具栏/右键菜单  | [编辑器定制](/infinite-map-editor/customization)              |
 | 写自定义插件         | [插件开发指南](/infinite-map-editor/plugin-development)       |
 | 查插件 API           | [插件 API 参考](/infinite-map-editor/plugin-reference)        |
-| 深入核心渲染引擎     | [infinite-map 架构总览](/infinite-map/overview)               |
+| 深入核心渲染引擎     | [infinite-map 架构总览](./infinite-map/overview)               |
 | 查 NodeData 字段     | [NodeData 节点数据](/library/node-data)                       |
 | 查组件 Props         | [InfiniteMap 组件 API](/library/component-api)                |
 | 主题 / 持久化 / 协作 | 见侧边栏「编辑器使用」                                        |
