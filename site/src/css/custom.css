@@ -2,6 +2,13 @@
 /* Docusaurus 默认主题已包含暗色模式支持，这里只做微调 */
 
 :root {
+  --ifm-color-primary: #630ed4;
+  --ifm-color-primary-dark: #510bad;
+  --ifm-color-primary-darker: #41098c;
+  --ifm-color-primary-darkest: #31076a;
+  --ifm-color-primary-light: #7c24f0;
+  --ifm-color-primary-lighter: #924af3;
+  --ifm-color-primary-lightest: #af7af6;
   --ifont-code-font-size: 95%;
 }
 

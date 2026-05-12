@@ -7,8 +7,7 @@ const config: Config = {
   tagline: '一个可扩展的无限画布组件库：渲染、编辑器插件、Patch 变更流与持久化。',
   url: 'https://qiuyulc.github.io',
   baseUrl: '/infinite-map/',
-  favicon: 'img/favicon.ico',
-
+  favicon: 'img/logo.png',
   organizationName: 'qiuyulc',
   projectName: 'infinite-map',
 
@@ -44,12 +43,16 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: 'Infinite Map',
+      // title: 'Infinite Map',
+      logo: {
+        alt: 'Infinite Map',
+        src: 'img/logo.png',
+      },
       items: [
         {
           to: '/infinite-map-editor/quickstart',
           label: '文档',
-          position: 'left',
+          position: 'right',
         },
         // {
         //   to: '/功能清单与对外API',
@@ -73,15 +76,15 @@ const config: Config = {
             { label: 'API 参考', to: '/library/component-api' },
           ],
         },
-        {
-          title: '社区',
-          items: [
-            { label: 'GitHub', href: 'https://github.com/qiuyulc/infinite-map' },
-            { label: 'npm', href: 'https://www.npmjs.com/package/@qiuyulc/infinite-map' },
-          ],
-        },
+        // {
+        //   title: '社区',
+        //   items: [
+        //     { label: 'GitHub', href: 'https://github.com/qiuyulc/infinite-map' },
+        //     { label: 'npm', href: 'https://www.npmjs.com/package/@qiuyulc/infinite-map' },
+        //   ],
+        // },
       ],
-      copyright: `Built with Docusaurus.`,
+      // copyright: `Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
