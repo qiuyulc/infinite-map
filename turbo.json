@@ -35,7 +35,7 @@
       ],
       "outputs": []
     },
-    "site#typecheck": {
+    "infinite-map-docs#typecheck": {
       "dependsOn": [
         "^build"
       ],
