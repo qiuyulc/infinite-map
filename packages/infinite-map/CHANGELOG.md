@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.3
+
+### Patch Changes
+
+- 1cd74b2: 修复 bug
+
 ## 0.0.2
 
 ### Patch Changes
