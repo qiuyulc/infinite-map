@@ -136,7 +136,7 @@ import { applyPatchesToNodes } from "@qiuyulc/infinite-map";
 />;
 ```
 
-`onPatches` 输出细粒度差量变更（`NodePatch[]`），适合高频编辑和多人协作。详见 [编辑与变更流](/docs/infinite-map-editor/editing)。
+`onPatches` 输出细粒度差量变更（`NodePatch[]`），适合高频编辑和多人协作。详见 [编辑与变更流](/infinite-map-editor/editing)。
 
 ---
 
@@ -170,7 +170,7 @@ const plugins = createDefaultEditorPluginsWithUI({
 });
 ```
 
-全部配置项见 [插件配置](/docs/infinite-map-editor/plugin-config)。
+全部配置项见 [插件配置](/infinite-map-editor/plugin-config)。
 
 ---
 
@@ -193,14 +193,14 @@ const plugins = composePlugins([
 ]);
 ```
 
-`composePlugins()` 自动校验依赖、解决冲突、按优先级排序。详见 [插件开发指南](/docs/infinite-map-editor/plugin-development)。
+`composePlugins()` 自动校验依赖、解决冲突、按优先级排序。详见 [插件开发指南](/infinite-map-editor/plugin-development)。
 
 ---
 
 ## 下一步
 
-- [插件配置](/docs/infinite-map-editor/plugin-config) — 所有可配置项和默认值
-- [操作与快捷键](/docs/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
-- [编辑与变更流](/docs/infinite-map-editor/editing) — 深入理解 patches 机制
-- [插件开发指南](/docs/infinite-map-editor/plugin-development) — 编写自定义插件
-- [编辑器定制](/docs/infinite-map-editor/customization) — 定制工具栏/右键菜单/HUD
+- [插件配置](/infinite-map-editor/plugin-config) — 所有可配置项和默认值
+- [操作与快捷键](/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
+- [编辑与变更流](/infinite-map-editor/editing) — 深入理解 patches 机制
+- [插件开发指南](/infinite-map-editor/plugin-development) — 编写自定义插件
+- [编辑器定制](/infinite-map-editor/customization) — 定制工具栏/右键菜单/HUD

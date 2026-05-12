@@ -138,7 +138,7 @@ const cmd = apiRef.current?.getCommand('history.undo')
 // { id: 'history.undo', title: '撤销', shortcut: 'Mod+Z', run: [Function] }
 ```
 
-> 完整命令列表见：[命令速查表](/docs/library/commands)
+> 完整命令列表见：[命令速查表](/library/commands)
 
 ---
 

@@ -44,5 +44,5 @@ function onRemotePatches(patches: NodePatch[], meta: ChangeMeta) {
 - doc 流：`NodePatch[]`（Infinite Map 负责生成）
 - resource 流：业务自定义 `ResourcePatch[]`（业务自己同步与存储）
 
-参考：[保存/加载（Doc & Resources）](/docs/library/persistence)。
+参考：[保存/加载（Doc & Resources）](/library/persistence)。
 

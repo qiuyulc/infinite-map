@@ -528,4 +528,4 @@
 `createDefaultEditorPlugins`（无 UI）包含上述插件的大部分（不含 HUD 类）。  
 `createDefaultEditorPluginsWithUI` 在前者基础上叠加 HUD 类插件。
 
-完整顺序和依赖关系见 [架构总览](/docs/infinite-map-editor/overview)。
+完整顺序和依赖关系见 [架构总览](/infinite-map-editor/overview)。

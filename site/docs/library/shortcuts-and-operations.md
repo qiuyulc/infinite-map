@@ -164,6 +164,6 @@ apiRef.current?.runCommand?.(id, { source: 'api' });
 
 ## 3. 相关文档
 
-- [命令速查表（Command IDs）](/docs/library/commands)
-- [编辑与变更流（onPatches）](/docs/library/editing)
-- [视图控制（铺满/居中/锁定）](/docs/library/view)
+- [命令速查表（Command IDs）](/library/commands)
+- [编辑与变更流（onPatches）](/library/editing)
+- [视图控制（铺满/居中/锁定）](/library/view)

@@ -21,7 +21,7 @@ const config: Config = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          routeBasePath: '/docs/',
+          routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.ts'),
           editUrl: 'https://github.com/qiuyulc/infinite-map/edit/main/site/',
         },
@@ -50,7 +50,7 @@ const config: Config = {
       },
       items: [
         {
-          to: '/docs/infinite-map-editor/quickstart',
+          to: '/infinite-map-editor/quickstart',
           label: '文档',
           position: 'right',
         },
@@ -72,8 +72,8 @@ const config: Config = {
         {
           title: '文档',
           items: [
-            { label: '快速上手', to: '/docs/infinite-map-editor/quickstart' },
-            { label: 'API 参考', to: '/docs/library/component-api' },
+            { label: '快速上手', to: '/infinite-map-editor/quickstart' },
+            { label: 'API 参考', to: '/library/component-api' },
           ],
         },
         // {

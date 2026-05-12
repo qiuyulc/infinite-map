@@ -388,7 +388,7 @@ Selection 是非互斥逻辑：点击节点时，selection 和 drag 可能同时
 
 ## 10. 相关文档
 
-- [编辑器快速上手](/docs/infinite-map-editor/quickstart) — 5 分钟接入指南
-- [插件开发指南](/docs/infinite-map-editor/plugin-development) — 编写自定义插件（含完整模板）
-- [插件 API 参考](/docs/infinite-map-editor/plugin-reference) — 24 个内置插件详解
-- [编辑器定制](/docs/infinite-map-editor/customization) — 定制工具栏/右键菜单/HUD/主题
+- [编辑器快速上手](/infinite-map-editor/quickstart) — 5 分钟接入指南
+- [插件开发指南](/infinite-map-editor/plugin-development) — 编写自定义插件（含完整模板）
+- [插件 API 参考](/infinite-map-editor/plugin-reference) — 24 个内置插件详解
+- [编辑器定制](/infinite-map-editor/customization) — 定制工具栏/右键菜单/HUD/主题

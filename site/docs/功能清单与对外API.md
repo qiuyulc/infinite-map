@@ -6,11 +6,11 @@
 > 的对外导出与实现现状。
 
 > 补充阅读：
-> - [NodeData 字段参考](/docs/library/node-data)
-> - [组件 API](/docs/library/component-api)
-> - [InfiniteMapApi 参考](/docs/library/api-ref)
-> - [插件配置](/docs/library/plugin-config)
-> - [主题定制](/docs/library/theming)
+> - [NodeData 字段参考](/library/node-data)
+> - [组件 API](/library/component-api)
+> - [InfiniteMapApi 参考](/library/api-ref)
+> - [插件配置](/library/plugin-config)
+> - [主题定制](/library/theming)
 
 ---
 
@@ -469,4 +469,4 @@
 - `locked?: boolean`（锁定传递）
 - `hidden?: boolean`（隐藏传递）
 
-> 详细字段说明见：[NodeData 字段参考](/docs/library/node-data)
+> 详细字段说明见：[NodeData 字段参考](/library/node-data)
