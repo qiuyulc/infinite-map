@@ -51,7 +51,8 @@
     "build": "tsup",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "tsup"
   },
   "dependencies": {
     "@qiuyulc/infinite-map": "workspace:*",

@@ -32,6 +32,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm build
+
       - name: Verify and Setup npm Auth
         # 这一步通过脚本强制创建 .npmrc，确保所有底层工具都能读到
         run: |
