@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.3
+
+### Patch Changes
+
+- 1cd74b2: 修复 bug
+- Updated dependencies [1cd74b2]
+  - @qiuyulc/infinite-map@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
