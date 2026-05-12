@@ -3,6 +3,9 @@ name: CI
 on:
   push:
     branches: [master, main]
+    paths-ignore:
+      - 'site/**'
+      - '.github/workflows/deploy-docs.yml'
   pull_request:
 
 jobs:
