@@ -6,19 +6,39 @@
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".vitepress/dist/**", "es/**", "lib/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".vitepress/dist/**",
+        "es/**",
+        "lib/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"],
+      "dependsOn": [
+        "^lint"
+      ],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"],
+      "dependsOn": [
+        "^typecheck"
+      ],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build", "^test"],
+      "dependsOn": [
+        "^build",
+        "^test"
+      ],
+      "outputs": []
+    },
+    "site#typecheck": {
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     }
   }
