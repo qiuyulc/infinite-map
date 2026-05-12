@@ -4,6 +4,7 @@ slug: /infinite-map-editor/quickstart
 
 import { QuickstartPreviewDemo } from '@site/src/demos/QuickstartPreviewDemo';
 import { QuickstartEditorDemo } from '@site/src/demos/QuickstartEditorDemo';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # 编辑器快速上手
 
@@ -37,7 +38,9 @@ const nodes: NodeData[] = [
 
 <!-- 此时可以 pan/zoom 浏览，但没有任何编辑能力。 -->
 
-<QuickstartPreviewDemo />
+<BrowserOnly fallback={<div style={{ height: 380 }} />}>
+  {() => <QuickstartPreviewDemo />}
+</BrowserOnly>
 
 > 👆 可以拖拽平移、滚轮缩放。但无法编辑节点。
 
@@ -45,7 +48,9 @@ const nodes: NodeData[] = [
 
 ## 启用完整编辑器
 
-<QuickstartEditorDemo />
+<BrowserOnly fallback={<div style={{ height: 460 }} />}>
+  {() => <QuickstartEditorDemo />}
+</BrowserOnly>
 
 > 👆 **点击选中节点 → 拖拽移动 → 拖动角点缩放 → 旋转手柄旋转。** 试试看！
 

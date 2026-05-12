@@ -3,6 +3,7 @@ slug: /
 ---
 
 import { HomeDemo } from '@site/src/demos/HomeDemo';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 # Infinite Map
 
@@ -12,7 +13,9 @@ import { HomeDemo } from '@site/src/demos/HomeDemo';
 
 ## 在线体验
 
-<HomeDemo />
+<BrowserOnly fallback={<div style={{ height: 420 }} />}>
+  {() => <HomeDemo />}
+</BrowserOnly>
 
 > 拖拽画面平移、滚轮缩放，体验无限画布的基础交互。
 
