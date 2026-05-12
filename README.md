@@ -20,18 +20,18 @@
 
 ```ts
 // ESM（推荐）—— 默认入口
-import { InfiniteMap } from '@qiuyulc/infinite-map'
-import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor'
+import { InfiniteMap } from "@qiuyulc/infinite-map";
+import { createDefaultEditorPluginsWithUI } from "@qiuyulc/infinite-map-editor";
 
 // CJS
-const { InfiniteMap } = require('@qiuyulc/infinite-map')
+const { InfiniteMap } = require("@qiuyulc/infinite-map");
 
 // 子路径导出
-import { DefaultNode } from '@qiuyulc/infinite-map/ui'
-import { makeDemoNodes } from '@qiuyulc/infinite-map/demo'
+import { DefaultNode } from "@qiuyulc/infinite-map/ui";
+import { makeDemoNodes } from "@qiuyulc/infinite-map/demo";
 
 // 按需深路径（tree-shaking 友好）
-import { createDragPlugin } from '@qiuyulc/infinite-map-editor/es/plugins/createDragPlugin'
+import { createDragPlugin } from "@qiuyulc/infinite-map-editor/es/plugins/createDragPlugin";
 ```
 
 TypeScript 类型声明随包附带，无需额外安装 `@types/*`。CSS 已通过 `sideEffects` 声明，bundler 不会误删。
@@ -51,27 +51,27 @@ pnpm -C docs dev
 ## 最小用法（纯渲染）
 
 ```tsx
-import { InfiniteMap, type NodeData } from '@qiuyulc/infinite-map'
+import { InfiniteMap, type NodeData } from "@qiuyulc/infinite-map";
 
 const nodes: NodeData[] = [
-  { id: 'a', x: 0, y: 0, width: 120, height: 60, label: 'A' },
-]
+  { id: "a", x: 0, y: 0, width: 120, height: 60, label: "A" },
+];
 
 export function App() {
   // 纯预览不需要变更出口
-  return <InfiniteMap nodes={nodes} />
+  return <InfiniteMap nodes={nodes} />;
 }
 ```
 
 ## 启用编辑器（插件 + UI）
 
 ```tsx
-import { InfiniteMap, type NodeData } from '@qiuyulc/infinite-map'
-import { createDefaultEditorPluginsWithUI } from '@qiuyulc/infinite-map-editor'
+import { InfiniteMap, type NodeData } from "@qiuyulc/infinite-map";
+import { createDefaultEditorPluginsWithUI } from "@qiuyulc/infinite-map-editor";
 
 export function EditorApp() {
-  const [nodes, setNodes] = useState<NodeData[]>([])
-  const plugins = useMemo(() => createDefaultEditorPluginsWithUI(), [])
+  const [nodes, setNodes] = useState<NodeData[]>([]);
+  const plugins = useMemo(() => createDefaultEditorPluginsWithUI(), []);
 
   return (
     <InfiniteMap
@@ -80,7 +80,7 @@ export function EditorApp() {
       editMode="controlled"
       onNodesChange={(next) => setNodes(next)}
     />
-  )
+  );
 }
 ```
 
@@ -91,50 +91,13 @@ export function EditorApp() {
 推荐通过 `apiRef`：
 
 ```tsx
-const apiRef = useRef<InfiniteMapApi | null>(null)
+const apiRef = useRef<InfiniteMapApi | null>(null);
 
 // 保存
-const doc = apiRef.current?.serializeDoc()
-localStorage.setItem('doc', JSON.stringify(doc))
+const doc = apiRef.current?.serializeDoc();
+localStorage.setItem("doc", JSON.stringify(doc));
 
 // 加载
-const raw = localStorage.getItem('doc')
-if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
+const raw = localStorage.getItem("doc");
+if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true });
 ```
-
-`parseDoc` 仅接受当前 schemaVersion=1 的 doc（不做历史版本兼容）。
-
-## 文档（Docusaurus）
-
-推荐阅读路径：
-- `site/docs/infinite-map-editor/quickstart.md`（编辑器快速上手）
-- `site/docs/infinite-map-editor/plugin-config.md`（插件配置）
-- `site/docs/infinite-map-editor/editing.md`（编辑与变更流）
-- `site/docs/infinite-map-editor/plugin-development.md`（插件开发指南）
-- `site/docs/library/component-api.md`（组件 API）
-- `site/docs/library/persistence.md`（保存/加载）
-- `site/docs/library/collaboration.md`（多人协作接入）
-
-本地启动：
-
-```bash
-pnpm dev:docs
-```
-
-## 发布 npm 包
-
-本仓库已接入 `Changesets + GitHub Actions` 自动发布流程。
-
-常用命令：
-
-```bash
-# 新建一条发版记录
-pnpm changeset
-
-# 查看待发版状态
-pnpm changeset:status
-```
-
-完整流程与 GitHub Secret 配置见：
-
-- `RELEASING.md`
