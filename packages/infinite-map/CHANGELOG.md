@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.4-beta.0
+
+### Patch Changes
+
+- Update InfiniteMap component and hook API attachment logic.
+
 ## 0.0.3
 
 ### Patch Changes

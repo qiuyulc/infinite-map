@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@qiuyulc/infinite-map": "0.0.3",
+    "@qiuyulc/infinite-map-editor": "0.0.3",
+    "playground": "0.0.2",
+    "infinite-map-docs": "0.0.0"
+  },
+  "changesets": [
+    "update-infinite-map-beta"
+  ]
+}

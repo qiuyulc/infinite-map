@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.4-beta.0
+
+### Patch Changes
+
+- Updated dependencies
+  - @qiuyulc/infinite-map@0.0.4-beta.0
+
 ## 0.0.3
 
 ### Patch Changes
