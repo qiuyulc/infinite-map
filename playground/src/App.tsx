@@ -143,6 +143,28 @@ export default function App() {
 
   const apiRef = useRef<InfiniteMapApi | null>(null);
 
+  // selection 跟踪 + data 编辑状态
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [dataEditText, setDataEditText] = useState('');
+  const [dataEditError, setDataEditError] = useState('');
+
+  const loadSelectedData = () => {
+    if (!apiRef.current) return;
+    const ids = apiRef.current.getSelectionIds();
+    if (ids.length !== 1) {
+      setSelectedId(null);
+      setDataEditText('');
+      setDataEditError('');
+      return;
+    }
+    const id = ids[0];
+    setSelectedId(id);
+    const node = nodes.find((n) => n.id === id);
+    const d = (node as any)?.data;
+    setDataEditText(d != null ? JSON.stringify(d, null, 2) : '');
+    setDataEditError('');
+  };
+
   const resolvedEditModeText = useMemo(() => {
     const em = editMode === 'unset' ? undefined : editMode;
     const ed = editable === 'unset' ? undefined : editable === 'true';
@@ -360,6 +382,52 @@ export default function App() {
           </div>
 
           <div className="pg-section">
+            <div className="pg-section__title">节点 data 编辑</div>
+            <div className="pg-hint" style={{ marginBottom: 8 }}>
+              先单击选中一个节点，然后点击"加载"按钮
+            </div>
+            <div className="pg-actions" style={{ marginBottom: 8 }}>
+              <button className="pg-btn" type="button" onClick={loadSelectedData}>
+                从选中节点加载
+              </button>
+            </div>
+            <div className="pg-hint" style={{ marginBottom: 8 }}>
+              {selectedId
+                ? `当前编辑: ${selectedId}`
+                : '未加载节点（先选中 → 点加载）'}
+            </div>
+            <textarea
+              className="pg-textarea"
+              value={dataEditText}
+              onChange={(e) => {
+                setDataEditText(e.target.value);
+                setDataEditError('');
+              }}
+              rows={6}
+              placeholder={selectedId ? '编辑 JSON，然后点击"应用"' : '先加载选中节点'}
+              disabled={!selectedId}
+            />
+            {dataEditError && (
+              <div className="pg-hint" style={{ color: 'var(--im-danger, #ef4444)', marginTop: 4 }}>
+                {dataEditError}
+              </div>
+            )}
+            <div className="pg-actions" style={{ marginTop: 8 }}>
+              <button className="pg-btn" type="button" disabled={!selectedId}
+                onClick={() => {
+                  if (!selectedId) return;
+                  try { const parsed = dataEditText.trim() ? JSON.parse(dataEditText) : undefined;
+                    apiRef.current?.updateNodeData(selectedId, parsed);
+                  } catch (err: any) { setDataEditError('JSON 解析错误: ' + err.message); }
+                }}
+              >应用 data</button>
+              <button className="pg-btn" type="button" disabled={!selectedId}
+                onClick={() => { apiRef.current?.updateNodeData(selectedId, undefined); setDataEditText(''); }}
+              >清除 data</button>
+            </div>
+          </div>
+
+          <div className="pg-section">
             <div className="pg-section__title">操作</div>
             <div className="pg-actions">
               <button
@@ -386,6 +454,40 @@ export default function App() {
                 随机重排
               </button>
             </div>
+            <div className="pg-actions" style={{ marginTop: 8 }}>
+              <button
+                className="pg-btn"
+                type="button"
+                onClick={() => {
+                  const target = nodes.find((n) => !chartNodeIdSet.has(n.id));
+                  if (!target) return;
+                  const ts = Date.now();
+                  apiRef.current?.updateNodeData(target.id, {
+                    test: true,
+                    time: ts,
+                    msg: `updated at ${ts}`,
+                  });
+                  console.log(`[test] updateNodeData(${target.id}) → data updated, press Ctrl+Z to undo`);
+                }}
+              >
+                改第一个普通节点 data（测试 undo）
+              </button>
+              <button
+                className="pg-btn"
+                type="button"
+                onClick={() => {
+                  const target = nodes.find((n) => !chartNodeIdSet.has(n.id));
+                  if (!target) return;
+                  const newX = target.x + 50;
+                  apiRef.current?.applyPatches([
+                    { type: 'move', id: target.id, x: newX, y: target.y },
+                  ]);
+                  console.log(`[test] moved ${target.id} → x=${newX}, selection overlay should follow`);
+                }}
+              >
+                移动第一个普通节点 50px（测试 overlay 跟随）
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -409,10 +511,20 @@ export default function App() {
               keepAlive: keepAliveEnabled ? (n: NodeData) => chartNodeIdSet.has(n.id) : undefined,
             }}
             renderNodeContent={(n: NodeData) => {
-              if (!chartNodeIdSet.has(n.id)) return null;
-              // 初始化外置 store 的 key（首次渲染时把 placeholder 替换为真实 nodeId）
-              if (chartStore.get(n.id) == null) chartStore.set(n.id, 10);
-              return <ChartLikeNode store={chartStore} nodeId={n.id} />;
+              if (chartNodeIdSet.has(n.id)) {
+                if (chartStore.get(n.id) == null) chartStore.set(n.id, 10);
+                return <ChartLikeNode store={chartStore} nodeId={n.id} />;
+              }
+              if (n.data != null) {
+                const txt = JSON.stringify(n.data);
+                const short = txt.length > 60 ? txt.slice(0, 60) + '…' : txt;
+                return (
+                  <div style={{ fontSize: 11, opacity: 0.6, padding: '4px 0' }}>
+                    📋 <code style={{ fontSize: 10 }}>{short}</code>
+                  </div>
+                );
+              }
+              return null;
             }}
           />
         </main>

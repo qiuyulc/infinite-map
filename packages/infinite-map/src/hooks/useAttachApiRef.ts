@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
 import { parseDoc, serializeDoc } from '../editor/document';
-import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext } from '../editor/types';
+import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import type { InfiniteMapApi } from '../components/InfiniteMap';
 import { STORE_KEYS } from '../editor/keys';
 
@@ -14,6 +14,7 @@ export function useAttachApiRef({
   getNodeRect,
   getSelectionRect,
   onNodesChange,
+  applyPatches,
 }: {
   apiRef?: React.MutableRefObject<InfiniteMapApi | null> | undefined;
   plugins?: InfiniteMapPlugin[];
@@ -23,6 +24,7 @@ export function useAttachApiRef({
   getNodeRect: (id: string) => Rect | null;
   getSelectionRect: () => Rect | null;
   onNodesChange?: (nextNodes: NodeData[], meta: ChangeMeta) => void;
+  applyPatches: (patches: NodePatch[], meta: ChangeMeta) => void;
 }) {
   useEffect(() => {
     if (!apiRef) return;
@@ -60,16 +62,44 @@ export function useAttachApiRef({
       serializeDoc: (meta) => serializeDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
       parseDoc: (doc, opts) => {
         const next = parseDoc(doc);
-        // 相机先应用（immediate 可用于“无动画跳转”）
         commitCamera(next.camera, Boolean(opts?.immediate));
         if (!onNodesChange) {
           throw new Error('[InfiniteMapApi.parseDoc] onNodesChange is required to apply imported nodes');
         }
         onNodesChange(next.nodes, { source: 'plugin', plugin: 'api', reason: 'import' });
       },
+      applyPatches: (patches, meta) => {
+        applyPatches(patches, {
+          source: 'plugin',
+          plugin: 'api',
+          reason: 'import',
+          ids: patches.map((p) => (p as any).id ?? (p as any).node?.id).filter(Boolean),
+          ...(meta ?? {}),
+        } as ChangeMeta);
+      },
+      updateNodeData: (idOrData, data) => {
+        const getSelectionIds = () => ctx.getService<{ getIds: () => string[] }>('selection')?.getIds?.() ?? [];
+        let id: string;
+        let value: unknown;
+        if (typeof idOrData === 'string') {
+          id = idOrData;
+          value = data;
+        } else {
+          const ids = getSelectionIds();
+          if (ids.length === 0) throw new Error('[InfiniteMapApi.updateNodeData] no node selected');
+          id = ids[0];
+          value = idOrData;
+        }
+        applyPatches([{ type: 'set', id, data: { data: value } }], {
+          source: 'plugin',
+          plugin: 'api',
+          reason: 'import',
+          ids: [id],
+        } as ChangeMeta);
+      },
     };
     return () => {
       apiRef.current = null;
     };
-  }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect, onNodesChange]);
+  }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect, onNodesChange, applyPatches]);
 }

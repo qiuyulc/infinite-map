@@ -270,6 +270,17 @@ export type InfiniteMapApi = {
    */
   serializeDoc: (meta?: Record<string, unknown>) => InfiniteMapDoc;
   parseDoc: (doc: unknown, opts?: { immediate?: boolean }) => void;
+  /**
+   * 以可追踪的方式应用 patches（history 会记录逆操作）
+   * - 适用场景：外部修改节点字段（包括 data），希望 undo 能还原
+   */
+  applyPatches: (patches: NodePatch[], meta?: Partial<ChangeMeta>) => void;
+  /**
+   * 修改节点的 data 字段（糖）
+   * - updateNodeData(id, newData)：精确修改指定节点
+   * - updateNodeData(newData)：修改当前选中的第一个节点
+   */
+  updateNodeData: <T = unknown>(idOrData: string | T, data?: T) => void;
 };
 
 // -----------------------------------------------------------------------------
@@ -331,11 +342,9 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     engineStore.getState().setViewport(viewport);
   }, [engineStore, viewport]);
 
-  // nodes refs：给插件 ctx 读取，避免闭包过期
+  // nodes refs：给插件 ctx 读取，在 render 阶段同步确保 overlay/hud 读到最新值
   const nodesRef = useRef(nodes);
-  useEffect(() => {
-    nodesRef.current = nodes;
-  }, [nodes]);
+  nodesRef.current = nodes;
   const nodesById = useMemo(() => new Map(nodes.map((n) => [n.id, n] as const)), [nodes]);
 
   // visibleNodes ref（给插件读取）
@@ -668,6 +677,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     getNodeRect: (_id) => null,
     getSelectionRect: () => null,
     onNodesChange,
+    applyPatches,
   });
 
   return (
