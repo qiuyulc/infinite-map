@@ -204,6 +204,36 @@ const rect = apiRef.current?.getSelectionRect()
 
 ---
 
+## 节点修改（Patches）
+
+### `applyPatches(patches, meta?)`
+
+以可追踪的方式修改节点——history 自动记录逆操作，undo 能还原。
+
+```ts
+apiRef.current?.applyPatches([{ type: 'move', id: 'node-1', x: 200, y: 150 }])
+apiRef.current?.applyPatches([{ type: 'set', id: 'node-1', data: { data: { desc: 'hello' } } }])
+```
+
+**patch 类型**：`move` / `set` / `add` / `remove`
+
+**`meta` 参数**（可选）：`source`、`plugin`、`reason`、`phase`、`ids`
+
+### `updateNodeData(idOrData, data?)`
+
+修改节点的 `data` 字段（`applyPatches` 的便利糖）。
+
+```ts
+apiRef.current?.updateNodeData('node-1', { description: 'hello' })
+apiRef.current?.updateNodeData('node-1', undefined)  // 清除
+apiRef.current?.updateNodeData({ description: 'hello' })  // 自动选中模式
+```
+
+> **与 `setNodes` 的区别**：直接 `setNodes()` 不产生 history，undo 无法还原。
+> `applyPatches` / `updateNodeData` 走 patch 管线，history 自动追踪。
+
+---
+
 ## Doc 导入导出
 
 ### `serializeDoc(meta?)`

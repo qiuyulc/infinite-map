@@ -263,6 +263,8 @@
 - `setCamera(next, opts?): void`
 - `subscribeCamera(listener): () => void`
 - `getNodes(): NodeData[]`
+- `applyPatches(patches, meta?): void` — 以可追踪的方式修改节点（history 记录逆操作）
+- `updateNodeData(idOrData, data?): void` — 修改 data 字段的便利糖
 - `serializeDoc(meta?): InfiniteMapDoc`
 - `parseDoc(doc, opts?): void`
 

@@ -59,5 +59,120 @@ describe('InfiniteMap apiRef', () => {
 
     expect(() => apiRef.current!.setSelectionIds(['a'])).toThrow(/selection service is not available/);
   });
-});
 
+  describe('applyPatches', () => {
+    it('triggers onNodesChange with updated node position', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A' }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.applyPatches([{ type: 'move', id: 'a', x: 100, y: 50 }]); });
+      expect(onNodesChange).toHaveBeenCalledTimes(1);
+      const nextNodes = onNodesChange.mock.calls[0][0] as NodeData[];
+      expect(nextNodes[0].x).toBe(100);
+      expect(nextNodes[0].y).toBe(50);
+    });
+
+    it('merges meta with defaults', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A' }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.applyPatches([{ type: 'move', id: 'a', x: 200, y: 300 }], { plugin: 'my-custom-plugin', reason: 'drag' as any }); });
+      expect(onNodesChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('does nothing in readonly mode', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A' }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="readonly" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.applyPatches([{ type: 'move', id: 'a', x: 999, y: 999 }]); });
+      expect(onNodesChange).not.toHaveBeenCalled();
+    });
+
+    it('works with set patch to update node data field', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A', data: { old: true } }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.applyPatches([{ type: 'set', id: 'a', data: { data: { new: true } } }]); });
+      expect(onNodesChange).toHaveBeenCalledTimes(1);
+      const nextNodes = onNodesChange.mock.calls[0][0] as NodeData[];
+      expect(nextNodes[0].data).toEqual({ new: true });
+    });
+  });
+
+  describe('updateNodeData', () => {
+    it('updates data field of a node by id', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A' }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.updateNodeData('a', { description: 'hello', count: 42 }); });
+      expect(onNodesChange).toHaveBeenCalledTimes(1);
+      const nextNodes = onNodesChange.mock.calls[0][0] as NodeData[];
+      expect(nextNodes[0].data).toEqual({ description: 'hello', count: 42 });
+    });
+
+    it('clears data when passed undefined', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A', data: { old: true } }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.updateNodeData('a', undefined); });
+      expect(onNodesChange).toHaveBeenCalledTimes(1);
+      const nextNodes = onNodesChange.mock.calls[0][0] as NodeData[];
+      expect(nextNodes[0].data).toBeUndefined();
+    });
+
+    it('throws when auto-select mode has no selection', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A' }];
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={() => void 0} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(() => { (apiRef.current as any)!.updateNodeData({ foo: 'bar' }); }).toThrow(/no node selected/);
+    });
+
+    it('accepts empty string data', async () => {
+      const apiRef = { current: null as InfiniteMapApi | null };
+      const dummy: InfiniteMapPlugin = { id: 'dummy' };
+      const initial: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 10, height: 10, label: 'A', data: { keep: 'me' } }];
+      const onNodesChange = vi.fn();
+      const { container } = render(<InfiniteMap nodes={initial} plugins={[dummy]} apiRef={apiRef as any} onNodesChange={onNodesChange} editMode="controlled" />);
+      const root = container.firstElementChild as HTMLElement;
+      setRect(root, { width: 800, height: 600 });
+      await new Promise((r) => setTimeout(r, 0));
+      act(() => { apiRef.current!.updateNodeData('a', ''); });
+      const nextNodes = onNodesChange.mock.calls[0][0] as NodeData[];
+      expect(nextNodes[0].data).toBe('');
+    });
+  });
+});
