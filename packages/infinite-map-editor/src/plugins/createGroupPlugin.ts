@@ -89,8 +89,49 @@ export function createGroupPlugin(): InfiniteMapPlugin {
       if (!doc || ids.length < 2) return;
 
       const byId = buildById(ctx.getNodes());
-      const picked = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];
+      let picked = ids.map((id) => byId.get(id)).filter(Boolean) as NodeData[];
       if (picked.length < 2) return;
+
+      // 提升：对群组/非群组统一检查父子覆盖，再提升非群组到最外层容器
+      {
+        const pickedSet = new Set(picked.map(n => n.id));
+        const toAdd = new Set<string>();
+        const toRemove = new Set<string>();
+        for (const n of picked) {
+          // 第一步：检查是否有祖先 group 已在 picked 中（对所有节点有效）
+          let cur: NodeData | undefined = n;
+          let covered = false;
+          let outermost: string | null = null;
+          while (cur?.parentId) {
+            const parent = byId.get(cur.parentId);
+            if (!parent) break;
+            if (isGroupNode(parent)) {
+              if (pickedSet.has(parent.id)) {
+                covered = true;
+                break;
+              }
+              outermost = parent.id;
+            }
+            cur = parent;
+          }
+          if (covered) {
+            toRemove.add(n.id);
+            continue;
+          }
+          // 第二步：提升到最外层容器（group 节点同样参与，防止脱离外层 group）
+          if (outermost) {
+            toAdd.add(outermost);
+            toRemove.add(n.id);
+          }
+        }
+        if (toAdd.size > 0 || toRemove.size > 0) {
+          const finalIds = [...new Set([
+            ...picked.map(n => n.id).filter(id => !toRemove.has(id)),
+            ...toAdd,
+          ])];
+          picked = finalIds.map(id => byId.get(id)).filter(Boolean) as NodeData[];
+        }
+      }
 
       const rect = computeGroupRectFromNodes(picked);
       const minZ = Math.min(...picked.map((n) => n.z ?? 0));

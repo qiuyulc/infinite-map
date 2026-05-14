@@ -4,9 +4,11 @@ import { buildById, getAncestorChain, isGroupNode } from './groupUtils';
 /**
  * 将命中 id 规范化为"更符合编辑器直觉"的有效 id。
  *
- * 策略：沿祖先链找最外层 group
- * - 有 group → 返回最外层 group id（单击子节点 = 选中父 group）
- * - 无 group → 返回自身
+ * 策略：
+ * 1. 如果 hitId 已在 selectedIds 中 → 返回自身（阻止提升，保护双击穿透结果）
+ * 2. 否则沿祖先链找最外层 group：
+ *    - 有 group → 返回最外层 group id（单击子节点 = 选中父 group）
+ *    - 无 group → 返回自身
  */
 export function normalizeHitIdForSelectedGroups(opts: {
   nodes: NodeData[];
@@ -14,7 +16,10 @@ export function normalizeHitIdForSelectedGroups(opts: {
   selectedIds: string[];
   modifiers: { alt: boolean };
 }): string {
-  const { nodes, hitId } = opts;
+  const { nodes, hitId, selectedIds } = opts;
+
+  // 已选中的节点不执行提升（双击穿透后再次单击该节点时不重新提升到 group）
+  if (selectedIds.includes(hitId)) return hitId;
 
   const byId = buildById(nodes);
   const chain = getAncestorChain(byId, hitId);
