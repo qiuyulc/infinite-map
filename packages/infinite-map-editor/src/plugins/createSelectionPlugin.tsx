@@ -20,13 +20,19 @@ export type SelectionPluginOptions = {
    * 点击空白时是否清空选择
    */
   clearOnBlankClick?: boolean;
+  /** 双击 group 节点时是否选中其所有后代子节点（默认 true） */
+  dblClickSelectDescendants?: boolean;
+  /** 双击间隔阈值（ms，默认 350） */
+  dblClickMs?: number;
 };
 
 const DEFAULT_KEY = STORE_KEYS.selectionIds;
 const SPACE_KEY = STORE_KEYS.keyboardSpace;
 
+type ClickRecord = { time: number; id: string; button: number };
+
 function hitTest(nodes: NodeData[], p: { x: number; y: number }): NodeData | null {
-  // 从后往前：模拟“后渲染的在上层”（更接近 DOM 层级直觉）
+  // 从后往前：模拟"后渲染的在上层"（更接近 DOM 层级直觉）
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i];
     if (p.x >= n.x && p.x <= n.x + n.width && p.y >= n.y && p.y <= n.y + n.height) return n;
@@ -41,6 +47,9 @@ function toggle(ids: string[], id: string) {
 export function createSelectionPlugin(opts: SelectionPluginOptions = {}): InfiniteMapPlugin {
   const storeKey = opts.storeKey ?? DEFAULT_KEY;
   const clearOnBlankClick = opts.clearOnBlankClick ?? true;
+  const dblClickSelectDescendants = opts.dblClickSelectDescendants ?? true;
+  const dblClickMs = opts.dblClickMs ?? 350;
+  const lastClick: ClickRecord = { time: 0, id: '', button: 0 };
 
   const nodeHitTest: HitTestContributor = {
     id: 'hit.node',
@@ -63,8 +72,36 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
       if (e.button !== 0) return;
       // Space：平移模式，selection 不抢事件
       if (ctx.store.get<boolean>(SPACE_KEY)) return;
-      // handle 命中：不要当成“空白点击”清空 selection，让对应 gesture 接管
+      // handle 命中：不要当成"空白点击"清空 selection，让对应 gesture 接管
       if (hit.kind === 'handle') return;
+
+      // ------- 双击：穿透提升，直接选中 hit.id -------
+      if (dblClickSelectDescendants && hit.kind === 'node') {
+        const now = Date.now();
+        const isDblClick =
+          now - lastClick.time < dblClickMs &&
+          lastClick.id === hit.id &&
+          lastClick.button === e.button;
+        if (isDblClick) {
+          lastClick.time = 0;
+          lastClick.id = '';
+          // 穿透：跳过 promote，直接选中该节点
+          const prev = ctx.store.get<string[]>(storeKey) ?? [];
+          const next = [hit.id];
+          if (!(next.length === prev.length && next.every((x, i) => x === prev[i]))) {
+            ctx.store.set(storeKey, next);
+            ctx.bus.emit('selection:change', { ids: next });
+            ctx.requestRender();
+          }
+          return;
+        }
+        lastClick.time = now;
+        lastClick.id = hit.id;
+        lastClick.button = e.button;
+      } else {
+        // 点击空白/把手：重置双击追踪
+        lastClick.time = 0;
+      }
 
       if (hit.kind === 'blank') {
         if (clearOnBlankClick && !e.modifiers.shift) {
@@ -81,18 +118,13 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
 
       const prev = ctx.store.get<string[]>(storeKey) ?? [];
 
-      // group：若当前已经选中了某个 group，则默认把“点到组内成员”视为点到该 group
-      // 目的：让用户可以直接拖动整组（不需要精确点到外框）
-      // - 按住 Alt：允许“钻取”选择子节点
-      let hitId = hit.id;
-      if (!e.modifiers.shift) {
-        hitId = normalizeHitIdForSelectedGroups({
-          nodes: ctx.getNodes(),
-          hitId: hit.id,
-          selectedIds: prev,
-          modifiers: { alt: e.modifiers.alt },
-        });
-      }
+      // 单击子节点自动提升到最外层祖先 group（包括 Shift）
+      let hitId = normalizeHitIdForSelectedGroups({
+        nodes: ctx.getNodes(),
+        hitId: hit.id,
+        selectedIds: prev,
+        modifiers: { alt: e.modifiers.alt },
+      });
 
       // hidden：不可选（不改变 selection），但不阻断（避免影响 pan/右键等）
       if (isHiddenEffective(ctx.getNodes(), hitId)) return;
@@ -115,7 +147,7 @@ export function createSelectionPlugin(opts: SelectionPluginOptions = {}): Infini
       // locked 节点允许被选中（用于解锁等），但阻断后续 gesture（drag/resize/rotate/marquee）
       if (isLockedEffective(ctx.getNodes(), hitId)) return { stop: true, hit: { kind: 'node', id: hitId, cursor: 'grab' } };
 
-      // 关键：把“有效命中”传递给后续 gesture（drag 等），避免出现：
+      // 关键：把"有效命中"传递给后续 gesture（drag 等），避免出现：
       // - 点击到已选中 group 的子节点时 selection 逻辑认为命中 group
       // - 但 drag gesture 仍然按子节点启动
       if (hitId !== hit.id) return { hit: { kind: 'node', id: hitId, cursor: 'grab' } };
