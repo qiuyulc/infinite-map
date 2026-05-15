@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.10.1">
 <title data-rh="true">插件 API 参考 | Infinite Map</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"><meta data-rh="true" property="og:locale" content="zh_CN"><meta data-rh="true" name="docusaurus_locale" content="zh-CN"><meta data-rh="true" name="docsearch:language" content="zh-CN"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="插件 API 参考 | Infinite Map"><meta data-rh="true" name="description" content="本文档是 @qiuyulc/infinite-map-editor 全部 24 个内置插件的详细参考。"><meta data-rh="true" property="og:description" content="本文档是 @qiuyulc/infinite-map-editor 全部 24 个内置插件的详细参考。"><link data-rh="true" rel="icon" href="/infinite-map/img/logo.png"><link data-rh="true" rel="canonical" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"><link data-rh="true" rel="alternate" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference" hreflang="zh-CN"><link data-rh="true" rel="alternate" href="https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"插件 API 参考","item":"https://qiuyulc.github.io/infinite-map/infinite-map-editor/plugin-reference"}]}</script><link rel="stylesheet" href="/infinite-map/assets/css/styles.bfeae030.css">
-<script src="/infinite-map/assets/js/runtime~main.a981dde4.js" defer="defer"></script>
+<script src="/infinite-map/assets/js/runtime~main.4469e687.js" defer="defer"></script>
 <script src="/infinite-map/assets/js/main.23a02ce3.js" defer="defer"></script>
 </head>
 <body>
@@ -209,16 +209,57 @@
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_AYB9" id="group"><code>group</code><a href="#group" class="hash-link" aria-label="group的直接链接" title="group的直接链接" translate="no">​</a></h3>
 <p><strong>ID</strong>: <code>group</code><br>
-<strong>功能</strong>: 编组/解组。选中多个节点后 <code>edit.group</code> 创建 group 节点（<code>kind=&#x27;group&#x27;</code>），成员 <code>parentId</code> 指向 group。解组时删除 group，成员 <code>parentId</code> 清空。<br>
 <strong>Provides</strong>: <code>group</code><br>
 <strong>Requires</strong>: <code>commands</code>, <code>selection</code>, <code>document</code><br>
 <strong>Options</strong>: 无</p>
-<p><strong>Commands</strong>:</p>
+<p>编组/解组插件。group 节点是一种特殊的 <code>NodeData</code>（<code>kind=&#x27;group&#x27;</code>），本身不承载业务内容，仅作为组织子节点（<code>parentId</code> 指向该 group）的容器。</p>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="commands">Commands<a href="#commands" class="hash-link" aria-label="Commands的直接链接" title="Commands的直接链接" translate="no">​</a></h4>
+<table><thead><tr><th>Command</th><th>快捷键</th><th>说明</th></tr></thead><tbody><tr><td><code>edit.group</code></td><td><code>Mod+G</code></td><td>将当前选中的节点编入新 group</td></tr><tr><td><code>edit.ungroup</code></td><td><code>Shift+Mod+G</code></td><td>将选中的 group 解组（删除 group，子节点 parentId 清空）</td></tr></tbody></table>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="编组规则">编组规则<a href="#编组规则" class="hash-link" aria-label="编组规则的直接链接" title="编组规则的直接链接" translate="no">​</a></h4>
+<p>执行 <code>edit.group</code> 时，插件会对选中节点做<strong>自动提升</strong>，避免破坏已有的 group 层级：</p>
+<ol>
+<li class=""><strong>父子覆盖检查</strong>：对每个选中节点，沿 <code>parentId</code> 链向上遍历。如果某个祖先 group 已在选集中，该节点被&quot;覆盖&quot;，从选集中移除。</li>
+<li class=""><strong>最外层提升</strong>：未被覆盖的非 group 节点，沿 <code>parentId</code> 链找到最外层祖先 group。若找到，将该节点提升为该 group（group 加入选集、原节点移除）。</li>
+<li class=""><strong>group 节点同样参与提升</strong>：选中内层 group 时，若其上有外层 group，同样被提升到最外层，防止内层 group 被&quot;剥离&quot;。</li>
+</ol>
+<blockquote>
+<p>示例：G1 → G2 → A, B。选中 A + C，编组时 A 被提升到 G1，最终 picked = [G1, C]。</p>
+</blockquote>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="解组规则">解组规则<a href="#解组规则" class="hash-link" aria-label="解组规则的直接链接" title="解组规则的直接链接" translate="no">​</a></h4>
+<p><code>edit.ungroup</code> 仅对 group 节点生效（需单选一个 group）。解组时：</p>
 <ul>
-<li class=""><code>edit.group</code>（<code>Mod+G</code>）</li>
-<li class=""><code>edit.ungroup</code>（<code>Shift+Mod+G</code>）</li>
+<li class="">删除该 group 节点</li>
+<li class="">其直接子节点（<code>parentId === groupId</code>）的 <code>parentId</code> 置为 <code>undefined</code></li>
+<li class="">子节点变为选中状态</li>
 </ul>
-<p><strong>Service</strong>: <code>group</code> — 提供 <code>expandIds(ids)</code> 方法供 drag 等插件展开 group 后代</p>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="选择交互">选择交互<a href="#选择交互" class="hash-link" aria-label="选择交互的直接链接" title="选择交互的直接链接" translate="no">​</a></h4>
+<p>Group 的存在改变了点击选择的行为：</p>
+<table><thead><tr><th>操作</th><th>行为</th></tr></thead><tbody><tr><td>单击 group 子节点</td><td>自动提升到最外层祖先 group 并选中</td></tr><tr><td>单击无 group 归属的节点</td><td>选中节点自身</td></tr><tr><td>双击节点</td><td>穿透提升，直接选中该节点自身</td></tr><tr><td><code>Shift</code> + 单击</td><td>提升到最外层 group 后 toggle</td></tr><tr><td><code>Shift</code> + 双击</td><td>与普通双击相同（穿透选中该节点）</td></tr><tr><td>单击 group 外框</td><td>选中 group</td></tr><tr><td>双击 group 外框</td><td>穿透选中 group 自身</td></tr></tbody></table>
+<blockquote>
+<p>已选中的节点再次单击<strong>不执行提升</strong>，保护双击穿透结果不被覆盖。</p>
+</blockquote>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="拖拽--变换">拖拽 / 变换<a href="#拖拽--变换" class="hash-link" aria-label="拖拽 / 变换的直接链接" title="拖拽 / 变换的直接链接" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>拖动 group</strong>：drag 插件通过 <code>expandIds</code> 展开 group 的所有递归后代，整体移动。</li>
+<li class=""><strong>拖动子节点</strong>（双击穿透后）：仅移动该子节点，group 及其他子节点不动。</li>
+<li class=""><strong>框选</strong>：命中检测会考虑 hidden/locked 传递规则。</li>
+<li class=""><strong>复制/粘贴</strong>：clipboard 插件会正确处理 group 结构（复制时 remap id + 修正 parentId）。</li>
+<li class=""><strong>锁定/隐藏传递</strong>：祖先 group 的 locked/hidden 状态会传递到所有后代。</li>
+</ul>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="service">Service<a href="#service" class="hash-link" aria-label="Service的直接链接" title="Service的直接链接" translate="no">​</a></h4>
+<p>注册在 <code>group</code> key 下，供其他插件调用：</p>
+<div class="language-ts codeBlockContainer_HV1D theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_oI_s"><pre tabindex="0" class="prism-code language-ts codeBlock_Hhtt thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_Orda"><div class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">const</span><span class="token plain"> grp </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> ctx</span><span class="token punctuation" style="color:#393A34">.</span><span class="token plain">getService</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token punctuation" style="color:#393A34">{</span><span class="token plain"></span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token function-variable function" style="color:#d73a49">isGroupId</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">id</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token builtin">string</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">=&gt;</span><span class="token plain"> </span><span class="token builtin">boolean</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token function-variable function" style="color:#d73a49">getDescendantIds</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">groupId</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token builtin">string</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">=&gt;</span><span class="token plain"> </span><span class="token builtin">string</span><span class="token punctuation" style="color:#393A34">[</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></div><div class="token-line" style="color:#393A34"><span class="token plain">  </span><span class="token function-variable function" style="color:#d73a49">expandIds</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token punctuation" style="color:#393A34">(</span><span class="token plain">ids</span><span class="token operator" style="color:#393A34">:</span><span class="token plain"> </span><span class="token builtin">string</span><span class="token punctuation" style="color:#393A34">[</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">)</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">=&gt;</span><span class="token plain"> </span><span class="token builtin">string</span><span class="token punctuation" style="color:#393A34">[</span><span class="token punctuation" style="color:#393A34">]</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"></span><br></div><div class="token-line" style="color:#393A34"><span class="token plain"></span><span class="token punctuation" style="color:#393A34">}</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">(</span><span class="token string" style="color:#e3116c">&#x27;group&#x27;</span><span class="token punctuation" style="color:#393A34">)</span><span class="token punctuation" style="color:#393A34">;</span><br></div></code></pre></div></div>
+<table><thead><tr><th>方法</th><th>说明</th></tr></thead><tbody><tr><td><code>isGroupId(id)</code></td><td>判断 id 是否为 group 节点</td></tr><tr><td><code>getDescendantIds(groupId)</code></td><td>获取 group 所有递归后代 id</td></tr><tr><td><code>expandIds(ids)</code></td><td>将 ids 中的 group 展开为其所有后代（用于 drag/resize/rotate）</td></tr></tbody></table>
+<hr>
+<h4 class="anchor anchorTargetStickyNavbar_AYB9" id="工具函数grouputils">工具函数（<code>groupUtils</code>）<a href="#工具函数grouputils" class="hash-link" aria-label="工具函数grouputils的直接链接" title="工具函数grouputils的直接链接" translate="no">​</a></h4>
+<p>从 <code>@qiuyulc/infinite-map-editor</code> 导出：</p>
+<table><thead><tr><th>函数</th><th>说明</th></tr></thead><tbody><tr><td><code>isGroupNode(n)</code></td><td>判断 <code>n.kind === &#x27;group&#x27;</code></td></tr><tr><td><code>buildById(nodes)</code></td><td>构建 <code>Map&lt;id, NodeData&gt;</code></td></tr><tr><td><code>getChildren(nodes, groupId)</code></td><td>获取直接子节点（仅一层）</td></tr><tr><td><code>getDescendantIds(nodes, groupId)</code></td><td>获取所有递归后代 id</td></tr><tr><td><code>getAncestorChain(byId, nodeId)</code></td><td>获取某节点的祖先链</td></tr><tr><td><code>getOutermostGroupId(nodes, hitId)</code></td><td>若命中节点是 group 或其子节点，返回最外层 group id</td></tr><tr><td><code>isLockedEffective(nodes, id)</code></td><td>考虑锁定传递后的有效锁定状态</td></tr><tr><td><code>isHiddenEffective(nodes, id)</code></td><td>考虑隐藏传递后的有效隐藏状态</td></tr><tr><td><code>computeBBox(nodes)</code></td><td>计算节点集的包围盒</td></tr><tr><td><code>expandIdsWithGroups(nodes, ids)</code></td><td>展开 ids 中的 group 为其所有后代</td></tr></tbody></table>
 <hr>
 <h3 class="anchor anchorTargetStickyNavbar_AYB9" id="lock-hide"><code>lock-hide</code><a href="#lock-hide" class="hash-link" aria-label="lock-hide的直接链接" title="lock-hide的直接链接" translate="no">​</a></h3>
 <p><strong>ID</strong>: <code>lock-hide</code><br>
