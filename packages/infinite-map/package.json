@@ -1,6 +1,6 @@
 {
   "name": "@qiuyulc/infinite-map",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Infinite canvas renderer for React — world coordinates, spatial index, plugin protocol, document serialization.",
   "license": "MIT",
   "keywords": [
