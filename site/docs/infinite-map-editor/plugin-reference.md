@@ -299,16 +299,108 @@
 ### `group`
 
 **ID**: `group`  
-**功能**: 编组/解组。选中多个节点后 `edit.group` 创建 group 节点（`kind='group'`），成员 `parentId` 指向 group。解组时删除 group，成员 `parentId` 清空。  
 **Provides**: `group`  
 **Requires**: `commands`, `selection`, `document`  
 **Options**: 无
 
-**Commands**:
-- `edit.group`（`Mod+G`）
-- `edit.ungroup`（`Shift+Mod+G`）
+编组/解组插件。group 节点是一种特殊的 `NodeData`（`kind='group'`），本身不承载业务内容，仅作为组织子节点（`parentId` 指向该 group）的容器。
 
-**Service**: `group` — 提供 `expandIds(ids)` 方法供 drag 等插件展开 group 后代
+---
+
+#### Commands
+
+| Command | 快捷键 | 说明 |
+|---|---|---|
+| `edit.group` | `Mod+G` | 将当前选中的节点编入新 group |
+| `edit.ungroup` | `Shift+Mod+G` | 将选中的 group 解组（删除 group，子节点 parentId 清空） |
+
+---
+
+#### 编组规则
+
+执行 `edit.group` 时，插件会对选中节点做**自动提升**，避免破坏已有的 group 层级：
+
+1. **父子覆盖检查**：对每个选中节点，沿 `parentId` 链向上遍历。如果某个祖先 group 已在选集中，该节点被"覆盖"，从选集中移除。
+2. **最外层提升**：未被覆盖的非 group 节点，沿 `parentId` 链找到最外层祖先 group。若找到，将该节点提升为该 group（group 加入选集、原节点移除）。
+3. **group 节点同样参与提升**：选中内层 group 时，若其上有外层 group，同样被提升到最外层，防止内层 group 被"剥离"。
+
+> 示例：G1 → G2 → A, B。选中 A + C，编组时 A 被提升到 G1，最终 picked = [G1, C]。
+
+---
+
+#### 解组规则
+
+`edit.ungroup` 仅对 group 节点生效（需单选一个 group）。解组时：
+- 删除该 group 节点
+- 其直接子节点（`parentId === groupId`）的 `parentId` 置为 `undefined`
+- 子节点变为选中状态
+
+---
+
+#### 选择交互
+
+Group 的存在改变了点击选择的行为：
+
+| 操作 | 行为 |
+|---|---|
+| 单击 group 子节点 | 自动提升到最外层祖先 group 并选中 |
+| 单击无 group 归属的节点 | 选中节点自身 |
+| 双击节点 | 穿透提升，直接选中该节点自身 |
+| `Shift` + 单击 | 提升到最外层 group 后 toggle |
+| `Shift` + 双击 | 与普通双击相同（穿透选中该节点） |
+| 单击 group 外框 | 选中 group |
+| 双击 group 外框 | 穿透选中 group 自身 |
+
+> 已选中的节点再次单击**不执行提升**，保护双击穿透结果不被覆盖。
+
+---
+
+#### 拖拽 / 变换
+
+- **拖动 group**：drag 插件通过 `expandIds` 展开 group 的所有递归后代，整体移动。
+- **拖动子节点**（双击穿透后）：仅移动该子节点，group 及其他子节点不动。
+- **框选**：命中检测会考虑 hidden/locked 传递规则。
+- **复制/粘贴**：clipboard 插件会正确处理 group 结构（复制时 remap id + 修正 parentId）。
+- **锁定/隐藏传递**：祖先 group 的 locked/hidden 状态会传递到所有后代。
+
+---
+
+#### Service
+
+注册在 `group` key 下，供其他插件调用：
+
+```ts
+const grp = ctx.getService<{
+  isGroupId: (id: string) => boolean,
+  getDescendantIds: (groupId: string) => string[],
+  expandIds: (ids: string[]) => string[],
+}>('group');
+```
+
+| 方法 | 说明 |
+|---|---|
+| `isGroupId(id)` | 判断 id 是否为 group 节点 |
+| `getDescendantIds(groupId)` | 获取 group 所有递归后代 id |
+| `expandIds(ids)` | 将 ids 中的 group 展开为其所有后代（用于 drag/resize/rotate） |
+
+---
+
+#### 工具函数（`groupUtils`）
+
+从 `@qiuyulc/infinite-map-editor` 导出：
+
+| 函数 | 说明 |
+|---|---|
+| `isGroupNode(n)` | 判断 `n.kind === 'group'` |
+| `buildById(nodes)` | 构建 `Map<id, NodeData>` |
+| `getChildren(nodes, groupId)` | 获取直接子节点（仅一层） |
+| `getDescendantIds(nodes, groupId)` | 获取所有递归后代 id |
+| `getAncestorChain(byId, nodeId)` | 获取某节点的祖先链 |
+| `getOutermostGroupId(nodes, hitId)` | 若命中节点是 group 或其子节点，返回最外层 group id |
+| `isLockedEffective(nodes, id)` | 考虑锁定传递后的有效锁定状态 |
+| `isHiddenEffective(nodes, id)` | 考虑隐藏传递后的有效隐藏状态 |
+| `computeBBox(nodes)` | 计算节点集的包围盒 |
+| `expandIdsWithGroups(nodes, ids)` | 展开 ids 中的 group 为其所有后代 |
 
 ---
 

@@ -129,4 +129,108 @@ describe('createSelectionPlugin', () => {
     runDown(plugin, pe({ world: { x: 500, y: 500 } }), ctx, { kind: 'handle', owner: 'resize', id: 'a', handle: 'se' });
     expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
   });
+
+  it('click child of group selects outermost group', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g', x: 10, y: 10, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin();
+
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['g']);
+  });
+
+  it('click nested child promotes to outermost group', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g1', kind: 'group', x: 0, y: 0, width: 200, height: 200 },
+      { id: 'g2', kind: 'group', parentId: 'g1', x: 10, y: 10, width: 100, height: 100 },
+      { id: 'a', parentId: 'g2', x: 20, y: 20, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin();
+
+    runDown(plugin, pe({ world: { x: 25, y: 25 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['g1']);
+  });
+
+  it('double-click penetrates and selects child node directly', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g', x: 10, y: 10, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin({ dblClickMs: 10 });
+
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
+  });
+
+  it('double-click on group frame selects group itself', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g', x: 10, y: 10, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin({ dblClickMs: 10 });
+
+    runDown(plugin, pe({ world: { x: 90, y: 90 } }), ctx);
+    runDown(plugin, pe({ world: { x: 90, y: 90 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['g']);
+  });
+
+  it('re-clicking an already-selected child does not promote it', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g', x: 10, y: 10, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin({ dblClickMs: 10 });
+
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
+
+    runDown(plugin, pe({ world: { x: 15, y: 15 } }), ctx);
+    expect(store.get<string[]>(STORE_KEYS.selectionIds)).toEqual(['a']);
+  });
+
+  it('shift-click child promotes to group and toggles', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g1', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g1', x: 10, y: 10, width: 10, height: 10 },
+      { id: 'g2', kind: 'group', x: 200, y: 0, width: 100, height: 100 },
+      { id: 'b', parentId: 'g2', x: 210, y: 10, width: 10, height: 10 },
+    ]);
+    const plugin = createSelectionPlugin();
+
+    store.set(STORE_KEYS.selectionIds, ['g1']);
+    runDown(
+      plugin,
+      pe({ world: { x: 215, y: 15 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }),
+      ctx
+    );
+    expect(new Set(store.get<string[]>(STORE_KEYS.selectionIds))).toEqual(new Set(['g1', 'g2']));
+  });
+
+  it('shift-double-click penetrates and toggles child node', () => {
+    const { ctx, store } = makeCtx([
+      { id: 'g', kind: 'group', x: 0, y: 0, width: 100, height: 100 },
+      { id: 'a', parentId: 'g', x: 10, y: 10, width: 10, height: 10 },
+      { id: 'b', x: 200, y: 0, width: 100, height: 80 },
+    ]);
+    const plugin = createSelectionPlugin({ dblClickMs: 10 });
+
+    store.set(STORE_KEYS.selectionIds, ['b']);
+    runDown(
+      plugin,
+      pe({ world: { x: 15, y: 15 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }),
+      ctx
+    );
+    runDown(
+      plugin,
+      pe({ world: { x: 15, y: 15 }, modifiers: { shift: true, alt: false, ctrl: false, meta: false } }),
+      ctx
+    );
+    // first shift-click promotes to group g and toggles it → ['b', 'g']
+    // second shift-click triggers double-click, penetrates and selects 'a' → ['a']
+    expect(new Set(store.get<string[]>(STORE_KEYS.selectionIds))).toEqual(new Set(['a']));
+  });
 });
