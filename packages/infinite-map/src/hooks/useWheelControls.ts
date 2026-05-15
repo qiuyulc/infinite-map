@@ -5,6 +5,7 @@ import { clamp } from '../core/utils';
 type Params = {
   containerRef: RefObject<HTMLElement | null>;
   cameraRef: MutableRefObject<Camera>;
+  viewportRef: MutableRefObject<{ w: number; h: number }>;
   commitCamera: (next: Camera, immediate?: boolean) => void;
   /**
    * 是否允许平移（trackpad 两指平移 / 触控板滚动的 pan 分支）
@@ -32,6 +33,7 @@ type Params = {
 export function useWheelControls({
   containerRef,
   cameraRef,
+  viewportRef,
   commitCamera,
   panEnabled = true,
   minZoom,
@@ -68,13 +70,17 @@ export function useWheelControls({
         const pinchFactor = isPinch ? pinchZoomFactor : 1;
         const limitedDy = clamp(dy, -240, 240);
 
-        const wx = cam.x + sx / cam.zoom;
-        const wy = cam.y + sy / cam.zoom;
+        const vp = viewportRef.current;
+        const vpCx = vp.w / 2;
+        const vpCy = vp.h / 2;
+
+        const wx = cam.x + (sx - vpCx) / cam.zoom;
+        const wy = cam.y + (sy - vpCy) / cam.zoom;
 
         const zoomFactor = Math.exp(-limitedDy * zoomSpeed * pinchFactor);
         const nextZoom = clamp(cam.zoom * zoomFactor, minZoom, maxZoom);
-        const nextX = wx - sx / nextZoom;
-        const nextY = wy - sy / nextZoom;
+        const nextX = wx - (sx - vpCx) / nextZoom;
+        const nextY = wy - (sy - vpCy) / nextZoom;
         commitCamera({ x: nextX, y: nextY, zoom: nextZoom }, true);
       } else {
         // 视图拖动锁：不处理 trackpad 两指平移，并允许浏览器默认滚动
@@ -111,6 +117,7 @@ export function useWheelControls({
   }, [
     containerRef,
     cameraRef,
+    viewportRef,
     commitCamera,
     panEnabled,
     maxZoom,

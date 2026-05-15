@@ -156,8 +156,8 @@ export function createHoverHighlightPlugin(opts: HoverHighlightPluginOptions = {
 
         // 小范围点高亮
         const radiusWorld = highlightRadiusPx / z;
-        const wx0 = cam.x + mx / z;
-        const wy0 = cam.y + my / z;
+        const wx0 = cam.x + (mx - w / 2) / z;
+        const wy0 = cam.y + (my - h / 2) / z;
         const startX = Math.floor((wx0 - radiusWorld) / spacingWorld) * spacingWorld;
         const startY = Math.floor((wy0 - radiusWorld) / spacingWorld) * spacingWorld;
         const endX = wx0 + radiusWorld;
@@ -174,8 +174,8 @@ export function createHoverHighlightPlugin(opts: HoverHighlightPluginOptions = {
 
         for (let wx = startX; wx <= endX; wx += spacingWorld) {
           for (let wy = startY; wy <= endY; wy += spacingWorld) {
-            const sx = (wx - cam.x) * z;
-            const sy = (wy - cam.y) * z;
+            const sx = (wx - cam.x) * z + w / 2;
+            const sy = (wy - cam.y) * z + h / 2;
             const dx = sx - mx;
             const dy = sy - my;
             const d2 = dx * dx + dy * dy;

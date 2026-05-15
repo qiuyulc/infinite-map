@@ -1,7 +1,7 @@
 export type Camera = {
-  /** 世界坐标中视口左上角 x */
+  /** 世界坐标中视口中心 x */
   x: number;
-  /** 世界坐标中视口左上角 y */
+  /** 世界坐标中视口中心 y */
   y: number;
   /** 缩放比例（1 = 100%） */
   zoom: number;

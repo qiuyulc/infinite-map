@@ -5,24 +5,29 @@ import type { Point } from '../editor/types';
 /**
  * 坐标换算（基于 cameraRef 的最新值）：
  * - screen: 相对画布容器左上角的像素坐标
- * - world: 无限画布的世界坐标
+ * - world: 无限画布的世界坐标（原点位于视口中心）
  */
-export function useCoordinateTransforms(cameraRef: React.MutableRefObject<Camera>) {
+export function useCoordinateTransforms(
+  cameraRef: React.MutableRefObject<Camera>,
+  viewportRef: React.MutableRefObject<{ w: number; h: number }>
+) {
   const screenToWorld = useCallback(
     (p: Point) => {
       const z = cameraRef.current.zoom || 1;
-      return { x: cameraRef.current.x + p.x / z, y: cameraRef.current.y + p.y / z };
+      const vp = viewportRef.current;
+      return { x: cameraRef.current.x + (p.x - vp.w / 2) / z, y: cameraRef.current.y + (p.y - vp.h / 2) / z };
     },
-    [cameraRef]
+    [cameraRef, viewportRef]
   );
 
   const worldToScreen = useCallback(
     (p: Point) => {
       const cam = cameraRef.current;
       const z = cam.zoom || 1;
-      return { x: (p.x - cam.x) * z, y: (p.y - cam.y) * z };
+      const vp = viewportRef.current;
+      return { x: (p.x - cam.x) * z + vp.w / 2, y: (p.y - cam.y) * z + vp.h / 2 };
     },
-    [cameraRef]
+    [cameraRef, viewportRef]
   );
 
   const rectScreenToWorld = useCallback(

@@ -54,9 +54,9 @@ describe('snapUtils', () => {
   it('getViewportCenterWorld returns center in world coordinates', () => {
     const { ctx } = makeCtx();
     const p = getViewportCenterWorld(ctx);
-    // cam.x + (w/2)/z = 10 + 50/2 = 35
-    expect(p.x).toBe(35);
-    expect(p.y).toBe(40);
+    // camera 现已改为视口中心坐标系，直接返回 cam.x/cam.y
+    expect(p.x).toBe(10);
+    expect(p.y).toBe(20);
   });
 });
 

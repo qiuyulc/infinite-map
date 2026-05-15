@@ -61,7 +61,5 @@ export function setSnapGuides(ctx: MapContext, guides: { v?: number[]; h?: numbe
 
 export function getViewportCenterWorld(ctx: MapContext) {
   const cam = ctx.getCamera();
-  const vp = ctx.getViewport();
-  const z = cam.zoom || 1;
-  return { x: cam.x + vp.w / (2 * z), y: cam.y + vp.h / (2 * z) };
+  return { x: cam.x, y: cam.y };
 }

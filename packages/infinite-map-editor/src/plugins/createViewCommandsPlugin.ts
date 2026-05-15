@@ -72,16 +72,15 @@ function fitRect(ctx: MapContext, rect: Rect, opts?: { paddingPx?: number; immed
   const z = clamp(Math.min(availW / rect.w, availH / rect.h), minZoom, maxZoom);
   const cx = rect.x + rect.w / 2;
   const cy = rect.y + rect.h / 2;
-  setCamera(ctx, { x: cx - vp.w / 2 / z, y: cy - vp.h / 2 / z, zoom: z }, opts?.immediate);
+  setCamera(ctx, { x: cx, y: cy, zoom: z }, opts?.immediate);
 }
 
 function centerRect(ctx: MapContext, rect: Rect, opts?: { immediate?: boolean }) {
   const cam = getCameraService(ctx)?.get?.() ?? ctx.getCamera();
-  const vp = ctx.getViewport();
   const z = cam.zoom || 1;
   const cx = rect.x + rect.w / 2;
   const cy = rect.y + rect.h / 2;
-  setCamera(ctx, { x: cx - vp.w / 2 / z, y: cy - vp.h / 2 / z, zoom: z }, opts?.immediate);
+  setCamera(ctx, { x: cx, y: cy, zoom: z }, opts?.immediate);
 }
 
 function getSelectedNodes(ctx: MapContext) {
@@ -174,9 +173,8 @@ export function createViewCommandsPlugin(opts: ViewCommandsPluginOptions = {}): 
         run: (ctx) => {
           // 组件库约定：Center view 表示“把世界原点(0,0)放到视口中心”（便于配合标尺）
           const cam = getCameraService(ctx)?.get?.() ?? ctx.getCamera();
-          const vp = ctx.getViewport();
           const z = cam.zoom || 1;
-          setCamera(ctx, { x: -(vp.w / 2) / z, y: -(vp.h / 2) / z, zoom: z });
+          setCamera(ctx, { x: 0, y: 0, zoom: z });
         },
       },
       'view.fitSelection': {

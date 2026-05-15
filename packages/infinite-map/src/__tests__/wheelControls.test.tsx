@@ -32,6 +32,7 @@ describe('useWheelControls', () => {
       useWheelControls({
         containerRef: elRef,
         cameraRef: camRef,
+        viewportRef: { current: { w: 800, h: 600 } },
         commitCamera: (next, immediate) => {
           camRef.current = next;
           commitCamera(next, immediate);
@@ -73,6 +74,7 @@ describe('useWheelControls', () => {
       useWheelControls({
         containerRef: elRef,
         cameraRef: camRef,
+        viewportRef: { current: { w: 800, h: 600 } },
         commitCamera,
         panEnabled: false,
         minZoom: 0.25,

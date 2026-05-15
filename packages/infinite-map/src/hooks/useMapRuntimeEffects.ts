@@ -8,6 +8,7 @@ export function useMapRuntimeEffects({
   ctx,
   containerRef,
   cameraRef,
+  viewportRef,
   commitCamera,
   panEnabled,
   minZoom,
@@ -21,6 +22,7 @@ export function useMapRuntimeEffects({
   ctx: MapContext;
   containerRef: { current: HTMLElement | null };
   cameraRef: React.MutableRefObject<Camera>;
+  viewportRef: React.MutableRefObject<{ w: number; h: number }>;
   commitCamera: (next: Camera, immediate?: boolean) => void;
   panEnabled: boolean;
   minZoom: number;
@@ -33,6 +35,7 @@ export function useMapRuntimeEffects({
   useWheelControls({
     containerRef: containerRef as any,
     cameraRef,
+    viewportRef,
     commitCamera,
     panEnabled,
     minZoom,

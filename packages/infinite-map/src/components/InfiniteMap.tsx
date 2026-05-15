@@ -300,7 +300,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     getDefaultNodeProps,
     defaultNodeShowMeta = false,
     onNodeDrag,
-    initialCamera = { x: -400, y: -250, zoom: 1 },
+    initialCamera = { x: 0, y: 0, zoom: 1 },
     commandConflictPolicy = 'keep-first',
     warnOnCommandConflict = true,
     editorHooks,
@@ -357,7 +357,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     spatialIndexRef.current = spatialIndex;
   }, [spatialIndex]);
 
-  const { screenToWorld, worldToScreen, rectScreenToWorld, rectWorldToScreen } = useCoordinateTransforms(cameraRef);
+  const { screenToWorld, worldToScreen, rectScreenToWorld, rectWorldToScreen } = useCoordinateTransforms(cameraRef, viewportRef);
 
   // 插件 bus/store（稳定引用，仍沿用现有插件契约）
   const bus = useMemo(() => createEventBus(), []);
@@ -527,7 +527,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
       if (vp.w <= 0 || vp.h <= 0) return;
       const z = cam.zoom || 1;
       const overscanWorld = (virtualization?.overscanPx ?? overscanPx) / z;
-      const viewRect = { x: cam.x - overscanWorld, y: cam.y - overscanWorld, w: vp.w / z + overscanWorld * 2, h: vp.h / z + overscanWorld * 2 };
+      const viewRect = { x: cam.x - vp.w / (2 * z) - overscanWorld, y: cam.y - vp.h / (2 * z) - overscanWorld, w: vp.w / z + overscanWorld * 2, h: vp.h / z + overscanWorld * 2 };
        // 复用 ctx 查询（内部使用 spatial index），避免依赖索引实现细节
       const base = (virtualization?.enabled ?? true) ? (ctx.queryNodesInWorldRect(viewRect) as NodeData[]) : nodesRef.current;
 
@@ -655,6 +655,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     ctx,
     containerRef,
     cameraRef,
+    viewportRef,
     commitCamera,
     panEnabled: panEnabled !== false,
     minZoom,

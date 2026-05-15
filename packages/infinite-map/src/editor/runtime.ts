@@ -81,5 +81,5 @@ export function applyPatchesToNodes(nodes: NodeData[], patches: NodePatch[]): No
 
 export function rectFromWorldView(camera: { x: number; y: number; zoom: number }, viewport: { w: number; h: number }): Rect {
   const z = camera.zoom || 1;
-  return { x: camera.x, y: camera.y, w: viewport.w / z, h: viewport.h / z };
+  return { x: camera.x - viewport.w / (2 * z), y: camera.y - viewport.h / (2 * z), w: viewport.w / z, h: viewport.h / z };
 }

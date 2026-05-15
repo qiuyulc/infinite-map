@@ -4,7 +4,7 @@ import type { Camera, NodeData } from '../core/types';
  * Doc schema version（对外持久化格式）
  * - 只要格式有 breaking change，就递增 schemaVersion，并在 migrations 中补迁移
  */
-export const DOC_SCHEMA_VERSION = 1 as const;
+export const DOC_SCHEMA_VERSION = 2 as const;
 
 /**
  * Doc（统一版本）
@@ -67,7 +67,7 @@ export function parseDoc(input: unknown): InfiniteMapDoc {
   assert('schemaVersion' in input, 'schemaVersion is required', 'doc.schemaVersion');
   const sv = (input as any).schemaVersion;
   assert(typeof sv === 'number', 'schemaVersion must be a number', 'doc.schemaVersion');
-  assert(sv === DOC_SCHEMA_VERSION, `Unsupported doc schemaVersion: ${sv}`, 'doc.schemaVersion');
+  assert(sv === DOC_SCHEMA_VERSION, `Unsupported doc schemaVersion: ${sv}（v1 的相机坐标系已变更为视口中心原点，请用新版编辑器重新导出文件。）`, 'doc.schemaVersion');
 
   validateNodes((input as any).nodes, 'doc.nodes');
   validateCamera((input as any).camera, 'doc.camera');

@@ -135,10 +135,10 @@ function EngineRulersOverlay({
       }
       pending = null;
 
-      const viewStartX = cam.x + thickness / z;
-      const viewEndX = cam.x + vp.w / z;
-      const viewStartY = cam.y + thickness / z;
-      const viewEndY = cam.y + vp.h / z;
+      const viewStartX = cam.x - vp.w / (2 * z) + thickness / z;
+      const viewEndX = cam.x + vp.w / (2 * z);
+      const viewStartY = cam.y - vp.h / (2 * z) + thickness / z;
+      const viewEndY = cam.y + vp.h / (2 * z);
 
       const { majorStepWorld, minorCount } = computeAdaptiveSteps(z);
       const zoomFactor = Math.sqrt(z);
@@ -353,9 +353,10 @@ function EngineRulersOverlay({
   // 注意：这里使用“整个画布容器的 rect”（可用标尺自身 rect 近似：顶部标尺的 top/left 即容器 top/left）
   const updatePreview = (axis: 'x' | 'y', cam: Camera, clientX: number, clientY: number, containerRect: DOMRect) => {
     const z = cam.zoom || 1;
+    const vp = ctx.getViewport();
     if (axis === 'x') {
       const xPx = clientX - containerRect.left;
-      const worldX = cam.x + xPx / z;
+      const worldX = cam.x + (xPx - vp.w / 2) / z;
       const el = previewVRef.current;
       if (el) {
         el.style.display = 'block';
@@ -364,7 +365,7 @@ function EngineRulersOverlay({
       return { worldX };
     } else {
       const yPx = clientY - containerRect.top;
-      const worldY = cam.y + yPx / z;
+      const worldY = cam.y + (yPx - vp.h / 2) / z;
       const el = previewHRef.current;
       if (el) {
         el.style.display = 'block';
@@ -519,20 +520,21 @@ function EngineRulersOverlay({
     e.preventDefault?.();
     const cam = ctx.getCamera();
     const z = cam.zoom || 1;
+    const vp = ctx.getViewport();
     if (st.kind === 'v') {
       const rect =
         hSvgRef.current?.getBoundingClientRect() ??
         (guideRootRef.current?.getBoundingClientRect() as DOMRect | undefined);
       if (!rect) return;
       const xPx = e.clientX - rect.left;
-      updateVGuide(st.index, cam.x + xPx / z);
+      updateVGuide(st.index, cam.x + (xPx - vp.w / 2) / z);
     } else {
       const rect =
         vSvgRef.current?.getBoundingClientRect() ??
         (guideRootRef.current?.getBoundingClientRect() as DOMRect | undefined);
       if (!rect) return;
       const yPx = e.clientY - rect.top;
-      updateHGuide(st.index, cam.y + yPx / z);
+      updateHGuide(st.index, cam.y + (yPx - vp.h / 2) / z);
     }
   };
 

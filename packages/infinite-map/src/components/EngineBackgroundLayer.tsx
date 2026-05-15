@@ -55,8 +55,9 @@ export const EngineBackgroundLayer = memo(function EngineBackgroundLayer({
             : dotSpacing;
 
       const spacingPx = Math.max(2, spacingWorld * z);
-      const ox = mod(-cam.x * z, spacingPx);
-      const oy = mod(-cam.y * z, spacingPx);
+      const vp = store.getState().viewport;
+      const ox = mod(vp.w / 2 - cam.x * z, spacingPx);
+      const oy = mod(vp.h / 2 - cam.y * z, spacingPx);
 
       el.style.backgroundRepeat = 'repeat';
       el.style.backgroundSize = `${spacingPx}px ${spacingPx}px`;

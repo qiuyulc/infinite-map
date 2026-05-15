@@ -43,12 +43,11 @@ describe('InfiniteMap integrations (jsdom)', () => {
 
     await screen.findByText('A');
     // 等一拍：让 InfiniteMap 内部 useEffect 把 visibleNodesRef 写入（插件命中依赖它）
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
     // click on node A
-    // 初始 camera 默认为 {x:-400,y:-250,zoom:1}，因此 world(0,0) 对应 screen(400,250)
-    // 注意：测试里不做 DOM hit-testing，因此直接对 root 触发事件即可
-    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 410, clientY: 260 });
-    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 410, clientY: 260 });
+    // camera 原点现已改为视口中心，world(0,0) 对应 screen(400,300)
+    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 420, clientY: 310 });
+    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 420, clientY: 310 });
 
     await waitFor(() => {
       expect(ctxRef).toBeTruthy();
@@ -74,11 +73,11 @@ describe('InfiniteMap integrations (jsdom)', () => {
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
 
     await screen.findByText('A');
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     // select node A
-    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 410, clientY: 260 });
-    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 410, clientY: 260 });
+    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 420, clientY: 310 });
+    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 420, clientY: 310 });
     await waitFor(() => expect(ctxRef).toBeTruthy());
 
     // wait selection overlay
@@ -133,11 +132,11 @@ describe('InfiniteMap integrations (jsdom)', () => {
     // 等两拍：
     // - ResizeObserver fire
     // - visibleNodesRef useEffect
-    await new Promise((r) => setTimeout(r, 0));
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 20));
 
     // move mouse over node A area
-    fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 410, clientY: 260 });
+    fireEvent.pointerMove(root, { pointerId: 1, buttons: 0, clientX: 420, clientY: 310 });
     await waitFor(() => expect(root.style.cursor).toBe('grab'));
     await waitFor(() => {
       expect(ctxRef).toBeTruthy();

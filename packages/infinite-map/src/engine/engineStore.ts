@@ -5,7 +5,7 @@ import type { Camera } from '../core/types';
 export type ViewSnapshot = Camera & {
   /**
    * 用于直接写入 DOM 的 transform 字符串
-   * - translate3d(-x*zoom, -y*zoom, 0) scale(zoom)
+   * - 原点位于视口中心：translate3d(vp.w/2 - x*zoom, vp.h/2 - y*zoom, 0) scale(zoom)
    */
   transform: string;
 };
@@ -40,27 +40,32 @@ export type EngineActions = {
 
 export type EngineStore = ReturnType<typeof createEngineStore>;
 
-export function cameraToTransform(cam: Camera): string {
+export function cameraToTransform(cam: Camera, vp: { w: number; h: number }): string {
   const z = cam.zoom || 1;
-  return `translate3d(${-cam.x * z}px, ${-cam.y * z}px, 0) scale(${z})`;
+  const cx = vp.w / 2 - cam.x * z;
+  const cy = vp.h / 2 - cam.y * z;
+  return `translate3d(${cx}px, ${cy}px, 0) scale(${z})`;
 }
 
 export function createEngineStore(initialCamera: Camera) {
   return createStore(
-    subscribeWithSelector<EngineState & EngineActions>((set) => ({
-      view: { ...initialCamera, transform: cameraToTransform(initialCamera) },
+    subscribeWithSelector<EngineState & EngineActions>((set, get) => ({
+      view: { ...initialCamera, transform: '' },
       viewport: { w: 0, h: 0 },
       interaction: { panning: false, draggingNode: false },
       visibleNodeIds: [],
-      setViewport: (vp) => set({ viewport: vp }),
+      setViewport: (vp) => {
+        const cam = get().view as Camera;
+        set({ viewport: vp, view: { ...cam, transform: cameraToTransform(cam, vp) } });
+      },
       setInteraction: (next) =>
         set((s) => ({
           interaction: { ...s.interaction, ...next },
         })),
       setView: (next) =>
-        set({
-          view: { ...next, transform: cameraToTransform(next) },
-        }),
+        set((s) => ({
+          view: { ...next, transform: cameraToTransform(next, s.viewport) },
+        })),
       setVisibleNodeIds: (ids) => set({ visibleNodeIds: ids }),
     }))
   );

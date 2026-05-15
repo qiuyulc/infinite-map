@@ -128,8 +128,8 @@ function EngineMinimapOverlay({
     const vp = ctx.getViewport();
     const vwWorld = vp.w / cam.zoom;
     const vhWorld = vp.h / cam.zoom;
-    const vx = t.offsetX + (cam.x - t.minX) * t.scale;
-    const vy = t.offsetY + (cam.y - t.minY) * t.scale;
+    const vx = t.offsetX + (cam.x - vwWorld / 2 - t.minX) * t.scale;
+    const vy = t.offsetY + (cam.y - vhWorld / 2 - t.minY) * t.scale;
     const vw = vwWorld * t.scale;
     const vh = vhWorld * t.scale;
     g.strokeStyle = cssVar('--im-minimap-viewport', 'rgba(255,255,255,0.75)', canvasRef.current);
@@ -270,8 +270,8 @@ function EngineMinimapOverlay({
     const vwWorld = vp.w / cam.zoom;
     const vhWorld = vp.h / cam.zoom;
 
-    const vx = t.offsetX + (cam.x - t.minX) * t.scale;
-    const vy = t.offsetY + (cam.y - t.minY) * t.scale;
+    const vx = t.offsetX + (cam.x - vwWorld / 2 - t.minX) * t.scale;
+    const vy = t.offsetY + (cam.y - vhWorld / 2 - t.minY) * t.scale;
     const vw = vwWorld * t.scale;
     const vh = vhWorld * t.scale;
 
@@ -284,7 +284,7 @@ function EngineMinimapOverlay({
 
     const wx = (px - t.offsetX) / t.scale + t.minX;
     const wy = (py - t.offsetY) / t.scale + t.minY;
-    commitCamera({ x: wx - vwWorld / 2, y: wy - vhWorld / 2, zoom: cam.zoom }, true);
+    commitCamera({ x: wx, y: wy, zoom: cam.zoom }, true);
   };
 
   // stats（DOM 层，避免每帧触发 React 计算）

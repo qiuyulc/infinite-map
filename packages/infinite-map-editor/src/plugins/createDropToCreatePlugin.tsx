@@ -59,10 +59,9 @@ const DropGhostOverlay = memo(function DropGhostOverlay({ ctx, ghost }: GhostOve
   const g = lastRef.current;
   if (!g.visible || !engine) return null;
 
-  const cam = engine.cameraRef?.current ?? { x: 0, y: 0, zoom: 1 };
-  const z = cam.zoom || 1;
-  const screenX = (g.worldX - cam.x) * z;
-  const screenY = (g.worldY - cam.y) * z;
+  const screenPos = ctx.worldToScreen({ x: g.worldX, y: g.worldY });
+  const screenX = screenPos.x;
+  const screenY = screenPos.y;
 
   const customRender = typeof ghost === 'object' ? ghost.render : undefined;
   if (customRender) {
@@ -117,7 +116,6 @@ export function createDropToCreatePlugin(opts: DropToCreatePluginOptions): Infin
     overlayPointerEvents: 'none',
 
     setup(ctx) {
-      const engine = ctx.getService<{ cameraRef: React.MutableRefObject<Camera> }>('engine');
       let dropLocked = false;
 
       const getContainer = (e: DragEvent): HTMLElement | null => {
@@ -143,13 +141,12 @@ export function createDropToCreatePlugin(opts: DropToCreatePluginOptions): Infin
         if (!container) return;
 
         const rect = container.getBoundingClientRect();
-        const cam = engine?.cameraRef?.current ?? { x: 0, y: 0, zoom: 1 };
-        const z = cam.zoom || 1;
+        const world = ctx.screenToWorld({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
         setGhost({
           type,
-          worldX: cam.x + (e.clientX - rect.left) / z,
-          worldY: cam.y + (e.clientY - rect.top) / z,
+          worldX: world.x,
+          worldY: world.y,
           visible: true,
         });
       };
@@ -170,10 +167,9 @@ export function createDropToCreatePlugin(opts: DropToCreatePluginOptions): Infin
         if (!container) { dropLocked = false; return; }
 
         const rect = container.getBoundingClientRect();
-        const cam = engine?.cameraRef?.current ?? { x: 0, y: 0, zoom: 1 };
-        const z = cam.zoom || 1;
-        const worldX = cam.x + (e.clientX - rect.left) / z;
-        const worldY = cam.y + (e.clientY - rect.top) / z;
+        const world = ctx.screenToWorld({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        const worldX = world.x;
+        const worldY = world.y;
 
         const node = opts.createNode(type, { x: worldX, y: worldY }, e);
         if (!node) { dropLocked = false; return; }

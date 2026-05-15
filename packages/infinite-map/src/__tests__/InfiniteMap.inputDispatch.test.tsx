@@ -86,10 +86,10 @@ describe('InfiniteMap input dispatch (core)', () => {
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
 
     // wait effects
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
-    // move to node area: initial camera is {x:-400,y:-250,zoom:1} so world(0,0) -> screen(400,250)
-    fireEvent.pointerMove(root, { pointerId: 1, clientX: 410, clientY: 260 });
+    // move to node area: camera center at (0,0), viewport 800x600, node at world(0,0,80,40) -> screen(400,300,480,340)
+    fireEvent.pointerMove(root, { pointerId: 1, clientX: 420, clientY: 310 });
 
     await waitFor(() => {
       expect(ctxRef).toBeTruthy();
@@ -106,11 +106,11 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
-    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 410, clientY: 260 });
-    fireEvent.pointerMove(root, { pointerId: 1, buttons: 1, clientX: 430, clientY: 280 });
-    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 430, clientY: 280 });
+    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 420, clientY: 310 });
+    fireEvent.pointerMove(root, { pointerId: 1, buttons: 1, clientX: 440, clientY: 330 });
+    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 440, clientY: 330 });
 
     expect(calls.start).toBe(1);
     expect(calls.move).toBeGreaterThan(0);
@@ -124,7 +124,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} apiRef={apiRef as any} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     const before = apiRef.current!.getCamera();
     // click blank (far away from node): use world(1000,1000) -> screen(1400,1250)
@@ -145,7 +145,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={[]} plugins={plugins} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     // not focused => ignored
     fireEvent.keyDown(document.body, { key: 'x', code: 'KeyX' });
@@ -172,7 +172,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={[]} plugins={[plugin]} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     fireEvent.contextMenu(root, { clientX: 20, clientY: 30 });
     expect(onContextMenu).toHaveBeenCalled();
@@ -195,7 +195,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 410, clientY: 260 });
     fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 410, clientY: 260 });
@@ -237,7 +237,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={[]} plugins={[badHit, badGesture]} onNodesChange={() => void 0} onEditorError={onEditorError} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     // trigger hitTest via hover move + trigger canStart on down
     fireEvent.pointerMove(root, { pointerId: 1, clientX: 10, clientY: 10 });
@@ -254,7 +254,7 @@ describe('InfiniteMap input dispatch (core)', () => {
     const { container } = render(<InfiniteMap nodes={[]} plugins={[plugin]} onNodesChange={() => void 0} />);
     const root = container.firstElementChild as HTMLElement;
     setRect(root, { width: 800, height: 600, left: 0, top: 0 });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
 
     root.focus();
     const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'x', code: 'KeyX' });
