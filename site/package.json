@@ -1,6 +1,6 @@
 {
   "name": "infinite-map-docs",
-  "version": "0.0.1-beta.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "docusaurus start --port 5174",
