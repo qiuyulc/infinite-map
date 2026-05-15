@@ -528,9 +528,29 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
       const z = cam.zoom || 1;
       const overscanWorld = (virtualization?.overscanPx ?? overscanPx) / z;
       const viewRect = { x: cam.x - overscanWorld, y: cam.y - overscanWorld, w: vp.w / z + overscanWorld * 2, h: vp.h / z + overscanWorld * 2 };
-      // 复用 ctx 查询（内部使用 spatial index），避免依赖索引实现细节
+       // 复用 ctx 查询（内部使用 spatial index），避免依赖索引实现细节
       const base = (virtualization?.enabled ?? true) ? (ctx.queryNodesInWorldRect(viewRect) as NodeData[]) : nodesRef.current;
-      const filtered = (base as NodeData[]).filter((n) => rectIntersects(viewRect, { x: n.x, y: n.y, w: n.width, h: n.height }));
+
+      // hidden 过滤（含祖先传递）：与 useVisibleNodes 保持一致
+      const hiddenMemo = new Map<string, boolean>();
+      const isHidden = (id: string): boolean => {
+        const c = hiddenMemo.get(id);
+        if (c !== undefined) return c;
+        const n = nodesById.get(id);
+        if (!n) { hiddenMemo.set(id, false); return false; }
+        if (n.hidden) { hiddenMemo.set(id, true); return true; }
+        if (n.parentId) {
+          const v = isHidden(n.parentId);
+          hiddenMemo.set(id, v);
+          return v;
+        }
+        hiddenMemo.set(id, false);
+        return false;
+      };
+
+      const filtered = (base as NodeData[])
+        .filter((n) => !isHidden(n.id))
+        .filter((n) => rectIntersects(viewRect, { x: n.x, y: n.y, w: n.width, h: n.height }));
 
       // keepAlive：额外合并“不被卸载”的节点
       const keepAlive = virtualization?.keepAlive;
