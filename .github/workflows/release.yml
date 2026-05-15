@@ -3,9 +3,8 @@ name: Release
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - 'site/**'
-      - '.github/workflows/deploy-docs.yml'
+    paths:
+      - '.changeset/**'
   workflow_dispatch:
 
 permissions:
