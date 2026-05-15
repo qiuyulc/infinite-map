@@ -1,6 +1,6 @@
 ---
-"@qiuyulc/infinite-map": major
-"@qiuyulc/infinite-map-editor": major
+"@qiuyulc/infinite-map": patch
+"@qiuyulc/infinite-map-editor": patch
 ---
 
 相机坐标系从视口左上角改为视口中心原点，解决编辑/预览切换时节点偏移问题。
