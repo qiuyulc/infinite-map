@@ -192,6 +192,32 @@ const plugins = composePlugins([
 
 ---
 
+## 固定画布（海报模式）
+
+默认情况下世界原点 `(0,0)` 位于视口中心，适合白板、流程图等无限场景。如果你需要固定尺寸的画布（海报、封面编辑器），用 `initialCamera` 一行切换到"左上角对齐"模式：
+
+```tsx
+const CANVAS_W = 800;
+const CANVAS_H = 600;
+
+const nodes: NodeData[] = [
+  { id: 'bg', x: 0, y: 0, width: CANVAS_W, height: CANVAS_H, locked: true },
+  { id: 'title', x: 30, y: 20, width: 200, height: 40, label: '标题' },
+];
+
+<InfiniteMap
+  nodes={nodes}
+  panEnabled={false}
+  zoomEnabled={false}
+  initialCamera={{ x: 0, y: 0, zoom: 1 }}
+  onNodesChange={setNodes}
+/>
+```
+
+`initialCamera={{ x: 0, y: 0 }}` 把视口左上角钉在世界原点，此后节点 `x: 30` 就表示"距左边 30px"——和传统设计工具的习惯一致。
+
+---
+
 ## 下一步
 
 - [插件配置](/editor/plugin-config) — 所有可配置项和默认值

@@ -97,3 +97,20 @@ export function Preview({ nodes }: { nodes: NodeData[] }) {
 - `Space` 平移模式
 - 触控板两指平移（wheel pan）
 
+## 4）固定画布模式（海报 / 封面）
+
+默认相机以世界原点 `(0,0)` 为视口中心。如果你需要固定尺寸画布（例如 800×600 的海报），且希望节点坐标按"距左上角距离"来写：
+
+```tsx
+<InfiniteMap
+  nodes={nodes}
+  panEnabled={false}
+  zoomEnabled={false}
+  initialCamera={{ x: 0, y: 0, zoom: 1 }}
+/>
+```
+
+- `initialCamera={{ x: 0, y: 0, zoom: 1 }}` 把视口左上角对齐世界原点
+- 节点 `x: 30` 即距画布左边 30px，无需手动换算
+- 搭配 `panEnabled={false}` 和 `zoomEnabled={false}` 锁定视口，模拟传统设计工具的固定画布体验
+
