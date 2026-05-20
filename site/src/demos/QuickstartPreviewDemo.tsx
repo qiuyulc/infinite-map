@@ -15,3 +15,4 @@ export function QuickstartPreviewDemo() {
     </div>
   );
 }
+export default QuickstartPreviewDemo;

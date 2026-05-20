@@ -2,9 +2,8 @@
 slug: /infinite-map-editor/quickstart
 ---
 
-import { QuickstartPreviewDemo } from '@site/src/demos/QuickstartPreviewDemo';
-import { QuickstartEditorDemo } from '@site/src/demos/QuickstartEditorDemo';
-import BrowserOnly from '@docusaurus/BrowserOnly';
+import { QuickstartPreviewDemo } from "../../src/demos/QuickstartPreviewDemo";
+import { QuickstartEditorDemo } from "../../src/demos/QuickstartEditorDemo";
 
 # 编辑器快速上手
 
@@ -30,17 +29,15 @@ pnpm add @qiuyulc/infinite-map @qiuyulc/infinite-map-editor
 import { InfiniteMap, type NodeData } from "@qiuyulc/infinite-map";
 
 const nodes: NodeData[] = [
-  { id: "1", x: 100, y: 100, width: 200, height: 120, label: "Hello" },
+  { id: "1", x: -100, y: -60, width: 200, height: 120, label: "Hello" },
 ];
 
 <InfiniteMap nodes={nodes} />;
 ```
 
-<!-- 此时可以 pan/zoom 浏览，但没有任何编辑能力。 -->
+{/* 此时可以 pan/zoom 浏览，但没有任何编辑能力。 */}
 
-<BrowserOnly fallback={<div style={{ height: 380 }} />}>
-  {() => <QuickstartPreviewDemo />}
-</BrowserOnly>
+<QuickstartPreviewDemo />
 
 > 👆 可以拖拽平移、滚轮缩放。但无法编辑节点。
 
@@ -48,9 +45,7 @@ const nodes: NodeData[] = [
 
 ## 启用完整编辑器
 
-<BrowserOnly fallback={<div style={{ height: 460 }} />}>
-  {() => <QuickstartEditorDemo />}
-</BrowserOnly>
+<QuickstartEditorDemo />
 
 > 👆 **点击选中节点 → 拖拽移动 → 拖动角点缩放 → 旋转手柄旋转。** 试试看！
 
@@ -62,8 +57,8 @@ import type { NodeData } from "@qiuyulc/infinite-map";
 
 export default function App() {
   const [nodes, setNodes] = useState<NodeData[]>([
-    { id: "1", x: 100, y: 100, width: 200, height: 120, label: "Hello" },
-    { id: "2", x: 400, y: 200, width: 200, height: 120, label: "World" },
+    { id: "1", x: -120, y: -60, width: 180, height: 100, label: "Hello" },
+    { id: "2", x: 100, y: 40, width: 180, height: 100, label: "World" },
   ]);
 
   const plugins = createDefaultEditorPluginsWithUI({
@@ -136,7 +131,7 @@ import { applyPatchesToNodes } from "@qiuyulc/infinite-map";
 />;
 ```
 
-`onPatches` 输出细粒度差量变更（`NodePatch[]`），适合高频编辑和多人协作。详见 [编辑与变更流](/infinite-map-editor/editing)。
+`onPatches` 输出细粒度差量变更（`NodePatch[]`），适合高频编辑和多人协作。详见 [编辑与变更流](/editor/editing)。
 
 ---
 
@@ -170,7 +165,7 @@ const plugins = createDefaultEditorPluginsWithUI({
 });
 ```
 
-全部配置项见 [插件配置](/infinite-map-editor/plugin-config)。
+全部配置项见 [插件配置](/editor/plugin-config)。
 
 ---
 
@@ -193,14 +188,14 @@ const plugins = composePlugins([
 ]);
 ```
 
-`composePlugins()` 自动校验依赖、解决冲突、按优先级排序。详见 [插件开发指南](/infinite-map-editor/plugin-development)。
+`composePlugins()` 自动校验依赖、解决冲突、按优先级排序。详见 [插件开发指南](/editor/plugin-development)。
 
 ---
 
 ## 下一步
 
-- [插件配置](/infinite-map-editor/plugin-config) — 所有可配置项和默认值
-- [操作与快捷键](/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
-- [编辑与变更流](/infinite-map-editor/editing) — 深入理解 patches 机制
-- [插件开发指南](/infinite-map-editor/plugin-development) — 编写自定义插件
-- [编辑器定制](/infinite-map-editor/customization) — 定制工具栏/右键菜单/HUD
+- [插件配置](/editor/plugin-config) — 所有可配置项和默认值
+- [操作与快捷键](/editor/shortcuts-and-operations) — 完整交互指南
+- [编辑与变更流](/editor/editing) — 深入理解 patches 机制
+- [插件开发指南](/editor/plugin-development) — 编写自定义插件
+- [编辑器定制](/editor/customization) — 定制工具栏/右键菜单/HUD

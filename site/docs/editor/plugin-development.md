@@ -9,6 +9,7 @@
 插件是实现 `InfiniteMapPlugin` 接口的普通对象。每个插件负责一种编辑能力（如选择、拖拽、历史记录），通过统一的协议接入画布运行时。
 
 核心价值：
+
 - **可组合**：多个插件可以堆叠，`composePlugins()` 自动处理依赖和顺序
 - **可开关**：通过 `enabled` 字段按需启用/禁用
 - **不侵入内核**：所有编辑能力都实现在插件层，core 包保持不变
@@ -18,15 +19,15 @@
 ## 最小插件
 
 ```ts
-import type { InfiniteMapPlugin } from '@qiuyulc/infinite-map';
+import type { InfiniteMapPlugin } from "@qiuyulc/infinite-map";
 
 const myPlugin: InfiniteMapPlugin = {
-  id: 'my-plugin',
+  id: "my-plugin",
   setup: (ctx) => {
-    console.log('插件已挂载，当前节点数:', ctx.getNodes().length);
+    console.log("插件已挂载，当前节点数:", ctx.getNodes().length);
   },
   teardown: () => {
-    console.log('插件已卸载');
+    console.log("插件已卸载");
   },
 };
 ```
@@ -62,8 +63,8 @@ type InfiniteMapPlugin = {
 
   // ---- 视觉输出 ----
   overlay?: OverlayComponent;
-  slot?: 'background' | 'overlay' | 'hud';
-  overlayPointerEvents?: 'none' | 'auto';
+  slot?: "background" | "overlay" | "hud";
+  overlayPointerEvents?: "none" | "auto";
 
   // ---- 命令 ----
   commands?: Record<string, Command>;
@@ -112,6 +113,7 @@ type InfiniteMapPlugin = {
 ```
 
 `setup` 中可以安全地：
+
 - 读写 `ctx.store`
 - 注册 `ctx.registerService(name, service)`
 - 订阅 `ctx.bus.on(event, handler)`
@@ -266,6 +268,7 @@ Raw Pointer Event
 ```
 
 **关键约定**：
+
 - `onMove` 期间建议用 `phase: 'move'` 提交 patch（走 DOM 直写性能路径）
 - `onEnd` 时用 `phase: 'end'` 提交最终 patch
 - 不同 phase 的 patch 会被 history 插件自动合并为一条 undo 记录
@@ -299,25 +302,26 @@ Raw Pointer Event
 ## 5. 视觉输出：Overlay
 
 ```tsx
-import type { OverlayComponent } from '@qiuyulc/infinite-map';
+import type { OverlayComponent } from "@qiuyulc/infinite-map";
 
 const MyOverlay: OverlayComponent = ({ ctx }) => {
   const camera = ctx.getCamera();
   return (
-    <div style={{ position: 'absolute', left: 0, top: 0 }}>
+    <div style={{ position: "absolute", left: 0, top: 0 }}>
       Zoom: {camera.zoom.toFixed(2)}
     </div>
   );
 };
 
 const myPlugin: InfiniteMapPlugin = {
-  id: 'my-info-panel',
-  slot: 'hud',
+  id: "my-info-panel",
+  slot: "hud",
   overlay: MyOverlay,
 };
 ```
 
 slot 决定了渲染层级：
+
 - `'background'`：节点层之下（用于背景效果）
 - `'overlay'`：节点层之上（用于选择框/对齐线等编辑辅助）
 - `'hud'`：最上层（用于面板/工具栏/小地图等 UI）
@@ -348,6 +352,7 @@ slot 决定了渲染层级：
 ```
 
 命令可以被多种方式触发：
+
 - 快捷键（由 `shortcuts` 插件映射）
 - 工具栏按钮（通过 `hud` service 注册）
 - 右键菜单（通过 context menu service）
@@ -387,6 +392,7 @@ slot 决定了渲染层级：
 ```
 
 内置 service 示例：
+
 - `'camera'`：相机驱动服务（core 层注册）
 - `'document'`：统一 patches 入口
 - `'hud'`：Toolbar / ContextMenu 的贡献注册表
@@ -402,13 +408,13 @@ slot 决定了渲染层级：
 使用 `STORE_KEYS` 常量避免散落的字符串字面量：
 
 ```ts
-import { STORE_KEYS } from '@qiuyulc/infinite-map';
+import { STORE_KEYS } from "@qiuyulc/infinite-map";
 
 // 读取选中
 const ids = ctx.store.get<string[]>(STORE_KEYS.selectionIds);
 
 // 写入吸附引导线
-ctx.store.set(STORE_KEYS.snapGuides, [{ axis: 'x', value: 100 }]);
+ctx.store.set(STORE_KEYS.snapGuides, [{ axis: "x", value: 100 }]);
 
 // 订阅变化
 ctx.store.subscribe(STORE_KEYS.snapGuides, () => {
@@ -418,19 +424,19 @@ ctx.store.subscribe(STORE_KEYS.snapGuides, () => {
 
 关键 Store Key：
 
-| Key | 用途 |
-|---|---|
-| `selection:ids` | 当前选中的节点 ID 列表 |
-| `keyboard:space` | Space 键是否按下 |
-| `drag:state` | 拖拽手势状态 |
-| `resize:state` | 缩放手势状态 |
-| `snap:config` | 吸附配置 |
-| `snap:guides` | 当前吸附引导线 |
-| `history:undoStack` | 撤销栈 |
-| `history:redoStack` | 重做栈 |
-| `clipboard:data` | 剪贴板数据 |
-| `toolbar:items` | 工具栏贡献项 |
-| `contextmenu:items` | 右键菜单贡献项 |
+| Key                 | 用途                   |
+| ------------------- | ---------------------- |
+| `selection:ids`     | 当前选中的节点 ID 列表 |
+| `keyboard:space`    | Space 键是否按下       |
+| `drag:state`        | 拖拽手势状态           |
+| `resize:state`      | 缩放手势状态           |
+| `snap:config`       | 吸附配置               |
+| `snap:guides`       | 当前吸附引导线         |
+| `history:undoStack` | 撤销栈                 |
+| `history:redoStack` | 重做栈                 |
+| `clipboard:data`    | 剪贴板数据             |
+| `toolbar:items`     | 工具栏贡献项           |
+| `contextmenu:items` | 右键菜单贡献项         |
 
 完整列表见 `packages/infinite-map/src/editor/keys.ts`。
 
@@ -440,11 +446,11 @@ ctx.store.subscribe(STORE_KEYS.snapGuides, () => {
 
 ```ts
 // 发布
-ctx.bus.emit('selection:change', { ids: ['1', '2'] });
+ctx.bus.emit("selection:change", { ids: ["1", "2"] });
 
 // 订阅
-const unsub = ctx.bus.on('selection:change', ({ ids }) => {
-  console.log('选中变化:', ids);
+const unsub = ctx.bus.on("selection:change", ({ ids }) => {
+  console.log("选中变化:", ids);
 });
 // 卸载时解绑
 // unsub();
@@ -452,16 +458,16 @@ const unsub = ctx.bus.on('selection:change', ({ ids }) => {
 
 主要事件：
 
-| 事件 | 用途 |
-|---|---|
-| `selection:change` | 选中变化 |
-| `drag:start` / `drag:move` / `drag:end` | 拖拽生命周期 |
-| `hover:change` | hover 目标变化 |
-| `patches:applied` | patches 已应用（history 监听此事件） |
-| `command:run` | 命令已执行 |
-| `camera:set` / `camera:changed` | 相机变更 |
-| `history:undo` / `history:redo` | 撤销/重做 |
-| `export:png` | 导出 PNG 请求 |
+| 事件                                    | 用途                                 |
+| --------------------------------------- | ------------------------------------ |
+| `selection:change`                      | 选中变化                             |
+| `drag:start` / `drag:move` / `drag:end` | 拖拽生命周期                         |
+| `hover:change`                          | hover 目标变化                       |
+| `patches:applied`                       | patches 已应用（history 监听此事件） |
+| `command:run`                           | 命令已执行                           |
+| `camera:set` / `camera:changed`         | 相机变更                             |
+| `history:undo` / `history:redo`         | 撤销/重做                            |
+| `export:png`                            | 导出 PNG 请求                        |
 
 ---
 
@@ -475,8 +481,8 @@ import type {
   HitTestContributor,
   PointerDownProcessor,
   Command,
-} from '@qiuyulc/infinite-map';
-import { STORE_KEYS } from '@qiuyulc/infinite-map';
+} from "@qiuyulc/infinite-map";
+import { STORE_KEYS } from "@qiuyulc/infinite-map";
 
 // ---- 类型 ----
 type MyPluginOptions = {
@@ -495,19 +501,19 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
 
   return {
     // 元信息
-    id: 'my-plugin',
+    id: "my-plugin",
     priority: 50,
-    provides: ['myCapability'],
-    requires: ['commands', 'selection'],
-    order: { after: ['selection'], before: ['drag'] },
+    provides: ["myCapability"],
+    requires: ["commands", "selection"],
+    order: { after: ["selection"], before: ["drag"] },
 
     // 生命周期
     setup: (ctx) => {
-      ctx.store.set('my:data', { initialized: true });
+      ctx.store.set("my:data", { initialized: true });
 
-      ctx.bus.on('selection:change', ({ ids }) => {
+      ctx.bus.on("selection:change", ({ ids }) => {
         if (ids.length > 0) {
-          ctx.store.set('my:lastSelection', ids);
+          ctx.store.set("my:lastSelection", ids);
         }
       });
     },
@@ -518,8 +524,8 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
     // 非指针输入
     input: {
       onKeyDown: (e, ctx) => {
-        if (e.code === 'KeyM' && e.modifiers.ctrl) {
-          ctx.runCommand?.('my-plugin.action');
+        if (e.code === "KeyM" && e.modifiers.ctrl) {
+          ctx.runCommand?.("my-plugin.action");
           return { handled: true };
         }
         return { handled: false };
@@ -529,14 +535,22 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
     // 命中检测
     hitTests: [
       {
-        id: 'my-hit',
+        id: "my-hit",
         priority: 100,
         hitTest: (e, ctx) => {
           const nodes = ctx.queryNodesInWorldRect({
-            x: e.world.x - 5, y: e.world.y - 5, w: 10, h: 10,
+            x: e.world.x - 5,
+            y: e.world.y - 5,
+            w: 10,
+            h: 10,
           });
           if (nodes.length > 0) {
-            return { kind: 'handle', owner: nodes[0].id, id: 'my-handle', handle: 'my' };
+            return {
+              kind: "handle",
+              owner: nodes[0].id,
+              id: "my-handle",
+              handle: "my",
+            };
           }
           return null;
         },
@@ -546,10 +560,10 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
     // 指针预处理
     pointerDownProcessors: [
       {
-        id: 'my-processor',
+        id: "my-processor",
         priority: 10,
         onPointerDown: (e, ctx, hit) => {
-          if (hit.kind === 'handle' && hit.handle === 'my') {
+          if (hit.kind === "handle" && hit.handle === "my") {
             // 做一些事，不阻断手势
           }
         },
@@ -559,36 +573,39 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
     // 手势
     gestures: [
       {
-        id: 'my-gesture',
+        id: "my-gesture",
         priority: 100,
         canStart: (e, ctx, hit) => {
-          return e.button === 0 && hit.kind === 'handle' && hit.handle === 'my';
+          return e.button === 0 && hit.kind === "handle" && hit.handle === "my";
         },
         onStart: (e, ctx, hit) => {
           const st: MyGestureState = {
             pointerId: e.pointerId,
-            primaryId: hit.kind === 'handle' ? hit.owner : '',
+            primaryId: hit.kind === "handle" ? hit.owner : "",
             startWorld: { x: e.world.x, y: e.world.y },
           };
-          ctx.store.set('my:gestureState', st);
+          ctx.store.set("my:gestureState", st);
         },
         onMove: (e, ctx) => {
-          const st = ctx.store.get<MyGestureState>('my:gestureState');
+          const st = ctx.store.get<MyGestureState>("my:gestureState");
           if (!st || st.pointerId !== e.pointerId) return;
           // 计算并提交 patch
           ctx.requestRender();
         },
         onEnd: (e, ctx) => {
-          const st = ctx.store.get<MyGestureState>('my:gestureState');
+          const st = ctx.store.get<MyGestureState>("my:gestureState");
           if (!st || st.pointerId !== e.pointerId) return;
           ctx.applyPatches([], {
-            source: 'plugin', plugin: 'my-plugin', reason: 'drag', phase: 'end',
+            source: "plugin",
+            plugin: "my-plugin",
+            reason: "drag",
+            phase: "end",
           });
-          ctx.store.set('my:gestureState', null);
+          ctx.store.set("my:gestureState", null);
           ctx.requestRender();
         },
         onCancel: (e, ctx) => {
-          ctx.store.set('my:gestureState', null);
+          ctx.store.set("my:gestureState", null);
           ctx.requestRender();
         },
       } satisfies Gesture,
@@ -597,20 +614,22 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
     // 输入钩子
     inputHooks: {
       onBeforeHitTest: (e, ctx) => {
-        ctx.store.set('my:lastPointerScreen', e.screen);
+        ctx.store.set("my:lastPointerScreen", e.screen);
       },
     },
 
     // 命令
     commands: {
-      'my-plugin.action': {
-        id: 'my-plugin.action',
-        title: 'My Action',
-        shortcut: 'Mod+M',
+      "my-plugin.action": {
+        id: "my-plugin.action",
+        title: "My Action",
+        shortcut: "Mod+M",
         run: (ctx, payload) => {
-          const source = payload?.source ?? 'api';
+          const source = payload?.source ?? "api";
           ctx.applyPatches([], {
-            source: 'plugin', plugin: 'my-plugin', reason: 'keyboard',
+            source: "plugin",
+            plugin: "my-plugin",
+            reason: "keyboard",
           });
         },
       } satisfies Command,
@@ -641,6 +660,6 @@ export function createMyPlugin(opts: MyPluginOptions = {}): InfiniteMapPlugin {
 
 ## 下一步
 
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 所有内置插件的详细说明
-- [编辑器定制](/infinite-map-editor/customization) — 扩展工具栏/右键菜单
-- [架构总览](/infinite-map-editor/overview) — 理解 editor 包的整体设计
+- [插件 API 参考](/editor/plugin-reference) — 所有内置插件的详细说明
+- [编辑器定制](/editor/customization) — 扩展工具栏/右键菜单
+- [架构总览](/editor/overview) — 理解 editor 包的整体设计

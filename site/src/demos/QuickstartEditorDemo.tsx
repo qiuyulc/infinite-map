@@ -21,3 +21,4 @@ export function QuickstartEditorDemo() {
     </div>
   );
 }
+export default QuickstartEditorDemo;

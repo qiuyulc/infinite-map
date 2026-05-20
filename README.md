@@ -54,7 +54,7 @@ pnpm -C docs dev
 import { InfiniteMap, type NodeData } from "@qiuyulc/infinite-map";
 
 const nodes: NodeData[] = [
-  { id: "a", x: 0, y: 0, width: 120, height: 60, label: "A" },
+  { id: "a", x: -60, y: -30, width: 120, height: 60, label: "A" },
 ];
 
 export function App() {

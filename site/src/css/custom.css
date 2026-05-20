@@ -1,15 +1,10 @@
-/* 自定义 CSS */
-/* Docusaurus 默认主题已包含暗色模式支持，这里只做微调 */
-
+/* Rspress 自定义样式 */
 :root {
-  --ifm-color-primary: #630ed4;
-  --ifm-color-primary-dark: #510bad;
-  --ifm-color-primary-darker: #41098c;
-  --ifm-color-primary-darkest: #31076a;
-  --ifm-color-primary-light: #7c24f0;
-  --ifm-color-primary-lighter: #924af3;
-  --ifm-color-primary-lightest: #af7af6;
-  --ifont-code-font-size: 95%;
+  --rp-c-brand: #630ed4;
+  --rp-c-brand-light: #7c24f0;
+  --rp-c-brand-lighter: #924af3;
+  --rp-c-brand-dark: #510bad;
+  --rp-c-brand-darker: #41098c;
 }
 
 /* live code block 的编辑器区域需要高度限制，防止画布撑爆页面 */

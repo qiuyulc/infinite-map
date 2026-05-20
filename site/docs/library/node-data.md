@@ -81,8 +81,8 @@ type NodeData = {
 
 ```ts
 const nodes: NodeData[] = [
-  { id: '1', x: 0, y: 0, width: 150, height: 80, label: 'Hello' },
-  { id: '2', x: 200, y: 100, width: 150, height: 80, label: 'World' },
+  { id: '1', x: -160, y: -40, width: 150, height: 80, label: 'Hello' },
+  { id: '2', x: 10, y: -40, width: 150, height: 80, label: 'World' },
 ]
 ```
 
@@ -90,9 +90,9 @@ const nodes: NodeData[] = [
 
 ```ts
 const nodes: NodeData[] = [
-  { id: 'group-1', x: 0, y: 0, width: 300, height: 200, kind: 'group', label: 'Group 1' },
-  { id: 'a', x: 10, y: 10, width: 100, height: 60, parentId: 'group-1', label: 'Child A' },
-  { id: 'b', x: 150, y: 10, width: 100, height: 60, parentId: 'group-1', label: 'Child B' },
+  { id: 'group-1', x: -150, y: -100, width: 300, height: 200, kind: 'group', label: 'Group 1' },
+  { id: 'a', x: -140, y: -90, width: 100, height: 60, parentId: 'group-1', label: 'Child A' },
+  { id: 'b', x: 0, y: -90, width: 100, height: 60, parentId: 'group-1', label: 'Child B' },
 ]
 ```
 
@@ -106,7 +106,7 @@ const chartDataStore = {
 
 // NodeData 只放引用
 const nodes: NodeData[] = [
-  { id: 'chart-1', x: 0, y: 0, width: 400, height: 300, resourceId: 'chart-1' },
+  { id: 'chart-1', x: -200, y: -150, width: 400, height: 300, resourceId: 'chart-1' },
 ]
 
 // 渲染时从外部 store 读取

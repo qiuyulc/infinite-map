@@ -10,9 +10,9 @@ Infinite Map 的编辑器插件不会直接修改你的数据源，而是产生 
 - `onPatches(patches)`：细粒度差量变更，更适合高频编辑与多人协作（推荐）。
 
 ```ts
-import { applyPatchesToNodes } from '@qiuyulc/infinite-map'
+import { applyPatchesToNodes } from "@qiuyulc/infinite-map";
 
-setNodes(prev => applyPatchesToNodes(prev, patches))
+setNodes((prev) => applyPatchesToNodes(prev, patches));
 ```
 
 ---
@@ -23,25 +23,40 @@ setNodes(prev => applyPatchesToNodes(prev, patches))
 
 ```ts
 type NodePatch =
-  | { type: 'move'; id: string; x: number; y: number }
-  | { type: 'set'; id: string; data: Partial<NodeData> }
-  | { type: 'add'; node: NodeData }
-  | { type: 'remove'; id: string }
+  | { type: "move"; id: string; x: number; y: number }
+  | { type: "set"; id: string; data: Partial<NodeData> }
+  | { type: "add"; node: NodeData }
+  | { type: "remove"; id: string };
 ```
 
 每条 patch 伴随 `ChangeMeta` 描述来源：
 
 ```ts
 type ChangeMeta = {
-  source: 'plugin';
+  source: "plugin";
   plugin: string;
-  reason: 'drag' | 'click-select' | 'marquee-select' | 'snap' | 'align'
-        | 'distribute' | 'keyboard' | 'delete' | 'copy' | 'cut' | 'paste'
-        | 'duplicate' | 'import' | 'undo' | 'redo' | 'group' | 'ungroup'
-        | 'group-sync';
-  phase?: 'start' | 'move' | 'end';
+  reason:
+    | "drag"
+    | "click-select"
+    | "marquee-select"
+    | "snap"
+    | "align"
+    | "distribute"
+    | "keyboard"
+    | "delete"
+    | "copy"
+    | "cut"
+    | "paste"
+    | "duplicate"
+    | "import"
+    | "undo"
+    | "redo"
+    | "group"
+    | "ungroup"
+    | "group-sync";
+  phase?: "start" | "move" | "end";
   ids?: string[];
-}
+};
 ```
 
 - `meta.source`：变更来源（目前统一为 `'plugin'`）
@@ -81,6 +96,6 @@ type ChangeMeta = {
 
 ## 下一步
 
-- [操作与快捷键](/infinite-map-editor/shortcuts-and-operations) — 完整交互指南
-- [插件 API 参考](/infinite-map-editor/plugin-reference) — 所有内置插件详解
-- [多人协作接入](/library/collaboration) — patches 在协作场景的应用
+- [操作与快捷键](/editor/shortcuts-and-operations) — 完整交互指南
+- [插件 API 参考](/editor/plugin-reference) — 所有内置插件详解
+- [多人协作接入](/infinite-map/library/collaboration) — patches 在协作场景的应用

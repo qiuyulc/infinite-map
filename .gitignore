@@ -17,3 +17,5 @@ lib
 
 coverage
 site/build
+
+doc_build

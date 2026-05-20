@@ -28,8 +28,8 @@
 **Requires**: —  
 **Options**: `KeyboardStatePluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
+| 参数       | 类型     | 默认值                     | 说明                     |
+| ---------- | -------- | -------------------------- | ------------------------ |
 | `spaceKey` | `string` | `STORE_KEYS.keyboardSpace` | Space 键状态的 store key |
 
 **Store Key**: `keyboard:space` (boolean)  
@@ -65,9 +65,9 @@
 **Requires**: `commands`  
 **Options**: `ShortcutsPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `commandShortcuts` | `Record<string, string \| null>` | — | 命令快捷覆盖（`null` 禁用） |
+| 参数               | 类型                             | 默认值 | 说明                        |
+| ------------------ | -------------------------------- | ------ | --------------------------- |
+| `commandShortcuts` | `Record<string, string \| null>` | —      | 命令快捷覆盖（`null` 禁用） |
 
 **Input**: `onKeyDown`（触发快捷键映射）
 
@@ -81,11 +81,12 @@
 **Requires**: `commands`  
 **Options**: `HistoryPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `limit` | `number` | `200` | 历史栈最大长度 |
+| 参数    | 类型     | 默认值 | 说明           |
+| ------- | -------- | ------ | -------------- |
+| `limit` | `number` | `200`  | 历史栈最大长度 |
 
 **Commands**:
+
 - `history.undo`（`Mod+Z`）
 - `history.redo`（`Mod+Shift+Z`）
 
@@ -102,14 +103,15 @@
 **Requires**: `commands`  
 **Options**: `ViewCommandsPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `paddingPx` | `number` | `48` | fit 时的 padding（屏幕像素） |
-| `zoomStep` | `number` | `1.2` | zoom 步进倍率 |
-| `minZoom` | `number` | `0.25` | 最小缩放 |
-| `maxZoom` | `number` | `2.5` | 最大缩放 |
+| 参数        | 类型     | 默认值 | 说明                         |
+| ----------- | -------- | ------ | ---------------------------- |
+| `paddingPx` | `number` | `48`   | fit 时的 padding（屏幕像素） |
+| `zoomStep`  | `number` | `1.2`  | zoom 步进倍率                |
+| `minZoom`   | `number` | `0.25` | 最小缩放                     |
+| `maxZoom`   | `number` | `2.5`  | 最大缩放                     |
 
 **Commands**:
+
 - `view.zoomIn`（`Mod+=`）
 - `view.zoomOut`（`Mod+-`）
 - `view.resetZoom`
@@ -131,6 +133,7 @@
 **Options**: 无
 
 **Commands**:
+
 - `z.bringToFront`
 - `z.bringForward`
 - `z.sendBackward`
@@ -148,6 +151,7 @@
 **Options**: `ExportPngPluginOptions`
 
 **Commands**:
+
 - `file.exportPng`
 
 **Bus Events**: 触发 `export:png`
@@ -164,10 +168,10 @@
 **Requires**: —  
 **Options**: `SelectionPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `storeKey` | `string` | — | 自定义 selection store key |
-| `clearOnBlankClick` | `boolean` | — | 点击空白是否清空选择 |
+| 参数                | 类型      | 默认值 | 说明                       |
+| ------------------- | --------- | ------ | -------------------------- |
+| `storeKey`          | `string`  | —      | 自定义 selection store key |
+| `clearOnBlankClick` | `boolean` | —      | 点击空白是否清空选择       |
 
 **Store Key**: `selection:ids` (string[])  
 **Bus Events**: 触发 `selection:change`  
@@ -185,13 +189,13 @@
 **Requires**: `selection`  
 **Options**: `MarqueeSelectPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `true` | 是否启用 |
+| 参数           | 类型      | 默认值  | 说明                    |
+| -------------- | --------- | ------- | ----------------------- |
+| `enabled`      | `boolean` | `true`  | 是否启用                |
 | `requireShift` | `boolean` | `false` | 是否需要 Shift 才能框选 |
-| `storeKey` | `string` | — | 自定义 store key |
-| `selectionKey` | `string` | — | 自定义 selection key |
-| `minDragPx` | `number` | — | 形成框选的最小拖动距离 |
+| `storeKey`     | `string`  | —       | 自定义 store key        |
+| `selectionKey` | `string`  | —       | 自定义 selection key    |
+| `minDragPx`    | `number`  | —       | 形成框选的最小拖动距离  |
 
 **Store Key**: `marquee:state`  
 **Gesture**: marquee 手势（`canStart` 判断是否空白区域）  
@@ -209,11 +213,11 @@
 **Requires**: —  
 **Options**: `DragPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `dragKey` | `string` | — | 自定义 drag store key |
+| 参数           | 类型      | 默认值 | 说明                       |
+| -------------- | --------- | ------ | -------------------------- |
+| `dragKey`      | `string`  | —      | 自定义 drag store key      |
 | `selectOnDrag` | `boolean` | `true` | 拖拽未选中节点时是否先选中 |
-| `selectionKey` | `string` | — | 自定义 selection key |
+| `selectionKey` | `string`  | —      | 自定义 selection key       |
 
 **Store Key**: `drag:state`  
 **Bus Events**: 触发 `drag:start` / `drag:move` / `drag:end`  
@@ -229,12 +233,12 @@
 **Requires**: —  
 **Options**: `ResizePluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `selectionKey` | `string` | — | 自定义 selection key |
-| `spaceKey` | `string` | — | 自定义 space key |
-| `hitRadiusPx` | `number` | — | 手柄命中半径（px） |
-| `minSize` | `number` | — | 最小宽高（世界单位） |
+| 参数           | 类型     | 默认值 | 说明                 |
+| -------------- | -------- | ------ | -------------------- |
+| `selectionKey` | `string` | —      | 自定义 selection key |
+| `spaceKey`     | `string` | —      | 自定义 space key     |
+| `hitRadiusPx`  | `number` | —      | 手柄命中半径（px）   |
+| `minSize`      | `number` | —      | 最小宽高（世界单位） |
 
 **Store Key**: `resize:state`  
 **HitTests**: 8 个缩放手柄命中检测  
@@ -280,12 +284,13 @@
 **Requires**: `commands`, `selection`, `history`  
 **Options**: `ClipboardPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `true` | 是否启用 |
-| `offsetWorld` | `number` | — | paste/duplicate 偏移量（世界单位） |
+| 参数          | 类型      | 默认值 | 说明                               |
+| ------------- | --------- | ------ | ---------------------------------- |
+| `enabled`     | `boolean` | `true` | 是否启用                           |
+| `offsetWorld` | `number`  | —      | paste/duplicate 偏移量（世界单位） |
 
 **Commands**:
+
 - `edit.copy`（`Mod+C`）
 - `edit.paste`（`Mod+V`）
 - `edit.cut`（`Mod+X`）
@@ -309,9 +314,9 @@
 
 #### Commands
 
-| Command | 快捷键 | 说明 |
-|---|---|---|
-| `edit.group` | `Mod+G` | 将当前选中的节点编入新 group |
+| Command        | 快捷键        | 说明                                                    |
+| -------------- | ------------- | ------------------------------------------------------- |
+| `edit.group`   | `Mod+G`       | 将当前选中的节点编入新 group                            |
 | `edit.ungroup` | `Shift+Mod+G` | 将选中的 group 解组（删除 group，子节点 parentId 清空） |
 
 ---
@@ -331,6 +336,7 @@
 #### 解组规则
 
 `edit.ungroup` 仅对 group 节点生效（需单选一个 group）。解组时：
+
 - 删除该 group 节点
 - 其直接子节点（`parentId === groupId`）的 `parentId` 置为 `undefined`
 - 子节点变为选中状态
@@ -341,15 +347,15 @@
 
 Group 的存在改变了点击选择的行为：
 
-| 操作 | 行为 |
-|---|---|
-| 单击 group 子节点 | 自动提升到最外层祖先 group 并选中 |
-| 单击无 group 归属的节点 | 选中节点自身 |
-| 双击节点 | 穿透提升，直接选中该节点自身 |
-| `Shift` + 单击 | 提升到最外层 group 后 toggle |
-| `Shift` + 双击 | 与普通双击相同（穿透选中该节点） |
-| 单击 group 外框 | 选中 group |
-| 双击 group 外框 | 穿透选中 group 自身 |
+| 操作                    | 行为                              |
+| ----------------------- | --------------------------------- |
+| 单击 group 子节点       | 自动提升到最外层祖先 group 并选中 |
+| 单击无 group 归属的节点 | 选中节点自身                      |
+| 双击节点                | 穿透提升，直接选中该节点自身      |
+| `Shift` + 单击          | 提升到最外层 group 后 toggle      |
+| `Shift` + 双击          | 与普通双击相同（穿透选中该节点）  |
+| 单击 group 外框         | 选中 group                        |
+| 双击 group 外框         | 穿透选中 group 自身               |
 
 > 已选中的节点再次单击**不执行提升**，保护双击穿透结果不被覆盖。
 
@@ -371,17 +377,17 @@ Group 的存在改变了点击选择的行为：
 
 ```ts
 const grp = ctx.getService<{
-  isGroupId: (id: string) => boolean,
-  getDescendantIds: (groupId: string) => string[],
-  expandIds: (ids: string[]) => string[],
-}>('group');
+  isGroupId: (id: string) => boolean;
+  getDescendantIds: (groupId: string) => string[];
+  expandIds: (ids: string[]) => string[];
+}>("group");
 ```
 
-| 方法 | 说明 |
-|---|---|
-| `isGroupId(id)` | 判断 id 是否为 group 节点 |
-| `getDescendantIds(groupId)` | 获取 group 所有递归后代 id |
-| `expandIds(ids)` | 将 ids 中的 group 展开为其所有后代（用于 drag/resize/rotate） |
+| 方法                        | 说明                                                          |
+| --------------------------- | ------------------------------------------------------------- |
+| `isGroupId(id)`             | 判断 id 是否为 group 节点                                     |
+| `getDescendantIds(groupId)` | 获取 group 所有递归后代 id                                    |
+| `expandIds(ids)`            | 将 ids 中的 group 展开为其所有后代（用于 drag/resize/rotate） |
 
 ---
 
@@ -389,18 +395,18 @@ const grp = ctx.getService<{
 
 从 `@qiuyulc/infinite-map-editor` 导出：
 
-| 函数 | 说明 |
-|---|---|
-| `isGroupNode(n)` | 判断 `n.kind === 'group'` |
-| `buildById(nodes)` | 构建 `Map<id, NodeData>` |
-| `getChildren(nodes, groupId)` | 获取直接子节点（仅一层） |
-| `getDescendantIds(nodes, groupId)` | 获取所有递归后代 id |
-| `getAncestorChain(byId, nodeId)` | 获取某节点的祖先链 |
+| 函数                                | 说明                                               |
+| ----------------------------------- | -------------------------------------------------- |
+| `isGroupNode(n)`                    | 判断 `n.kind === 'group'`                          |
+| `buildById(nodes)`                  | 构建 `Map<id, NodeData>`                           |
+| `getChildren(nodes, groupId)`       | 获取直接子节点（仅一层）                           |
+| `getDescendantIds(nodes, groupId)`  | 获取所有递归后代 id                                |
+| `getAncestorChain(byId, nodeId)`    | 获取某节点的祖先链                                 |
 | `getOutermostGroupId(nodes, hitId)` | 若命中节点是 group 或其子节点，返回最外层 group id |
-| `isLockedEffective(nodes, id)` | 考虑锁定传递后的有效锁定状态 |
-| `isHiddenEffective(nodes, id)` | 考虑隐藏传递后的有效隐藏状态 |
-| `computeBBox(nodes)` | 计算节点集的包围盒 |
-| `expandIdsWithGroups(nodes, ids)` | 展开 ids 中的 group 为其所有后代 |
+| `isLockedEffective(nodes, id)`      | 考虑锁定传递后的有效锁定状态                       |
+| `isHiddenEffective(nodes, id)`      | 考虑隐藏传递后的有效隐藏状态                       |
+| `computeBBox(nodes)`                | 计算节点集的包围盒                                 |
+| `expandIdsWithGroups(nodes, ids)`   | 展开 ids 中的 group 为其所有后代                   |
 
 ---
 
@@ -413,6 +419,7 @@ const grp = ctx.getService<{
 **Options**: 无
 
 **Commands**:
+
 - `edit.lock`
 - `edit.unlock`
 - `edit.hide`
@@ -429,6 +436,7 @@ const grp = ctx.getService<{
 **Options**: 无
 
 **Commands**:
+
 - `edit.alignLeft` / `edit.alignHCenter` / `edit.alignRight`
 - `edit.alignTop` / `edit.alignVCenter` / `edit.alignBottom`
 - `edit.distributeH` / `edit.distributeV`
@@ -457,11 +465,11 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `ToolbarPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `false` | 是否启用 |
-| `items` | `(string \| ToolbarItem)[]` | 内置默认项 | 自定义按钮。字符串按 key 展开（`'\|'` = 分隔线） |
-| `position` | `'top-left' \| 'top-right'` | `'top-left'` | 工具栏位置 |
+| 参数       | 类型                        | 默认值       | 说明                                             |
+| ---------- | --------------------------- | ------------ | ------------------------------------------------ |
+| `enabled`  | `boolean`                   | `false`      | 是否启用                                         |
+| `items`    | `(string \| ToolbarItem)[]` | 内置默认项   | 自定义按钮。字符串按 key 展开（`'\|'` = 分隔线） |
+| `position` | `'top-left' \| 'top-right'` | `'top-left'` | 工具栏位置                                       |
 
 内置 key：`history.undo` `history.redo` `view.zoomOut` `view.zoomIn` `view.resetZoom` `view.fitView` `view.centerView` `edit.delete`
 
@@ -478,9 +486,9 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `ContextMenuPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `storeKey` | `string` | — | 自定义 store key |
+| 参数       | 类型     | 默认值 | 说明             |
+| ---------- | -------- | ------ | ---------------- |
+| `storeKey` | `string` | —      | 自定义 store key |
 
 **Input**: `onContextMenu`  
 **Store Key**: `contextmenu:state`
@@ -495,10 +503,10 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `DefaultContextMenuOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `false` | 是否启用 |
-| `items` | `(string \| ContextMenuItem)[]` | 内置默认项 | 自定义菜单项。字符串按 key 展开（`'\|'` = 分隔线） |
+| 参数      | 类型                            | 默认值     | 说明                                               |
+| --------- | ------------------------------- | ---------- | -------------------------------------------------- |
+| `enabled` | `boolean`                       | `false`    | 是否启用                                           |
+| `items`   | `(string \| ContextMenuItem)[]` | 内置默认项 | 自定义菜单项。字符串按 key 展开（`'\|'` = 分隔线） |
 
 内置 key：`edit.copy` `edit.cut` `edit.paste` `edit.duplicate` `edit.delete` `z.bringToFront` `z.bringForward` `z.sendBackward` `z.sendToBack` `edit.group` `edit.ungroup` `edit.lock` `edit.unlock` `edit.hide` `edit.showAll` `view.fitView` `view.centerView` `view.fitSelection` `view.centerSelection`
 
@@ -515,14 +523,14 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `MinimapPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `true` | 是否启用 |
-| `width` | `number` | `260` | 宽度（px） |
-| `height` | `number` | `160` | 高度（px） |
-| `cachePadding` | `number` | `120` | 缓存区 padding |
-| `includeOrigin` | `boolean` | `true` | 是否强制包含原点 |
-| `showStats` | `boolean` | `false` | 是否显示调试统计 |
+| 参数            | 类型      | 默认值  | 说明             |
+| --------------- | --------- | ------- | ---------------- |
+| `enabled`       | `boolean` | `true`  | 是否启用         |
+| `width`         | `number`  | `260`   | 宽度（px）       |
+| `height`        | `number`  | `160`   | 高度（px）       |
+| `cachePadding`  | `number`  | `120`   | 缓存区 padding   |
+| `includeOrigin` | `boolean` | `true`  | 是否强制包含原点 |
+| `showStats`     | `boolean` | `false` | 是否显示调试统计 |
 
 **Overlay**: `MinimapOverlay`（Canvas 绘制），slot=`hud`  
 **Store Keys**: `minimap:config`、`minimap:inViewCount`、`minimap:needsRedraw`、`minimap:enabled`
@@ -537,10 +545,10 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `RulersPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `true` | 是否启用 |
-| `thickness` | `number` | `24` | 标尺宽度/高度（px） |
+| 参数        | 类型      | 默认值 | 说明                |
+| ----------- | --------- | ------ | ------------------- |
+| `enabled`   | `boolean` | `true` | 是否启用            |
+| `thickness` | `number`  | `24`   | 标尺宽度/高度（px） |
 
 **Overlay**: `RulersOverlay`（SVG 动态绘制），slot=`hud`
 
@@ -554,8 +562,8 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `ZoomDockPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
+| 参数      | 类型      | 默认值 | 说明     |
+| --------- | --------- | ------ | -------- |
 | `enabled` | `boolean` | `true` | 是否启用 |
 
 **Overlay**: `ZoomDockOverlay`，slot=`hud`
@@ -572,8 +580,8 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `HoverHighlightPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
+| 参数      | 类型      | 默认值 | 说明     |
+| --------- | --------- | ------ | -------- |
 | `enabled` | `boolean` | `true` | 是否启用 |
 
 **InputHooks**: `onBeforeHitTest`  
@@ -589,12 +597,12 @@ const grp = ctx.getService<{
 **Requires**: —  
 **Options**: `SnapGuidesPluginOptions`
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `enabled` | `boolean` | `true` | 是否启用 |
-| `guidesEnabled` | `boolean` | `true` | 是否显示辅助线 |
-| `gridSize` | `number \| 'auto'` | `'auto'` | 网格吸附大小（世界单位） |
-| `thresholdPx` | `number` | — | 吸附阈值（屏幕像素） |
+| 参数            | 类型               | 默认值   | 说明                     |
+| --------------- | ------------------ | -------- | ------------------------ |
+| `enabled`       | `boolean`          | `true`   | 是否启用                 |
+| `guidesEnabled` | `boolean`          | `true`   | 是否显示辅助线           |
+| `gridSize`      | `number \| 'auto'` | `'auto'` | 网格吸附大小（世界单位） |
+| `thresholdPx`   | `number`           | —        | 吸附阈值（屏幕像素）     |
 
 **Store Keys**: `snap:config`（写入）、`snap:guides`（读取）  
 **Overlay**: `SnapGuidesOverlay`（对齐线渲染），slot=`overlay`
@@ -620,4 +628,4 @@ const grp = ctx.getService<{
 `createDefaultEditorPlugins`（无 UI）包含上述插件的大部分（不含 HUD 类）。  
 `createDefaultEditorPluginsWithUI` 在前者基础上叠加 HUD 类插件。
 
-完整顺序和依赖关系见 [架构总览](/infinite-map-editor/overview)。
+完整顺序和依赖关系见 [架构总览](/editor/overview)。

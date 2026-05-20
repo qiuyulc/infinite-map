@@ -11,7 +11,7 @@ export function HomeDemo() {
     { id: 'b', x: 80, y: 40, width: 160, height: 80, label: 'World 🌍', color: '#4f46e5' },
     { id: 'c', x: -40, y: 180, width: 200, height: 80, label: 'Infinite Map', color: '#059669' },
   ]);
-  const onNodesChange = (data) => {
+  const onNodesChange = (data: any) => {
     setNodes(data);
   }
 
@@ -40,3 +40,4 @@ export function HomeDemo() {
     </div>
   );
 }
+export default HomeDemo;
