@@ -33,6 +33,7 @@ import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
 import { useSyncedRef } from '../hooks/useSyncedRef';
 import { useViewportReady } from '../hooks/useViewportReady';
+import { usePanKeepAlive } from '../hooks/usePanKeepAlive';
 import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
 import type { ChangeMeta, Command, EditorErrorInfo, HitTestTarget, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import { createEventBus, createStore } from '../editor/runtime';
@@ -503,34 +504,9 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
 
   useCommandRegistry({ plugins, store, commandConflictPolicy, warnOnCommandConflict });
 
-  // pan keepAlive（低频：仅 start/end 改变）
-  const [panActive, setPanActive] = useState(false);
-  const panKeepAliveEnabled = (virtualization?.panKeepAlive ?? true) !== false;
-  const panKeepAliveMaxNodes = typeof virtualization?.panKeepAlive === 'object' ? virtualization.panKeepAlive.maxNodes ?? 2000 : 2000;
-  const panKeepAliveIdSetRef = useRef<Set<string>>(new Set());
-  const panKeepAliveLRURef = useRef<Map<string, number>>(new Map());
-  const panKeepAliveAdd = useCallback(
-    (ids: Iterable<string>) => {
-      const set0 = panKeepAliveIdSetRef.current;
-      const lru = panKeepAliveLRURef.current;
-      for (const id of ids) {
-        set0.add(id);
-        if (lru.has(id)) lru.delete(id);
-        lru.set(id, Date.now());
-      }
-      while (lru.size > panKeepAliveMaxNodes) {
-        const first = lru.keys().next().value as string | undefined;
-        if (!first) break;
-        lru.delete(first);
-        set0.delete(first);
-      }
-    },
-    [panKeepAliveMaxNodes]
-  );
-  useEffect(() => {
-    ctx.store.set(STORE_KEYS.viewPanActive, panActive);
-    engineStore.getState().setInteraction({ panning: panActive });
-  }, [ctx, engineStore, panActive]);
+  // pan keepAlive
+  const { panActive, setPanActive, panKeepAliveEnabled, panKeepAliveIdSetRef, panKeepAliveLRURef, panKeepAliveAdd } =
+    usePanKeepAlive({ ctx, engineStore, virtualization });
 
   // commitCamera：原生轨道（不 setState）
   const commitRafRef = useRef<number | null>(null);
