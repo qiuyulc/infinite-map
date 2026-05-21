@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Rspress v1.47.1">
+    <title data-rh="true">Infinite Map — 功能清单与对外 API（完整版） - Infinite Map</title><meta data-rh="true" name="description" content="一个可扩展的无限画布组件库：渲染、编辑器插件、Patch 变更流与持久化。"/>
+  <script>{;const saved = localStorage.getItem('rspress-theme-appearance');const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark = !saved || saved === 'auto' ? preferDark : saved === 'dark';document.documentElement.classList.toggle('dark', isDark);document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';}</script><link rel="icon" href="/infinite-map/logo.png"><script defer src="/infinite-map/static/js/styles.301dee57.js"></script><script defer src="/infinite-map/static/js/lib-react.c8d96e94.js"></script><script defer src="/infinite-map/static/js/lib-router.e08ece8c.js"></script><script defer src="/infinite-map/static/js/297.dd6f5d35.js"></script><script defer src="/infinite-map/static/js/index.aa189e49.js"></script><link href="/infinite-map/static/css/styles.68e6e8db.css" rel="stylesheet"></head>
+
+  <body >
+    <div id="root"><link rel="preload" as="image" href="/infinite-map/img/logo.png"/><div class="navContainer_d18b1 rspress-nav px-6  sticky_ddfa7"><div class="container_e4235 flex justify-between items-center h-full"><div class="navBarTitle_c5f07"><a href="/infinite-map/index.html" class="link_a7cea flex items-center w-full h-full text-base font-semibold transition-opacity duration-300 hover:opacity-60"><div class="mr-1 min-w-8"><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo dark:hidden"/><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo hidden dark:block"/></div></a></div><div class="flex flex-1 justify-end items-center"><div class="rightNav_a2fea"><div class="flex sm:flex-1 items-center sm:pl-4 sm:pr-2"><div class="rspress-nav-search-button navSearchButton_df1fb"><button><svg width="18" height="18" viewBox="0 0 32 32"><path fill="var(--rp-c-gray)" d="m29 27.586-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29ZM4 13a9 9 0 1 1 9 9 9.01 9.01 0 0 1-9-9"></path></svg><p class="searchWord_af2c1">Search</p><div style="opacity:0"><span></span><span>K</span></div></button></div><div class="mobileNavSearchButton_d85a9"><svg width="24" height="24" viewBox="0 0 32 32"><path fill="var(--rp-c-gray)" d="m29 27.586-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29ZM4 13a9 9 0 1 1 9 9 9.01 9.01 0 0 1-9-9"></path></svg></div></div><div class="rspress-nav-menu menu h-14"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154 activeItem_a28b5 text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">文档</div></a><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154  text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">GitHub</div></a></div><div class="flex-center flex-row"><div class="mx-2"><div class="md:mr-2 rspress-nav-appearance"><div class="p-1 border border-solid border-gray-300 text-gray-400  cursor-pointer rounded-md hover:border-gray-600 hover:text-gray-600 dark:hover:border-gray-200 dark:hover:text-gray-200 transition-all duration-300 w-7 h-7"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24" class="dark:hidden" width="18" height="18" fill="currentColor"><path d="M12 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6m0-10c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4M12 4c-.6 0-1-.4-1-1V1c0-.6.4-1 1-1s1 .4 1 1v2c0 .6-.4 1-1 1M12 24c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1s1 .4 1 1v2c0 .6-.4 1-1 1M5.6 6.6c-.3 0-.5-.1-.7-.3L3.5 4.9c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l1.4 1.4c.4.4.4 1 0 1.4-.1.2-.4.3-.7.3M19.8 20.8c-.3 0-.5-.1-.7-.3l-1.4-1.4c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l1.4 1.4c.4.4.4 1 0 1.4-.2.2-.5.3-.7.3M3 13H1c-.6 0-1-.4-1-1s.4-1 1-1h2c.6 0 1 .4 1 1s-.4 1-1 1M23 13h-2c-.6 0-1-.4-1-1s.4-1 1-1h2c.6 0 1 .4 1 1s-.4 1-1 1M4.2 20.8c-.3 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.4-1.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-1.4 1.4c-.2.2-.4.3-.7.3M18.4 6.6c-.3 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.4-1.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-1.4 1.4c-.2.2-.5.3-.7.3"></path></svg><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24" class="hidden dark:block" width="18" height="18" fill="currentColor"><path d="M12.1 22h-.9c-5.5-.5-9.5-5.4-9-10.9.4-4.8 4.2-8.6 9-9 .4 0 .8.2 1 .5s.2.8-.1 1.1c-2 2.7-1.4 6.4 1.3 8.4 2.1 1.6 5 1.6 7.1 0 .3-.2.7-.3 1.1-.1.3.2.5.6.5 1-.2 2.7-1.5 5.1-3.6 6.8-1.9 1.4-4.1 2.2-6.4 2.2M9.3 4.4c-2.9 1-5 3.6-5.2 6.8-.4 4.4 2.8 8.3 7.2 8.7 2.1.2 4.2-.4 5.8-1.8 1.1-.9 1.9-2.1 2.4-3.4-2.5.9-5.3.5-7.5-1.1-2.8-2.2-3.9-5.9-2.7-9.2"></path></svg></div></div></div><div class="social-links menu-item_e90a6 flex-center relative"><div class="flex-center h-full gap-x-4 transition-colors duration-300 md:mr-2"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="social-links"><div class="social-links-icon_a4ad0"><div><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a></div></div></div></div><div class="mobileNavMenu_e7045"><div class="navScreen_ec30c  rspress-nav-screen" id="navScreen"><div class="container_c935d"><div class="navMenu_b887b"><div class="navMenuItem_e7978 w-full"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154 activeItem_a28b5 text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">文档</div></a></div><div class="navMenuItem_e7978 w-full"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154  text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">GitHub</div></a></div></div><div class="flex-center flex-col gap-2"><div class="mt-2 navAppearance_bf893 flex justify-center"></div><div class="social-links menu-item_e90a6 flex-center relative"><div class="flex-center h-full gap-x-4 transition-colors duration-300 md:mr-2"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="social-links"><div class="social-links-icon_a4ad0"><div><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a></div></div></div></div></div><button aria-label="mobile hamburger" class=" rspress-mobile-hamburger navHamburger_ac64c text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><circle cx="8" cy="16" r="2" fill="currentColor"></circle><circle cx="16" cy="16" r="2" fill="currentColor"></circle><circle cx="24" cy="16" r="2" fill="currentColor"></circle></svg></button></div></div></div></div><section><div class="docLayout_af141 pt-0"><aside class="sidebar_dd719 rspress-sidebar "><div class="navTitleMask_fb17c"><div class="navBarTitle_c5f07"><a href="/infinite-map/index.html" class="link_a7cea flex items-center w-full h-full text-base font-semibold transition-opacity duration-300 hover:opacity-60"><div class="mr-1 min-w-8"><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo dark:hidden"/><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo hidden dark:block"/></div></a></div></div><div class="rspress-scrollbar sidebarContent_da296"><nav class="pb-2"><a href="/infinite-map/index.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:14px;margin-left:0;border-radius:0 var(--rp-radius) var(--rp-radius) 0;padding-left:24px;font-weight:bold"><span>首页</span></div></a><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">编辑器使用指南</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(90deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:1;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>快速上手</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-config.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件配置</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/shortcuts-and-operations.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>快捷键与操作</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/editing.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>编辑功能</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/view.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>视图操作</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/persistence.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>持久化</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/theming.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>主题</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/collaboration.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>协作</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">API 参考</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/library/node-data.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>节点数据</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/component-api.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>组件 API</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/api-ref.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>API 参考</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/功能清单与对外API.html" class="link_a7cea menuLink_bb039"><div class="menuItemActive_de63c mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>全量功能清单</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">架构与开发</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:18px"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex"><span class="flex-center" style="font-size:13px">infinite-map 核心引擎</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:0"><div class="rspress-sidebar-item"><a href="/infinite-map/overview.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>概览</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/01-core-types.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>核心类型</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/02-engine-store.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>Engine Store</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/03-plugin-protocol.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件协议</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/04-render-pipeline.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>渲染管线</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/05-input-pipeline.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>输入管线</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/06-patch-engine.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>Patch 引擎</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/07-camera-viewport.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>相机与视口</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/08-virtualization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>虚拟化</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/09-theme-system.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>主题系统</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/10-doc-serialization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>文档序列化</span></div></a></div></div></div></section></div><div class="rspress-sidebar-item"><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:18px"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex"><span class="flex-center" style="font-size:13px">editor 插件开发</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:0"><div class="rspress-sidebar-item"><a href="/infinite-map/editor/overview.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>概览</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-development.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件开发</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-reference.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件参考</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/customization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>自定义</span></div></a></div></div></div></section></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/project-structure.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>项目结构</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">附录</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/releasing.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>发布流程</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/demos.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>示例</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/faq.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>FAQ</span></div></a></div></div></div></section></nav></div></aside><div class="flex-1 relative min-w-0"><div class="rspress-sidebar-menu-container "><div class="rspress-sidebar-menu"><button type="button" class="flex-center mr-auto"><div class="text-md mr-2"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M4 6h24v2H4zm0 18h24v2H4zm0-12h24v2H4zm0 6h24v2H4z"></path></svg></div><span class="text-sm">Menu</span></button><button type="button" class="flex-center ml-auto"><span class="text-sm">ON THIS PAGE</span><div class="text-md mr-2" style="transform:rotate(0deg);transition:transform 0.2s ease-out;margin-top:2px"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></button><div class="rspress-local-toc-container "><ul><li><a href="#1-我们现在做了哪些功能面向使用者的能力" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">1. 我们现在做了哪些功能（面向使用者的&quot;能力&quot;）</span></a></li><li><a href="#11-画布视口基础能力" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">1.1 画布/视口（基础能力）</span></a></li><li><a href="#12-节点渲染与性能" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">1.2 节点渲染与性能</span></a></li><li><a href="#13-编辑器插件系统能力默认编辑器已集成" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">1.3 编辑器（插件系统）能力（默认编辑器已集成）</span></a></li><li><a href="#选择框选" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">选择/框选</span></a></li><li><a href="#拖拽缩放旋转" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">拖拽/缩放/旋转</span></a></li><li><a href="#键盘微调nudge" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">键盘微调（Nudge）</span></a></li><li><a href="#对齐吸附snapping" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">对齐吸附（snapping）</span></a></li><li><a href="#对齐分布align--distribute" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">对齐/分布（Align / Distribute）</span></a></li><li><a href="#历史undoredo" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">历史（Undo/Redo）</span></a></li><li><a href="#剪贴板" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">剪贴板</span></a></li><li><a href="#编组group" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">编组（Group）</span></a></li><li><a href="#锁定隐藏lockhide" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">锁定/隐藏（Lock/Hide）</span></a></li><li><a href="#导出-pngexport-png" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">导出 PNG（Export PNG）</span></a></li><li><a href="#hud可选启用的-ui" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">HUD（可选启用的 UI）</span></a></li><li><a href="#预览只读模式重要" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">预览/只读模式（重要）</span></a></li><li><a href="#view--z-index-命令" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">View / Z-Index 命令</span></a></li><li><a href="#2-对外暴露了哪些-api完整版" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">2. 对外暴露了哪些 API（完整版）</span></a></li><li><a href="#21-包入口导出qiuyulcinfinite-map" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.1 包入口导出（<code>@qiuyulc/infinite-map</code>）</span></a></li><li><a href="#react-组件" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">React 组件</span></a></li><li><a href="#theme-api" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Theme API</span></a></li><li><a href="#core-类型工具" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Core 类型/工具</span></a></li><li><a href="#layout预置布局" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Layout（预置布局）</span></a></li><li><a href="#demo-数据" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Demo 数据</span></a></li><li><a href="#plugin-contract供-editor-包社区插件复用" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Plugin Contract（供 editor 包/社区插件复用）</span></a></li><li><a href="#211-ui-子入口导出qiuyulcinfinite-mapui" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.1.1 UI 子入口导出（<code>@qiuyulc/infinite-map/ui</code>）</span></a></li><li><a href="#212-editor-包入口导出qiuyulcinfinite-map-editor" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.1.2 Editor 包入口导出（<code>@qiuyulc/infinite-map-editor</code>）</span></a></li><li><a href="#213-editor-ui仍从包根入口导出" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.1.3 Editor UI（仍从包根入口导出）</span></a></li><li><a href="#214-demo-子入口导出qiuyulcinfinite-mapdemo" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.1.4 demo 子入口导出（<code>@qiuyulc/infinite-map/demo</code>）</span></a></li><li><a href="#22-infinitemapprops组件属性完整版" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.2 <code>InfiniteMapProps</code>（组件属性，完整版）</span></a></li><li><a href="#数据与渲染" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">数据与渲染</span></a></li><li><a href="#编辑与插件系统" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">编辑与插件系统</span></a></li><li><a href="#相机与交互" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">相机与交互</span></a></li><li><a href="#背景缩放" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">背景/缩放</span></a></li><li><a href="#虚拟化" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">虚拟化</span></a></li><li><a href="#主题--调试" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">主题 / 调试</span></a></li><li><a href="#23-infinitemapapi通过-apiref-暴露的方法完整版" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.3 <code>InfiniteMapApi</code>（通过 <code>apiRef</code> 暴露的方法，完整版）</span></a></li><li><a href="#24-editor-插件系统给二次开发的公共类型" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.4 Editor 插件系统（给二次开发的公共类型）</span></a></li><li><a href="#nodepatch" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block"><code>NodePatch</code></span></a></li><li><a href="#changemeta" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block"><code>ChangeMeta</code></span></a></li><li><a href="#mapcontext插件运行时上下文" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block"><code>MapContext</code>（插件运行时上下文）</span></a></li><li><a href="#infinitemapplugin" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block"><code>InfiniteMapPlugin</code></span></a></li><li><a href="#25-内置插件工厂editorplugins完整版" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">2.5 内置插件工厂（<code>EditorPlugins.*</code>，完整版）</span></a></li><li><a href="#core" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">core</span></a></li><li><a href="#edit" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">edit</span></a></li><li><a href="#selection" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">selection</span></a></li><li><a href="#transform" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">transform</span></a></li><li><a href="#snapping" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">snapping</span></a></li><li><a href="#clipboard" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">clipboard</span></a></li><li><a href="#visual" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">visual</span></a></li><li><a href="#hud" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">hud</span></a></li><li><a href="#3-默认编辑器包含哪些插件" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">3. 默认编辑器包含哪些插件</span></a></li><li><a href="#31-createdefaulteditorpluginsopts不含-hud" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">3.1 <code>createDefaultEditorPlugins(opts?)</code>（不含 HUD）</span></a></li><li><a href="#32-createdefaulteditorpluginswithuiopts在-31-基础上追加-hud" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">3.2 <code>createDefaultEditorPluginsWithUI(opts?)</code>（在 3.1 基础上追加 HUD）</span></a></li><li><a href="#4-默认命令列表commandid" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">4. 默认命令列表（commandId）</span></a></li><li><a href="#41-history" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.1 history</span></a></li><li><a href="#42-editclipboard" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.2 edit（clipboard）</span></a></li><li><a href="#43-view" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.3 view</span></a></li><li><a href="#44-group" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.4 group</span></a></li><li><a href="#45-lockhide" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.5 lock/hide</span></a></li><li><a href="#46-z-index" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.6 z-index</span></a></li><li><a href="#47-align--distribute" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.7 align / distribute</span></a></li><li><a href="#48-export" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">4.8 export</span></a></li><li><a href="#5-nodedata节点数据结构现状摘要" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">5. NodeData（节点数据结构）现状摘要</span></a></li><li><a href="#几何层级" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">几何/层级</span></a></li><li><a href="#显示业务" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">显示/业务</span></a></li><li><a href="#编辑器结构字段" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block">编辑器结构字段</span></a></li></ul></div></div></div><div class="content_ff766 rspress-doc-container flex"><div class="flex-1 overflow-x-auto"><div class="rspress-doc"><!--$--><h1 id="infinite-map--功能清单与对外-api完整版" class="rspress-doc-title text-3xl mb-10 leading-10 tracking-tight title_fb7eb">Infinite Map — 功能清单与对外 API（完整版）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#infinite-map--功能清单与对外-api完整版">#</a></h1>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<h2 class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">统计基于当前仓库：</h2>
+</blockquote>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">— 获取容器左上角的世界坐标</li>
+<li class="[&amp;:not(:first-child)]:mt-2">— 移动相机，使世界原点(0,0)落在容器左上角<code>packages/infinite-map</code>（渲染层 + plugin contract）</li>
+</ul>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>packages/infinite-map-editor</code>（编辑器插件集合 + HUD/UI）
+的对外导出与实现现状。</li>
+</ul>
+</blockquote>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">补充阅读：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="/infinite-map/library/node-data.html" class="link_a7cea  link_a9ef4 inline-link_f855c">NodeData 字段参考</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="/infinite-map/library/component-api.html" class="link_a7cea  link_a9ef4 inline-link_f855c">组件 API</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="/infinite-map/library/api-ref.html" class="link_a7cea  link_a9ef4 inline-link_f855c">InfiniteMapApi 参考</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="/infinite-map/library/plugin-config.html" class="link_a7cea  link_a9ef4 inline-link_f855c">插件配置</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="/infinite-map/library/theming.html" class="link_a7cea  link_a9ef4 inline-link_f855c">主题定制</a></li>
+</ul>
+</blockquote>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="1-我们现在做了哪些功能面向使用者的能力" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">1. 我们现在做了哪些功能（面向使用者的&quot;能力&quot;）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#1-我们现在做了哪些功能面向使用者的能力">#</a></h2>
+<h3 id="11-画布视口基础能力" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">1.1 画布/视口（基础能力）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#11-画布视口基础能力">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">无限画布（世界坐标系）+ 相机模型：<code>Camera = { x, y, zoom }</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">平移（Pan）<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">鼠标/触控板拖拽平移（<code>Space</code> 平移模式由 <code>keyboard-state</code> 插件维护状态；具体 pan 在组件内部实现）</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2">缩放（Zoom）<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">滚轮缩放、触控板 pinch 缩放（<code>zoomSpeed</code> / <code>pinchZoomFactor</code> 可调）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">min/max zoom 限制</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2">背景渲染：<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">点阵背景（<code>backgroundMode=&#x27;dots&#x27;</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">网格背景（<code>backgroundMode=&#x27;grid&#x27;</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">无背景（<code>backgroundMode=&#x27;none&#x27;</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">自适应网格步进（<code>dotSpacing/gridSpacing=&#x27;auto&#x27;</code> 与 <code>computeAdaptiveSteps</code> 体系）</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2">鼠标附近高亮层（Canvas overlay，高性能，通过 <code>highlightRadiusPx</code> 控制）</li>
+</ul>
+<h3 id="12-节点渲染与性能" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">1.2 节点渲染与性能<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#12-节点渲染与性能">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">DOM 节点渲染（每个节点绝对定位在 world layer）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">可选虚拟化（空间索引）：<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">视口内节点筛选 + overscan</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>keepAlive</code> 支持（对&quot;重组件&quot;避免频繁卸载/重建）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>panKeepAlive</code>（pan 期间保持离场节点）</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">隐藏节点（hidden）不渲染</strong>，并且隐藏会&quot;向下传递&quot;（祖先 hidden =&gt; 后代视为 hidden）</li>
+</ul>
+<h3 id="13-编辑器插件系统能力默认编辑器已集成" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">1.3 编辑器（插件系统）能力（默认编辑器已集成）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#13-编辑器插件系统能力默认编辑器已集成">#</a></h3>
+<h4 id="选择框选" class="mt-8 leading-6 text-lg title_fb7eb">选择/框选<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#选择框选">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">单选/多选（Shift toggle）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">点击空白清空选择</li>
+<li class="[&amp;:not(:first-child)]:mt-2">框选（marquee）：<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">可配置 <code>requireShift</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">命中 resize/rotate handle 时不会触发框选</li>
+</ul>
+</li>
+</ul>
+<h4 id="拖拽缩放旋转" class="mt-8 leading-6 text-lg title_fb7eb">拖拽/缩放/旋转<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#拖拽缩放旋转">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">拖拽移动（支持多选整体移动）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">8 点缩放（单选）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">2D 旋转（选中后使用旋转 handle）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">3D 旋转（Alt/Option + 拖拽：<code>rotationX/rotationY</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">过程中支持 snapping（对齐线/网格吸附）+ 辅助线 overlay</li>
+</ul>
+<h4 id="键盘微调nudge" class="mt-8 leading-6 text-lg title_fb7eb">键盘微调（Nudge）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#键盘微调nudge">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">方向键微调选中节点：<code>↑ ↓ ← →</code>（默认 1px）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">大步微调：<code>Shift + ↑ ↓ ← →</code>（默认 10px）</li>
+</ul>
+<h4 id="对齐吸附snapping" class="mt-8 leading-6 text-lg title_fb7eb">对齐吸附（snapping）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#对齐吸附snapping">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">对齐线吸附（与可视范围内节点对齐）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">网格吸附（grid）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">吸附引导线（SnapGuidesOverlay）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">参考线吸附（从标尺拖出的 guides）</li>
+</ul>
+<h4 id="对齐分布align--distribute" class="mt-8 leading-6 text-lg title_fb7eb">对齐/分布（Align / Distribute）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#对齐分布align--distribute">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">对齐：左/水平居中/右/顶/垂直居中/底</li>
+<li class="[&amp;:not(:first-child)]:mt-2">分布：水平等间距 / 垂直等间距</li>
+<li class="[&amp;:not(:first-child)]:mt-2">命令：<code>edit.alignLeft</code> ~ <code>edit.alignBottom</code>、<code>edit.distributeH</code> / <code>edit.distributeV</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">UI：已挂到右键菜单（对齐需 ≥2 选中，分布需 ≥3 选中）</li>
+</ul>
+<h4 id="历史undoredo" class="mt-8 leading-6 text-lg title_fb7eb">历史（Undo/Redo）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#历史undoredo">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>history.undo</code> / <code>history.redo</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">move 阶段合并（drag/resize/rotate 等在 <code>phase=move/end</code> 下会合并成一次历史记录）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">undo/redo 时会取消正在进行的交互（避免状态&quot;拉扯&quot;）</li>
+</ul>
+<h4 id="剪贴板" class="mt-8 leading-6 text-lg title_fb7eb">剪贴板<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#剪贴板">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">Copy / Cut / Paste / Duplicate / Delete</li>
+<li class="[&amp;:not(:first-child)]:mt-2">paste/duplicate 支持 group 结构：复制时 remap <code>id</code> 并修正 <code>parentId</code></li>
+</ul>
+<h4 id="编组group" class="mt-8 leading-6 text-lg title_fb7eb">编组（Group）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#编组group">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">group 节点是一个 <code>NodeData</code>（<code>kind=&#x27;group&#x27;</code>），成员通过 <code>parentId</code> 形成树结构</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.group</code> / <code>edit.ungroup</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">组移动</strong>：拖拽 group 会带动所有后代</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">组缩放</strong>：缩放 group 会按内容区缩放后代（padding 保持恒定）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">组旋转</strong>：旋转时只旋转后代（group 外框由 group-sync 自动跟随成员 bbox）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">group bbox 自动同步（监听 <code>patches:applied</code>）</li>
+</ul>
+<h4 id="锁定隐藏lockhide" class="mt-8 leading-6 text-lg title_fb7eb">锁定/隐藏（Lock/Hide）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#锁定隐藏lockhide">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>locked?: boolean</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">锁定可以被&quot;点击选中&quot;（用于解锁），但不可拖拽/缩放/旋转、不可框选</strong></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">锁定传递</strong>：祖先 locked =&gt; 后代&quot;有效锁定&quot;</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>hidden?: boolean</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">隐藏不渲染/不命中/不参与选择与编辑</strong></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">隐藏传递</strong>：祖先 hidden =&gt; 后代&quot;有效隐藏&quot;</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.lock</code> / <code>edit.unlock</code> / <code>edit.hide</code> / <code>edit.showAll</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>showAll</code> 用于恢复 hidden 节点（因为 hidden 节点不可命中）</li>
+</ul>
+</li>
+</ul>
+<h4 id="导出-pngexport-png" class="mt-8 leading-6 text-lg title_fb7eb">导出 PNG（Export PNG）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#导出-pngexport-png">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">命令：<code>file.exportPng</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">触发 <code>export:png</code> 事件（骨架，宿主自行实现截图）</li>
+</ul>
+<h4 id="hud可选启用的-ui" class="mt-8 leading-6 text-lg title_fb7eb">HUD（可选启用的 UI）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#hud可选启用的-ui">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">ZoomDock（默认启用）：右下角缩放滑杆</li>
+<li class="[&amp;:not(:first-child)]:mt-2">Toolbar（默认关闭）：顶部工具条</li>
+<li class="[&amp;:not(:first-child)]:mt-2">ContextMenu（默认关闭）：右键菜单（右键命中节点时会先把该节点设为选中；若命中组内节点则选中最外层 group）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">Rulers（默认启用）：标尺</li>
+<li class="[&amp;:not(:first-child)]:mt-2">Minimap（默认启用）：小地图</li>
+</ul>
+<h4 id="预览只读模式重要" class="mt-8 leading-6 text-lg title_fb7eb">预览/只读模式（重要）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#预览只读模式重要">#</a></h4>
+<p class="my-4 leading-7">当满足以下任一条件时，编辑器会自动退化为&quot;预览/只读&quot;（不会出现选中框、缩放点、对齐线、右键菜单、工具栏、框选等编辑 UI）：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>editMode=&quot;readonly&quot;</code> 或 <code>editable={false}</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>editMode=&quot;auto&quot;</code>（默认）且 <strong class="font-semibold">未提供变更出口</strong>（<code>onNodesChange/onPatches</code> 都不传）</li>
+</ul>
+<h4 id="view--z-index-命令" class="mt-8 leading-6 text-lg title_fb7eb">View / Z-Index 命令<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#view--z-index-命令">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">视图命令：<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.zoomIn</code> / <code>view.zoomOut</code> / <code>view.resetZoom</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitView</code> / <code>view.centerView</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitSelection</code> / <code>view.centerSelection</code></li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2">层级（zIndex）命令：<!-- -->
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.bringToFront</code> / <code>z.bringForward</code> / <code>z.sendBackward</code> / <code>z.sendToBack</code> / <code>z.normalize</code></li>
+</ul>
+</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="2-对外暴露了哪些-api完整版" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">2. 对外暴露了哪些 API（完整版）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#2-对外暴露了哪些-api完整版">#</a></h2>
+<h3 id="21-包入口导出qiuyulcinfinite-map" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.1 包入口导出（<code>@qiuyulc/infinite-map</code>）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#21-包入口导出qiuyulcinfinite-map">#</a></h3>
+<p class="my-4 leading-7">来自 <code>packages/infinite-map/src/index.ts</code>：</p>
+<h4 id="react-组件" class="mt-8 leading-6 text-lg title_fb7eb">React 组件<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#react-组件">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>InfiniteMap</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>InfiniteMapProps</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>InfiniteMapApi</code>（通过 <code>apiRef</code> 暴露）</li>
+</ul>
+</li>
+</ul>
+<h4 id="theme-api" class="mt-8 leading-6 text-lg title_fb7eb">Theme API<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#theme-api">#</a></h4>
+<p class="my-4 leading-7">从主入口与 UI 子入口都可用：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>InfiniteMapThemeProvider</code> / <code>BackgroundDots</code> / <code>BackgroundGrid</code> / <code>DefaultNode</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>InfiniteMapTheme</code> / <code>lightTheme</code> / <code>darkTheme</code> / <code>mergeTheme</code> / <code>themeToCSSVars</code> / <code>themeOverrideToCSSVars</code></li>
+</ul>
+<h4 id="core-类型工具" class="mt-8 leading-6 text-lg title_fb7eb">Core 类型/工具<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#core-类型工具">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type Camera</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type NodeData</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type Rect</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>rectIntersects(a, b)</code></li>
+</ul>
+<h4 id="layout预置布局" class="mt-8 leading-6 text-lg title_fb7eb">Layout（预置布局）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#layout预置布局">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>computeLayout(preset, options)</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type LayoutPreset</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type LayoutOptions</code></li>
+</ul>
+<h4 id="demo-数据" class="mt-8 leading-6 text-lg title_fb7eb">Demo 数据<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#demo-数据">#</a></h4>
+<p class="my-4 leading-7">从主入口与 demo 子入口都可用：<code>makeDemoNodes()</code></p>
+<h4 id="plugin-contract供-editor-包社区插件复用" class="mt-8 leading-6 text-lg title_fb7eb">Plugin Contract（供 editor 包/社区插件复用）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#plugin-contract供-editor-包社区插件复用">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type InfiniteMapPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type MapContext</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type NodePatch</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type ChangeMeta</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>type Command</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">事件类型：<code>MapPointerEvent</code> / <code>MapWheelEvent</code> / <code>MapKeyEvent</code> / <code>MapContextMenuEvent</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">store/runtime：<code>STORE_KEYS</code> / <code>VISUAL_CONST</code> / <code>createStore</code> / <code>createEventBus</code> / <code>applyPatchesToNodes</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="211-ui-子入口导出qiuyulcinfinite-mapui" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.1.1 UI 子入口导出（<code>@qiuyulc/infinite-map/ui</code>）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#211-ui-子入口导出qiuyulcinfinite-mapui">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">UI 组件（渲染层）：<code>BackgroundDots</code> / <code>BackgroundGrid</code> / <code>DefaultNode</code> / <code>InfiniteMapThemeProvider</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">Theme：<code>InfiniteMapTheme</code> / <code>lightTheme</code> / <code>darkTheme</code> / <code>mergeTheme</code> / <code>themeToCSSVars</code> / <code>themeOverrideToCSSVars</code></li>
+</ul>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">HUD 插件（minimap / rulers / toolbar / context menu / zoom dock）由 <code>@qiuyulc/infinite-map-editor</code> 导出（插件 + overlay 逻辑在 editor 包里）。</p>
+</blockquote>
+<h3 id="212-editor-包入口导出qiuyulcinfinite-map-editor" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.1.2 Editor 包入口导出（<code>@qiuyulc/infinite-map-editor</code>）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#212-editor-包入口导出qiuyulcinfinite-map-editor">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>composePlugins(plugins)</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createDefaultEditorPlugins(opts?)</code> / <code>type DefaultEditorOptions</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createDefaultEditorPluginsWithUI(opts?)</code> / <code>type DefaultEditorWithUIOptions</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>EditorPlugins</code>（命名空间导出内置插件工厂）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">editor utils：<code>groupUtils</code> / <code>snapUtils</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">便于只安装一个包：再导出 core 合同类型 <code>InfiniteMapPlugin/MapContext/NodePatch/ChangeMeta</code></li>
+</ul>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">备注：<code>DefaultEditorOptions</code> 现在按&quot;插件名分组&quot;提供配置（例如 <code>snap/view/shortcuts/drag/resize/...</code>），便于透传到对应插件工厂。</p>
+</blockquote>
+<h3 id="213-editor-ui仍从包根入口导出" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.1.3 Editor UI（仍从包根入口导出）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#213-editor-ui仍从包根入口导出">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">HUD plugins：<code>createToolbarPlugin</code> / <code>createDefaultContextMenuPlugin</code> / <code>createMinimapPlugin</code> / <code>createRulersPlugin</code> / <code>createZoomDockPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">Visual plugins：<code>createHoverHighlightPlugin</code></li>
+</ul>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">备注：<code>DefaultEditorWithUIOptions</code> 同样按插件名分组提供 <code>toolbar/minimap/rulers/zoomDock/contextMenu/hoverHighlight</code> 等配置对象，并可通过 <code>enabled</code> 字段控制是否挂载对应插件。</p>
+</blockquote>
+<h3 id="214-demo-子入口导出qiuyulcinfinite-mapdemo" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.1.4 demo 子入口导出（<code>@qiuyulc/infinite-map/demo</code>）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#214-demo-子入口导出qiuyulcinfinite-mapdemo">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>makeDemoNodes()</code></li>
+</ul>
+<h3 id="22-infinitemapprops组件属性完整版" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.2 <code>InfiniteMapProps</code>（组件属性，完整版）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#22-infinitemapprops组件属性完整版">#</a></h3>
+<p class="my-4 leading-7">核心字段（节选结构与含义，字段名以源码为准）：</p>
+<h4 id="数据与渲染" class="mt-8 leading-6 text-lg title_fb7eb">数据与渲染<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#数据与渲染">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>nodes: NodeData[]</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>renderNode?: (node) =&gt; ReactNode</code>（完全自定义节点）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>renderNodeContent?: (node) =&gt; ReactNode</code>（推荐：沿用 DefaultNode 外观，仅自定义内容区）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getDefaultNodeProps?: (node) =&gt; { className?: string; style?: CSSProperties }</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>defaultNodeShowMeta?: boolean</code></li>
+</ul>
+<h4 id="编辑与插件系统" class="mt-8 leading-6 text-lg title_fb7eb">编辑与插件系统<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#编辑与插件系统">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>plugins?: InfiniteMapPlugin[]</code>（不传=纯预览）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>editMode?: &#x27;auto&#x27; | &#x27;readonly&#x27; | &#x27;controlled&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>editable?: boolean</code>（语法糖；false=readonly，true=controlled）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>onNodesChange?: (nextNodes, meta) =&gt; void</code>（高层回调）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>onPatches?: (patches, meta) =&gt; void</code>（底层 patch 回调，适合协作/历史/性能）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>commandConflictPolicy?: &#x27;keep-first&#x27; | &#x27;override&#x27; | &#x27;error&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>warnOnCommandConflict?: boolean</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>editorHooks?: { onBeforeCommand/onAfterCommand/onBeforeApplyPatches/onAfterApplyPatches }</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>hookMode?: &#x27;observe&#x27; | &#x27;intercept&#x27;</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>observe</code>（默认）：hooks 只观察/记录，不影响执行流程</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>intercept</code>：允许 <code>onBeforeCommand</code> 返回 false 阻止执行；允许 <code>onBeforeApplyPatches</code> 返回 patches 覆盖</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>onEditorError?: (err, info) =&gt; void</code>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">用于收集 hooks/command 执行异常（默认不会 throw 中断编辑器）</li>
+</ul>
+</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>apiRef?: MutableRefObject&lt;InfiniteMapApi | null&gt;</code>（对外暴露 API）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>onReady?: (api) =&gt; void</code>（地图首次就绪回调，viewport 有效后触发一次）</li>
+</ul>
+<h4 id="相机与交互" class="mt-8 leading-6 text-lg title_fb7eb">相机与交互<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#相机与交互">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>initialCamera?: Camera</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>origin?: &#x27;center&#x27; | &#x27;top-left&#x27;</code>（默认 <code>&#x27;center&#x27;</code>；<code>&#x27;top-left&#x27;</code> 时将原点固定在容器左上角，resize 自动跟随）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>panEnabled?: boolean</code>（默认 <code>true</code>；false 则禁用平移，包括 Space 模式与触控板平移）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>onNodeDrag?: (id, pos, phase) =&gt; void</code>（节点拖动回调）</li>
+</ul>
+<h4 id="背景缩放" class="mt-8 leading-6 text-lg title_fb7eb">背景/缩放<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#背景缩放">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>backgroundMode?: &#x27;dots&#x27; | &#x27;grid&#x27; | &#x27;none&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>dotSpacing?: number | &#x27;auto&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>dotRadiusPx?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>dotAlpha?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>gridSpacing?: number | &#x27;auto&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>gridAlpha?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>highlightRadiusPx?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>wheelPulseStrength?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>minZoom?</code> / <code>maxZoom?</code> / <code>zoomSpeed?</code> / <code>pinchZoomFactor?</code></li>
+</ul>
+<h4 id="虚拟化" class="mt-8 leading-6 text-lg title_fb7eb">虚拟化<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#虚拟化">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>virtualization?: { enabled?: boolean; overscanPx?: number; keepAlive?: (node) =&gt; boolean; panKeepAlive?: boolean | { maxNodes?: number } }</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>overscanPx?: number</code>（兼容旧字段）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>cellSize?: number</code>（空间索引网格大小）</li>
+</ul>
+<h4 id="主题--调试" class="mt-8 leading-6 text-lg title_fb7eb">主题 / 调试<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#主题--调试">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>themeBase?: &#x27;light&#x27; | &#x27;dark&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>theme?: Partial&lt;InfiniteMapTheme&gt;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>debug?: boolean</code>（默认 <code>false</code>，打开后写入 debug:* store 键）</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="23-infinitemapapi通过-apiref-暴露的方法完整版" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.3 <code>InfiniteMapApi</code>（通过 <code>apiRef</code> 暴露的方法，完整版）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#23-infinitemapapi通过-apiref-暴露的方法完整版">#</a></h3>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">仅当 <code>plugins</code> 存在且相关能力被加载时有效（例如 history/selection/commands/camera 等）。</p>
+</blockquote>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>undo(): void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>redo(): void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>canUndo(): boolean</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>canRedo(): boolean</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>subscribeHistory(listener): () =&gt; void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>runCommand(id, payload?): boolean</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getCommands(): Command[]</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getCommand(id): Command | undefined</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>subscribe(type, handler)</code>：订阅事件总线（<code>&#x27;camera:changed&#x27;</code>、<code>&#x27;selection:change&#x27;</code>、<code>&#x27;drag:start/move/end&#x27;</code>、<code>&#x27;patches:applied&#x27;</code> 等）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getSelectionIds(): string[]</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>setSelectionIds(ids: string[]): void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>subscribeSelection(listener): () =&gt; void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getNodeRect(id): Rect | null</code>（世界坐标包围盒）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getSelectionRect(): Rect | null</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getCamera(): Camera</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>setCamera(next, opts?): void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getContainerTopLeft(): { x: number; y: number }</code> — 获取容器左上角的世界坐标</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>moveOriginToTopLeft(): void</code> — 移动相机，使世界原点(0,0)落在容器左上角</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>subscribeCamera(listener): () =&gt; void</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>getNodes(): NodeData[]</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>applyPatches(patches, meta?): void</code> — 以可追踪的方式修改节点（history 记录逆操作）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>updateNodeData(idOrData, data?): void</code> — 修改 data 字段的便利糖</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>serializeDoc(meta?): InfiniteMapDoc</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>parseDoc(doc, opts?): void</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="24-editor-插件系统给二次开发的公共类型" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.4 Editor 插件系统（给二次开发的公共类型）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#24-editor-插件系统给二次开发的公共类型">#</a></h3>
+<p class="my-4 leading-7">来自 <code>packages/infinite-map/src/editor/types.ts</code>（已对外导出）：</p>
+<h4 id="nodepatch" class="mt-8 leading-6 text-lg title_fb7eb"><code>NodePatch</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#nodepatch">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>move</code> / <code>set</code> / <code>add</code> / <code>remove</code></li>
+</ul>
+<h4 id="changemeta" class="mt-8 leading-6 text-lg title_fb7eb"><code>ChangeMeta</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#changemeta">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>source: &#x27;plugin&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>plugin: string</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>reason</code>: <code>&#x27;drag&#x27; | &#x27;click-select&#x27; | &#x27;marquee-select&#x27; | ... | &#x27;group&#x27; | &#x27;ungroup&#x27; | &#x27;group-sync&#x27; | &#x27;undo&#x27; | &#x27;redo&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>phase?: &#x27;start&#x27; | &#x27;move&#x27; | &#x27;end&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>ids?: string[]</code></li>
+</ul>
+<h4 id="mapcontext插件运行时上下文" class="mt-8 leading-6 text-lg title_fb7eb"><code>MapContext</code>（插件运行时上下文）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#mapcontext插件运行时上下文">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">只读数据：<code>getCamera/getViewport/getNodes/getVisibleNodes</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">坐标变换：<code>screenToWorld/worldToScreen/rectScreenToWorld/rectWorldToScreen</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">查询：<code>queryNodesInWorldRect</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">数据变更出口：<code>applyPatches(patches, meta)</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">总线与共享状态：<code>bus</code> / <code>store</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">服务容器：<code>registerService/getService</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">可选命令执行：<code>runCommand?</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>requestRender()</code></li>
+</ul>
+<h4 id="infinitemapplugin" class="mt-8 leading-6 text-lg title_fb7eb"><code>InfiniteMapPlugin</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#infinitemapplugin">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>id/enabled/provides/requires/order/priority</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>setup/teardown</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>input</code>（wheel/key/contextmenu 等非指针输入）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>hitTests</code>（命中贡献者；统一 node/handle 命中）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>pointerDownProcessors</code>（hitTest 之后、gesture 之前；用于 selection 等&quot;非互斥逻辑&quot;，可返回 <code>{stop}</code> 阻断后续手势，或返回 <code>{hit}</code> 覆盖本次有效命中）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>gestures</code>（互斥手势：drag/resize/rotate/marquee/pan…；pointer 统一走 hitTest→processors→gestures）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>inputHooks</code>（<code>onBefore/AfterHitTest</code>、<code>onHoverChange</code>、<code>onBefore/AfterGesture</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>overlay</code>（React 组件）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>slot: &#x27;background&#x27; | &#x27;overlay&#x27; | &#x27;hud&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>overlayPointerEvents: &#x27;none&#x27; | &#x27;auto&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>commands?: Record&lt;string, Command&gt;</code></li>
+</ul>
+<p class="my-4 leading-7">补充（Scheme C）：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">hover 命中会写入 <code>STORE_KEYS.hoverHit</code>，并注册 <code>hover</code> service（<code>ctx.getService(&#x27;hover&#x27;)</code>）供 overlay 读取</li>
+<li class="[&amp;:not(:first-child)]:mt-2">pan 已作为内置 gesture（空白拖动/Space 平移）纳入手势互斥体系，不再使用独立 hook</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="25-内置插件工厂editorplugins完整版" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">2.5 内置插件工厂（<code>EditorPlugins.*</code>，完整版）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#25-内置插件工厂editorplugins完整版">#</a></h3>
+<p class="my-4 leading-7">从 <code>EditorPlugins</code> 命名空间导出：</p>
+<h4 id="core" class="mt-8 leading-6 text-lg title_fb7eb">core<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#core">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createKeyboardStatePlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createCoreServicesPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createCommandRunnerPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createShortcutsPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createHistoryPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createViewCommandsPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createZIndexPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createGroupPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createLockHidePlugin</code></li>
+</ul>
+<h4 id="edit" class="mt-8 leading-6 text-lg title_fb7eb">edit<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#edit">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createAlignDistributePlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createNudgePlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createExportPngPlugin</code></li>
+</ul>
+<h4 id="selection" class="mt-8 leading-6 text-lg title_fb7eb">selection<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#selection">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createSelectionPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createMarqueeSelectPlugin</code></li>
+</ul>
+<h4 id="transform" class="mt-8 leading-6 text-lg title_fb7eb">transform<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#transform">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createDragPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createResizePlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createRotatePlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createRotate3DPlugin</code></li>
+</ul>
+<h4 id="snapping" class="mt-8 leading-6 text-lg title_fb7eb">snapping<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#snapping">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createSnapGuidesPlugin</code></li>
+</ul>
+<h4 id="clipboard" class="mt-8 leading-6 text-lg title_fb7eb">clipboard<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#clipboard">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createClipboardPlugin</code></li>
+</ul>
+<h4 id="visual" class="mt-8 leading-6 text-lg title_fb7eb">visual<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#visual">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createHoverHighlightPlugin</code></li>
+</ul>
+<h4 id="hud" class="mt-8 leading-6 text-lg title_fb7eb">hud<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#hud">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createContextMenuPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createToolbarPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createDefaultContextMenuPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createMinimapPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createRulersPlugin</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createZoomDockPlugin</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="3-默认编辑器包含哪些插件" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">3. 默认编辑器包含哪些插件<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#3-默认编辑器包含哪些插件">#</a></h2>
+<h3 id="31-createdefaulteditorpluginsopts不含-hud" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">3.1 <code>createDefaultEditorPlugins(opts?)</code>（不含 HUD）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#31-createdefaulteditorpluginsopts不含-hud">#</a></h3>
+<p class="my-4 leading-7">默认顺序（简化描述，实际可通过 <code>createDefaultEditorPlugins()</code> 源码确认）：</p>
+<ol class="list-decimal pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">keyboard-state</li>
+<li class="[&amp;:not(:first-child)]:mt-2">core-services</li>
+<li class="[&amp;:not(:first-child)]:mt-2">command-runner</li>
+<li class="[&amp;:not(:first-child)]:mt-2">shortcuts</li>
+<li class="[&amp;:not(:first-child)]:mt-2">history</li>
+<li class="[&amp;:not(:first-child)]:mt-2">view commands</li>
+<li class="[&amp;:not(:first-child)]:mt-2">z-index</li>
+<li class="[&amp;:not(:first-child)]:mt-2">export-png</li>
+<li class="[&amp;:not(:first-child)]:mt-2">snap guides</li>
+<li class="[&amp;:not(:first-child)]:mt-2">rotate3d（Alt + 拖）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">group</li>
+<li class="[&amp;:not(:first-child)]:mt-2">lock/hide</li>
+<li class="[&amp;:not(:first-child)]:mt-2">selection</li>
+<li class="[&amp;:not(:first-child)]:mt-2">nudge</li>
+<li class="[&amp;:not(:first-child)]:mt-2">align-distribute</li>
+<li class="[&amp;:not(:first-child)]:mt-2">clipboard（可关）</li>
+<li class="[&amp;:not(:first-child)]:mt-2">rotate</li>
+<li class="[&amp;:not(:first-child)]:mt-2">resize</li>
+<li class="[&amp;:not(:first-child)]:mt-2">drag</li>
+<li class="[&amp;:not(:first-child)]:mt-2">marquee（默认开，且始终追加到最后）</li>
+</ol>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">备注：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">snap 默认值已回归到 <code>createSnapGuidesPlugin</code> 内部默认（gridSize=&#x27;auto&#x27; 等），默认组装不再写死 gridSize=48</li>
+<li class="[&amp;:not(:first-child)]:mt-2">view 的默认值（minZoom/maxZoom/zoomStep/paddingPx）已统一由 <code>createViewCommandsPlugin</code> 写入 <code>STORE_KEYS.viewConfig</code></li>
+</ul>
+</blockquote>
+<h3 id="32-createdefaulteditorpluginswithuiopts在-31-基础上追加-hud" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">3.2 <code>createDefaultEditorPluginsWithUI(opts?)</code>（在 3.1 基础上追加 HUD）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#32-createdefaulteditorpluginswithuiopts在-31-基础上追加-hud">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createHoverHighlightPlugin</code>（默认开，放在最前面）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createToolbarPlugin</code>（默认关）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createZoomDockPlugin</code>（默认开）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createDefaultContextMenuPlugin</code>（默认关）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createRulersPlugin</code>（默认开）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createMinimapPlugin</code>（默认开）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>createMarqueeSelectPlugin</code>（最后追加，避免与其它交互抢事件）</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="4-默认命令列表commandid" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">4. 默认命令列表（commandId）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#4-默认命令列表commandid">#</a></h2>
+<h3 id="41-history" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.1 history<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#41-history">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>history.undo</code>（默认快捷键：<code>Mod+Z</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>history.redo</code>（默认快捷键：<code>Shift+Mod+Z</code>）</li>
+</ul>
+<h3 id="42-editclipboard" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.2 edit（clipboard）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#42-editclipboard">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.copy</code>（<code>Mod+C</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.paste</code>（<code>Mod+V</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.cut</code>（<code>Mod+X</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.duplicate</code>（<code>Mod+D</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.delete</code>（<code>Delete</code> / <code>Backspace</code>）</li>
+</ul>
+<h3 id="43-view" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.3 view<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#43-view">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.zoomIn</code>（插件声明 shortcut：<code>Mod+=</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.zoomOut</code>（插件声明 shortcut：<code>Mod+-</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.resetZoom</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitView</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.centerView</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitSelection</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.centerSelection</code></li>
+</ul>
+<h3 id="44-group" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.4 group<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#44-group">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.group</code>（<code>Mod+G</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.ungroup</code>（<code>Shift+Mod+G</code>）</li>
+</ul>
+<h3 id="45-lockhide" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.5 lock/hide<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#45-lockhide">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.lock</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.unlock</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.hide</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.showAll</code></li>
+</ul>
+<h3 id="46-z-index" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.6 z-index<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#46-z-index">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.bringToFront</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.bringForward</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.sendBackward</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.sendToBack</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.normalize</code></li>
+</ul>
+<h3 id="47-align--distribute" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.7 align / distribute<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#47-align--distribute">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.alignLeft</code> / <code>edit.alignHCenter</code> / <code>edit.alignRight</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.alignTop</code> / <code>edit.alignVCenter</code> / <code>edit.alignBottom</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.distributeH</code> / <code>edit.distributeV</code></li>
+</ul>
+<h3 id="48-export" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">4.8 export<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#48-export">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>file.exportPng</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="5-nodedata节点数据结构现状摘要" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">5. NodeData（节点数据结构）现状摘要<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#5-nodedata节点数据结构现状摘要">#</a></h2>
+<p class="my-4 leading-7">来自 <code>packages/infinite-map/src/core/types.ts</code>（已对外导出）：</p>
+<h3 id="几何层级" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">几何/层级<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#几何层级">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>id, x, y, width, height</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>rotation?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>rotationX?: number</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>rotationY?: number</code></li>
+</ul>
+<h3 id="显示业务" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">显示/业务<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#显示业务">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>label?: string</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>color?: string</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>data?: unknown</code>（建议不要放超大对象）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>resourceId?: string</code>（建议用于外置大数据引用）</li>
+</ul>
+<h3 id="编辑器结构字段" class="mt-10 mb-2 leading-7 text-xl title_fb7eb">编辑器结构字段<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#编辑器结构字段">#</a></h3>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>kind?: &#x27;node&#x27; | &#x27;group&#x27;</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>parentId?: string</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>locked?: boolean</code>（锁定传递）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>hidden?: boolean</code>（隐藏传递）</li>
+</ul>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">详细字段说明见：<a href="/infinite-map/library/node-data.html" class="link_a7cea  link_a9ef4 inline-link_f855c">NodeData 字段参考</a></p>
+</blockquote><!--/$--></div><div class="rspress-doc-footer"><footer class="mt-8"><div class="xs:flex pb-5 px-2 justify-end items-center"></div><div class="flex flex-col"><a href="https://github.com/qiuyulc/infinite-map/edit/main/site/docs/功能清单与对外API.md" target="_blank" class="editLink_e1cfa">编辑此页</a></div><div class="flex flex-col sm:flex-row sm:justify-around gap-4 pt-6"><div class="prev_c92d1 flex flex-col"><a href="/infinite-map/library/api-ref.html" class="link_a7cea pager-link_e0d2d"><span class="desc_dcc01">Previous Page</span><span class="title_a3acb">API 参考</span></a></div><div class="next_c11be flex flex-col"><a href="/infinite-map/overview.html" class="link_a7cea pager-link_e0d2d next_ad355"><span class="desc_dcc01">Next Page</span><span class="title_a3acb">概览</span></a></div></div></footer></div></div><div class="aside-container_bc5fa"><div class="flex flex-col"><div id="aside-container" class="relative text-sm font-medium"><div class="leading-7 block text-sm font-semibold pl-3">ON THIS PAGE</div><nav class="mt-1"><ul class="relative"><li><a href="#1-我们现在做了哪些功能面向使用者的能力" title="1. 我们现在做了哪些功能（面向使用者的&quot;能力&quot;）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">1. 我们现在做了哪些功能（面向使用者的&quot;能力&quot;）</span></a></li><li><a href="#11-画布视口基础能力" title="1.1 画布/视口（基础能力）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">1.1 画布/视口（基础能力）</span></a></li><li><a href="#12-节点渲染与性能" title="1.2 节点渲染与性能" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">1.2 节点渲染与性能</span></a></li><li><a href="#13-编辑器插件系统能力默认编辑器已集成" title="1.3 编辑器（插件系统）能力（默认编辑器已集成）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">1.3 编辑器（插件系统）能力（默认编辑器已集成）</span></a></li><li><a href="#选择框选" title="选择/框选" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">选择/框选</span></a></li><li><a href="#拖拽缩放旋转" title="拖拽/缩放/旋转" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">拖拽/缩放/旋转</span></a></li><li><a href="#键盘微调nudge" title="键盘微调（Nudge）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">键盘微调（Nudge）</span></a></li><li><a href="#对齐吸附snapping" title="对齐吸附（snapping）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">对齐吸附（snapping）</span></a></li><li><a href="#对齐分布align--distribute" title="对齐/分布（Align / Distribute）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">对齐/分布（Align / Distribute）</span></a></li><li><a href="#历史undoredo" title="历史（Undo/Redo）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">历史（Undo/Redo）</span></a></li><li><a href="#剪贴板" title="剪贴板" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">剪贴板</span></a></li><li><a href="#编组group" title="编组（Group）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">编组（Group）</span></a></li><li><a href="#锁定隐藏lockhide" title="锁定/隐藏（Lock/Hide）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">锁定/隐藏（Lock/Hide）</span></a></li><li><a href="#导出-pngexport-png" title="导出 PNG（Export PNG）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">导出 PNG（Export PNG）</span></a></li><li><a href="#hud可选启用的-ui" title="HUD（可选启用的 UI）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">HUD（可选启用的 UI）</span></a></li><li><a href="#预览只读模式重要" title="预览/只读模式（重要）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">预览/只读模式（重要）</span></a></li><li><a href="#view--z-index-命令" title="View / Z-Index 命令" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">View / Z-Index 命令</span></a></li><li><a href="#2-对外暴露了哪些-api完整版" title="2. 对外暴露了哪些 API（完整版）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">2. 对外暴露了哪些 API（完整版）</span></a></li><li><a href="#21-包入口导出qiuyulcinfinite-map" title="2.1 包入口导出（@qiuyulc/infinite-map）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.1 包入口导出（<code>@qiuyulc/infinite-map</code>）</span></a></li><li><a href="#react-组件" title="React 组件" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">React 组件</span></a></li><li><a href="#theme-api" title="Theme API" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Theme API</span></a></li><li><a href="#core-类型工具" title="Core 类型/工具" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Core 类型/工具</span></a></li><li><a href="#layout预置布局" title="Layout（预置布局）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Layout（预置布局）</span></a></li><li><a href="#demo-数据" title="Demo 数据" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Demo 数据</span></a></li><li><a href="#plugin-contract供-editor-包社区插件复用" title="Plugin Contract（供 editor 包/社区插件复用）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Plugin Contract（供 editor 包/社区插件复用）</span></a></li><li><a href="#211-ui-子入口导出qiuyulcinfinite-mapui" title="2.1.1 UI 子入口导出（@qiuyulc/infinite-map/ui）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.1.1 UI 子入口导出（<code>@qiuyulc/infinite-map/ui</code>）</span></a></li><li><a href="#212-editor-包入口导出qiuyulcinfinite-map-editor" title="2.1.2 Editor 包入口导出（@qiuyulc/infinite-map-editor）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.1.2 Editor 包入口导出（<code>@qiuyulc/infinite-map-editor</code>）</span></a></li><li><a href="#213-editor-ui仍从包根入口导出" title="2.1.3 Editor UI（仍从包根入口导出）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.1.3 Editor UI（仍从包根入口导出）</span></a></li><li><a href="#214-demo-子入口导出qiuyulcinfinite-mapdemo" title="2.1.4 demo 子入口导出（@qiuyulc/infinite-map/demo）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.1.4 demo 子入口导出（<code>@qiuyulc/infinite-map/demo</code>）</span></a></li><li><a href="#22-infinitemapprops组件属性完整版" title="2.2 InfiniteMapProps（组件属性，完整版）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.2 <code>InfiniteMapProps</code>（组件属性，完整版）</span></a></li><li><a href="#数据与渲染" title="数据与渲染" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">数据与渲染</span></a></li><li><a href="#编辑与插件系统" title="编辑与插件系统" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">编辑与插件系统</span></a></li><li><a href="#相机与交互" title="相机与交互" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">相机与交互</span></a></li><li><a href="#背景缩放" title="背景/缩放" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">背景/缩放</span></a></li><li><a href="#虚拟化" title="虚拟化" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">虚拟化</span></a></li><li><a href="#主题--调试" title="主题 / 调试" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">主题 / 调试</span></a></li><li><a href="#23-infinitemapapi通过-apiref-暴露的方法完整版" title="2.3 InfiniteMapApi（通过 apiRef 暴露的方法，完整版）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.3 <code>InfiniteMapApi</code>（通过 <code>apiRef</code> 暴露的方法，完整版）</span></a></li><li><a href="#24-editor-插件系统给二次开发的公共类型" title="2.4 Editor 插件系统（给二次开发的公共类型）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.4 Editor 插件系统（给二次开发的公共类型）</span></a></li><li><a href="#nodepatch" title="NodePatch" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block"><code>NodePatch</code></span></a></li><li><a href="#changemeta" title="ChangeMeta" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block"><code>ChangeMeta</code></span></a></li><li><a href="#mapcontext插件运行时上下文" title="MapContext（插件运行时上下文）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block"><code>MapContext</code>（插件运行时上下文）</span></a></li><li><a href="#infinitemapplugin" title="InfiniteMapPlugin" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block"><code>InfiniteMapPlugin</code></span></a></li><li><a href="#25-内置插件工厂editorplugins完整版" title="2.5 内置插件工厂（EditorPlugins.*，完整版）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">2.5 内置插件工厂（<code>EditorPlugins.*</code>，完整版）</span></a></li><li><a href="#core" title="core" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">core</span></a></li><li><a href="#edit" title="edit" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">edit</span></a></li><li><a href="#selection" title="selection" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">selection</span></a></li><li><a href="#transform" title="transform" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">transform</span></a></li><li><a href="#snapping" title="snapping" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">snapping</span></a></li><li><a href="#clipboard" title="clipboard" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">clipboard</span></a></li><li><a href="#visual" title="visual" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">visual</span></a></li><li><a href="#hud" title="hud" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">hud</span></a></li><li><a href="#3-默认编辑器包含哪些插件" title="3. 默认编辑器包含哪些插件" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">3. 默认编辑器包含哪些插件</span></a></li><li><a href="#31-createdefaulteditorpluginsopts不含-hud" title="3.1 createDefaultEditorPlugins(opts?)（不含 HUD）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">3.1 <code>createDefaultEditorPlugins(opts?)</code>（不含 HUD）</span></a></li><li><a href="#32-createdefaulteditorpluginswithuiopts在-31-基础上追加-hud" title="3.2 createDefaultEditorPluginsWithUI(opts?)（在 3.1 基础上追加 HUD）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">3.2 <code>createDefaultEditorPluginsWithUI(opts?)</code>（在 3.1 基础上追加 HUD）</span></a></li><li><a href="#4-默认命令列表commandid" title="4. 默认命令列表（commandId）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">4. 默认命令列表（commandId）</span></a></li><li><a href="#41-history" title="4.1 history" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.1 history</span></a></li><li><a href="#42-editclipboard" title="4.2 edit（clipboard）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.2 edit（clipboard）</span></a></li><li><a href="#43-view" title="4.3 view" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.3 view</span></a></li><li><a href="#44-group" title="4.4 group" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.4 group</span></a></li><li><a href="#45-lockhide" title="4.5 lock/hide" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.5 lock/hide</span></a></li><li><a href="#46-z-index" title="4.6 z-index" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.6 z-index</span></a></li><li><a href="#47-align--distribute" title="4.7 align / distribute" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.7 align / distribute</span></a></li><li><a href="#48-export" title="4.8 export" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">4.8 export</span></a></li><li><a href="#5-nodedata节点数据结构现状摘要" title="5. NodeData（节点数据结构）现状摘要" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">5. NodeData（节点数据结构）现状摘要</span></a></li><li><a href="#几何层级" title="几何/层级" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">几何/层级</span></a></li><li><a href="#显示业务" title="显示/业务" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">显示/业务</span></a></li><li><a href="#编辑器结构字段" title="编辑器结构字段" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block">编辑器结构字段</span></a></li></ul></nav></div></div></div></div></div></div></section></div>
+    <div id="search-container"></div>
+  </body>
+</html>

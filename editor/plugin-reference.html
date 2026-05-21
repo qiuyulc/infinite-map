@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Rspress v1.47.1">
+    <title data-rh="true">插件 API 参考 - Infinite Map</title><meta data-rh="true" name="description" content="一个可扩展的无限画布组件库：渲染、编辑器插件、Patch 变更流与持久化。"/>
+  <script>{;const saved = localStorage.getItem('rspress-theme-appearance');const preferDark = window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark = !saved || saved === 'auto' ? preferDark : saved === 'dark';document.documentElement.classList.toggle('dark', isDark);document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';}</script><link rel="icon" href="/infinite-map/logo.png"><script defer src="/infinite-map/static/js/styles.301dee57.js"></script><script defer src="/infinite-map/static/js/lib-react.c8d96e94.js"></script><script defer src="/infinite-map/static/js/lib-router.e08ece8c.js"></script><script defer src="/infinite-map/static/js/297.dd6f5d35.js"></script><script defer src="/infinite-map/static/js/index.aa189e49.js"></script><link href="/infinite-map/static/css/styles.68e6e8db.css" rel="stylesheet"></head>
+
+  <body >
+    <div id="root"><link rel="preload" as="image" href="/infinite-map/img/logo.png"/><div class="navContainer_d18b1 rspress-nav px-6  sticky_ddfa7"><div class="container_e4235 flex justify-between items-center h-full"><div class="navBarTitle_c5f07"><a href="/infinite-map/index.html" class="link_a7cea flex items-center w-full h-full text-base font-semibold transition-opacity duration-300 hover:opacity-60"><div class="mr-1 min-w-8"><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo dark:hidden"/><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo hidden dark:block"/></div></a></div><div class="flex flex-1 justify-end items-center"><div class="rightNav_a2fea"><div class="flex sm:flex-1 items-center sm:pl-4 sm:pr-2"><div class="rspress-nav-search-button navSearchButton_df1fb"><button><svg width="18" height="18" viewBox="0 0 32 32"><path fill="var(--rp-c-gray)" d="m29 27.586-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29ZM4 13a9 9 0 1 1 9 9 9.01 9.01 0 0 1-9-9"></path></svg><p class="searchWord_af2c1">Search</p><div style="opacity:0"><span></span><span>K</span></div></button></div><div class="mobileNavSearchButton_d85a9"><svg width="24" height="24" viewBox="0 0 32 32"><path fill="var(--rp-c-gray)" d="m29 27.586-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29ZM4 13a9 9 0 1 1 9 9 9.01 9.01 0 0 1-9-9"></path></svg></div></div><div class="rspress-nav-menu menu h-14"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154 activeItem_a28b5 text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">文档</div></a><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154  text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">GitHub</div></a></div><div class="flex-center flex-row"><div class="mx-2"><div class="md:mr-2 rspress-nav-appearance"><div class="p-1 border border-solid border-gray-300 text-gray-400  cursor-pointer rounded-md hover:border-gray-600 hover:text-gray-600 dark:hover:border-gray-200 dark:hover:text-gray-200 transition-all duration-300 w-7 h-7"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24" class="dark:hidden" width="18" height="18" fill="currentColor"><path d="M12 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6m0-10c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4M12 4c-.6 0-1-.4-1-1V1c0-.6.4-1 1-1s1 .4 1 1v2c0 .6-.4 1-1 1M12 24c-.6 0-1-.4-1-1v-2c0-.6.4-1 1-1s1 .4 1 1v2c0 .6-.4 1-1 1M5.6 6.6c-.3 0-.5-.1-.7-.3L3.5 4.9c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l1.4 1.4c.4.4.4 1 0 1.4-.1.2-.4.3-.7.3M19.8 20.8c-.3 0-.5-.1-.7-.3l-1.4-1.4c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l1.4 1.4c.4.4.4 1 0 1.4-.2.2-.5.3-.7.3M3 13H1c-.6 0-1-.4-1-1s.4-1 1-1h2c.6 0 1 .4 1 1s-.4 1-1 1M23 13h-2c-.6 0-1-.4-1-1s.4-1 1-1h2c.6 0 1 .4 1 1s-.4 1-1 1M4.2 20.8c-.3 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.4-1.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-1.4 1.4c-.2.2-.4.3-.7.3M18.4 6.6c-.3 0-.5-.1-.7-.3-.4-.4-.4-1 0-1.4l1.4-1.4c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-1.4 1.4c-.2.2-.5.3-.7.3"></path></svg><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24" class="hidden dark:block" width="18" height="18" fill="currentColor"><path d="M12.1 22h-.9c-5.5-.5-9.5-5.4-9-10.9.4-4.8 4.2-8.6 9-9 .4 0 .8.2 1 .5s.2.8-.1 1.1c-2 2.7-1.4 6.4 1.3 8.4 2.1 1.6 5 1.6 7.1 0 .3-.2.7-.3 1.1-.1.3.2.5.6.5 1-.2 2.7-1.5 5.1-3.6 6.8-1.9 1.4-4.1 2.2-6.4 2.2M9.3 4.4c-2.9 1-5 3.6-5.2 6.8-.4 4.4 2.8 8.3 7.2 8.7 2.1.2 4.2-.4 5.8-1.8 1.1-.9 1.9-2.1 2.4-3.4-2.5.9-5.3.5-7.5-1.1-2.8-2.2-3.9-5.9-2.7-9.2"></path></svg></div></div></div><div class="social-links menu-item_e90a6 flex-center relative"><div class="flex-center h-full gap-x-4 transition-colors duration-300 md:mr-2"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="social-links"><div class="social-links-icon_a4ad0"><div><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a></div></div></div></div><div class="mobileNavMenu_e7045"><div class="navScreen_ec30c  rspress-nav-screen" id="navScreen"><div class="container_c935d"><div class="navMenu_b887b"><div class="navMenuItem_e7978 w-full"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154 activeItem_a28b5 text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">文档</div></a></div><div class="navMenuItem_e7978 w-full"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="link_a7cea "><div class="rspress-nav-menu-item singleItem_c1154  text-sm font-medium mx-1.5 px-3 py-2 flex items-center break-keep">GitHub</div></a></div></div><div class="flex-center flex-col gap-2"><div class="mt-2 navAppearance_bf893 flex justify-center"></div><div class="social-links menu-item_e90a6 flex-center relative"><div class="flex-center h-full gap-x-4 transition-colors duration-300 md:mr-2"><a href="https://github.com/qiuyulc/infinite-map" target="_blank" rel="noopener noreferrer" class="social-links"><div class="social-links-icon_a4ad0"><div><svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></div></div></a></div></div></div></div></div><button aria-label="mobile hamburger" class=" rspress-mobile-hamburger navHamburger_ac64c text-gray-500"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><circle cx="8" cy="16" r="2" fill="currentColor"></circle><circle cx="16" cy="16" r="2" fill="currentColor"></circle><circle cx="24" cy="16" r="2" fill="currentColor"></circle></svg></button></div></div></div></div><section><div class="docLayout_af141 pt-0"><aside class="sidebar_dd719 rspress-sidebar "><div class="navTitleMask_fb17c"><div class="navBarTitle_c5f07"><a href="/infinite-map/index.html" class="link_a7cea flex items-center w-full h-full text-base font-semibold transition-opacity duration-300 hover:opacity-60"><div class="mr-1 min-w-8"><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo dark:hidden"/><img src="/infinite-map/img/logo.png" alt="logo" id="logo" class="rspress-logo hidden dark:block"/></div></a></div></div><div class="rspress-scrollbar sidebarContent_da296"><nav class="pb-2"><a href="/infinite-map/index.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:14px;margin-left:0;border-radius:0 var(--rp-radius) var(--rp-radius) 0;padding-left:24px;font-weight:bold"><span>首页</span></div></a><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">编辑器使用指南</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(90deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:1;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/editor/quickstart.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>快速上手</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-config.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件配置</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/shortcuts-and-operations.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>快捷键与操作</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/editing.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>编辑功能</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/view.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>视图操作</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/persistence.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>持久化</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/theming.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>主题</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/collaboration.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>协作</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">API 参考</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/library/node-data.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>节点数据</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/component-api.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>组件 API</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/api-ref.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>API 参考</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/功能清单与对外API.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>全量功能清单</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">架构与开发</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:18px"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex"><span class="flex-center" style="font-size:13px">infinite-map 核心引擎</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:0"><div class="rspress-sidebar-item"><a href="/infinite-map/overview.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>概览</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/01-core-types.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>核心类型</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/02-engine-store.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>Engine Store</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/03-plugin-protocol.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件协议</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/04-render-pipeline.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>渲染管线</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/05-input-pipeline.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>输入管线</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/06-patch-engine.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>Patch 引擎</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/07-camera-viewport.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>相机与视口</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/08-virtualization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>虚拟化</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/09-theme-system.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>主题系统</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/10-doc-serialization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>文档序列化</span></div></a></div></div></div></section></div><div class="rspress-sidebar-item"><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:18px"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex"><span class="flex-center" style="font-size:13px">editor 插件开发</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:0"><div class="rspress-sidebar-item"><a href="/infinite-map/editor/overview.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>概览</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-development.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件开发</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/plugin-reference.html" class="link_a7cea menuLink_bb039"><div class="menuItemActive_de63c mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>插件参考</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/editor/customization.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>自定义</span></div></a></div></div></div></section></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/project-structure.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>项目结构</span></div></a></div></div></div></section><section class="rspress-sidebar-section mt-0.5 block" style="margin-left:0"><div class="rspress-sidebar-collapse flex justify-between items-center menuItem_ac22e" style="border-radius:0 var(--rp-radius) var(--rp-radius) 0;cursor:pointer"><h2 class="py-2 px-3 text-sm font-medium flex" style="font-size:14px;padding-left:24px;font-weight:bold"><span class="flex-center" style="font-size:14px">附录</span></h2><div class="collapseContainer_d6e4e p-2 rounded-xl"><div style="cursor:pointer;transition:transform 0.2s ease-out;transform:rotate(0deg)"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></div></div><div class="transition-all duration-300 ease-in-out" style="overflow:hidden;max-height:0"><div class="rspress-sidebar-group transition-opacity duration-500 ease-in-out" style="opacity:0;margin-left:12px"><div class="rspress-sidebar-item"><a href="/infinite-map/releasing.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>发布流程</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/demos.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>示例</span></div></a></div><div class="rspress-sidebar-item"><a href="/infinite-map/library/faq.html" class="link_a7cea menuLink_bb039"><div class="menuItem_ac22e mt-0.5 py-2 px-3 font-medium flex" style="font-size:13px;margin-left:18px;border-radius:0 var(--rp-radius) var(--rp-radius) 0"><span>FAQ</span></div></a></div></div></div></section></nav></div></aside><div class="flex-1 relative min-w-0"><div class="rspress-sidebar-menu-container "><div class="rspress-sidebar-menu"><button type="button" class="flex-center mr-auto"><div class="text-md mr-2"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M4 6h24v2H4zm0 18h24v2H4zm0-12h24v2H4zm0 6h24v2H4z"></path></svg></div><span class="text-sm">Menu</span></button><button type="button" class="flex-center ml-auto"><span class="text-sm">ON THIS PAGE</span><div class="text-md mr-2" style="transform:rotate(0deg);transition:transform 0.2s ease-out;margin-top:2px"><svg width="1em" height="1em" viewBox="0 0 32 32"><path fill="currentColor" d="M22 16 12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z"></path></svg></div></button><div class="rspress-local-toc-container "><ul><li><a href="#目录" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">目录</span></a></li><li><a href="#基础设施类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">基础设施类</span></a></li><li><a href="#keyboard-state" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>keyboard-state</code></span></a></li><li><a href="#core-services" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>core-services</code></span></a></li><li><a href="#command-runner" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>command-runner</code></span></a></li><li><a href="#shortcuts" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>shortcuts</code></span></a></li><li><a href="#history" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>history</code></span></a></li><li><a href="#view-commands" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>view-commands</code></span></a></li><li><a href="#z-index" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>z-index</code></span></a></li><li><a href="#export-png" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>export-png</code></span></a></li><li><a href="#选择类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">选择类</span></a></li><li><a href="#selection" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>selection</code></span></a></li><li><a href="#marquee-select" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>marquee-select</code></span></a></li><li><a href="#变换类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">变换类</span></a></li><li><a href="#drag" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>drag</code></span></a></li><li><a href="#resize" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>resize</code></span></a></li><li><a href="#rotate" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>rotate</code></span></a></li><li><a href="#rotate3d" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>rotate3d</code></span></a></li><li><a href="#编辑类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">编辑类</span></a></li><li><a href="#clipboard" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>clipboard</code></span></a></li><li><a href="#group" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>group</code></span></a></li><li><a href="#commands" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Commands</span></a></li><li><a href="#编组规则" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">编组规则</span></a></li><li><a href="#解组规则" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">解组规则</span></a></li><li><a href="#选择交互" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">选择交互</span></a></li><li><a href="#拖拽--变换" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">拖拽 / 变换</span></a></li><li><a href="#service" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">Service</span></a></li><li><a href="#工具函数grouputils" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:24px"><span class="rspress-toc-link-text block">工具函数（<code>groupUtils</code>）</span></a></li><li><a href="#lock-hide" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>lock-hide</code></span></a></li><li><a href="#align-distribute" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>align-distribute</code></span></a></li><li><a href="#nudge" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>nudge</code></span></a></li><li><a href="#hud-类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">HUD 类</span></a></li><li><a href="#toolbar" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>toolbar</code></span></a></li><li><a href="#context-menu" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>context-menu</code></span></a></li><li><a href="#default-context-menu" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>default-context-menu</code></span></a></li><li><a href="#minimap" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>minimap</code></span></a></li><li><a href="#rulers" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>rulers</code></span></a></li><li><a href="#zoom-dock" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>zoom-dock</code></span></a></li><li><a href="#视觉类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">视觉类</span></a></li><li><a href="#hover-highlight" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>hover-highlight</code></span></a></li><li><a href="#snap-guides" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>snap-guides</code></span></a></li><li><a href="#扩展类" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">扩展类</span></a></li><li><a href="#drop-to-create" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:12px"><span class="rspress-toc-link-text block"><code>drop-to-create</code></span></a></li><li><a href="#默认插件组装" class="link_a7cea rspress-toc-link sm:text-normal text-sm" style="margin-left:0"><span class="rspress-toc-link-text block">默认插件组装</span></a></li></ul></div></div></div><div class="content_ff766 rspress-doc-container flex"><div class="flex-1 overflow-x-auto"><div class="rspress-doc"><!--$--><h1 id="插件-api-参考" class="rspress-doc-title text-3xl mb-10 leading-10 tracking-tight title_fb7eb">插件 API 参考<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#插件-api-参考">#</a></h1>
+<p class="my-4 leading-7">本文档是 <code>@qiuyulc/infinite-map-editor</code> 全部 24 个内置插件的详细参考。</p>
+<p class="my-4 leading-7">每个插件包含：插件 ID、功能描述、声明式依赖、配置选项、注册的命令、使用的 Store Key 和事件。</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="目录" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">目录<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#目录">#</a></h2>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">基础设施类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E9%80%89%E6%8B%A9%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">选择类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E5%8F%98%E6%8D%A2%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">变换类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E7%BC%96%E8%BE%91%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">编辑类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#hud-%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">HUD 类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E8%A7%86%E8%A7%89%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">视觉类</a></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><a href="#%E6%89%A9%E5%B1%95%E7%B1%BB" class="link_a7cea  link_a9ef4 inline-link_f855c">扩展类</a></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="基础设施类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">基础设施类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#基础设施类">#</a></h2>
+<h3 id="keyboard-state" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>keyboard-state</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#keyboard-state">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>keyboard-state</code><br/>
+<strong class="font-semibold">功能</strong>: 监听 <code>keydown</code>/<code>keyup</code>，维护 <code>Space</code> 键按下状态到 Store。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>KeyboardStatePluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>spaceKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>STORE_KEYS.keyboardSpace</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">Space 键状态的 store key</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>keyboard:space</code> (boolean)<br/>
+<strong class="font-semibold">Input</strong>: <code>onKeyDown</code> / <code>onKeyUp</code>（处理 Space 键）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="core-services" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>core-services</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#core-services">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>core-services</code><br/>
+<strong class="font-semibold">功能</strong>: 注册核心服务到 <code>ctx.services</code>：<code>camera</code>（相机驱动）、<code>document</code>（统一 patches 入口）、<code>hud</code>（Toolbar/ContextMenu 贡献注册表）。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="command-runner" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>command-runner</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#command-runner">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>command-runner</code><br/>
+<strong class="font-semibold">功能</strong>: 命令执行引擎。收集所有插件的 <code>commands</code> 到 <code>store.commands:registry</code>，提供统一的 <code>ctx.runCommand(id, payload)</code> 入口。<br/>
+<strong class="font-semibold">Provides</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="shortcuts" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>shortcuts</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#shortcuts">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>shortcuts</code><br/>
+<strong class="font-semibold">功能</strong>: 将快捷键映射到命令。支持 <code>commandShortcuts</code> 覆盖（<code>null</code> = 禁用）。仅在画布聚焦时生效。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: <code>ShortcutsPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>commandShortcuts</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>Record&lt;string, string | null&gt;</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">命令快捷覆盖（<code>null</code> 禁用）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Input</strong>: <code>onKeyDown</code>（触发快捷键映射）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="history" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>history</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#history">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>history</code><br/>
+<strong class="font-semibold">功能</strong>: Undo/Redo 历史栈。监听 <code>patches:applied</code> 事件生成逆向 patch，支持 move-phase 合并。<br/>
+<strong class="font-semibold">Provides</strong>: <code>history</code><br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: <code>HistoryPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>limit</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>200</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">历史栈最大长度</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>history.undo</code>（<code>Mod+Z</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>history.redo</code>（<code>Mod+Shift+Z</code>）</li>
+</ul>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Keys</strong>: <code>history:undoStack</code>、<code>history:redoStack</code>、<code>history:pending</code>、<code>history:version</code><br/>
+<strong class="font-semibold">Bus Events</strong>: 监听 <code>patches:applied</code>、<code>history:undo</code>、<code>history:redo</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="view-commands" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>view-commands</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#view-commands">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>view-commands</code><br/>
+<strong class="font-semibold">功能</strong>: 视图控制命令（zoom/fit/center）。同时写入 <code>view:config</code> 供其他插件读取。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: <code>ViewCommandsPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>paddingPx</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>48</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">fit 时的 padding（屏幕像素）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>zoomStep</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>1.2</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">zoom 步进倍率</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>minZoom</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>0.25</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">最小缩放</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>maxZoom</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>2.5</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">最大缩放</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.zoomIn</code>（<code>Mod+=</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.zoomOut</code>（<code>Mod+-</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.resetZoom</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitView</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.centerView</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.fitSelection</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>view.centerSelection</code></li>
+</ul>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>view:config</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="z-index" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>z-index</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#z-index">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>z-index</code><br/>
+<strong class="font-semibold">功能</strong>: 层级（zIndex）命令：置顶/置底/上移一层/下移一层/归位。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.bringToFront</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.bringForward</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.sendBackward</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.sendToBack</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>z.normalize</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="export-png" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>export-png</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#export-png">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>export-png</code><br/>
+<strong class="font-semibold">功能</strong>: 导出 PNG 命令（骨架）。触发 <code>export:png</code> 事件，由宿主实现截图逻辑。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: <code>ExportPngPluginOptions</code></p>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>file.exportPng</code></li>
+</ul>
+<p class="my-4 leading-7"><strong class="font-semibold">Bus Events</strong>: 触发 <code>export:png</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="选择类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">选择类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#选择类">#</a></h2>
+<h3 id="selection" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>selection</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#selection">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>selection</code><br/>
+<strong class="font-semibold">功能</strong>: 选择服务。提供 hitTest（节点命中）、pointerDownProcessor（选中逻辑）、overlay（选中框+缩放手柄）。<br/>
+<strong class="font-semibold">Provides</strong>: <code>selection</code><br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>SelectionPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>storeKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 selection store key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>clearOnBlankClick</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">点击空白是否清空选择</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>selection:ids</code> (string[])<br/>
+<strong class="font-semibold">Bus Events</strong>: 触发 <code>selection:change</code><br/>
+<strong class="font-semibold">HitTests</strong>: 节点命中检测<br/>
+<strong class="font-semibold">PointerDownProcessors</strong>: 点击选中/多选/清空逻辑<br/>
+<strong class="font-semibold">Overlay</strong>: <code>SelectionOverlay</code>（选中框 + 8 个缩放手柄），slot=<code>overlay</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="marquee-select" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>marquee-select</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#marquee-select">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>marquee-select</code><br/>
+<strong class="font-semibold">功能</strong>: 框选。空白拖拽时渲染矩形选框，松手后框内节点被选中。默认放最后以避免与 drag/pan 冲突。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>selection</code><br/>
+<strong class="font-semibold">Options</strong>: <code>MarqueeSelectPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>requireShift</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>false</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否需要 Shift 才能框选</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>storeKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 store key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>selectionKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 selection key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>minDragPx</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">形成框选的最小拖动距离</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>marquee:state</code><br/>
+<strong class="font-semibold">Gesture</strong>: marquee 手势（<code>canStart</code> 判断是否空白区域）<br/>
+<strong class="font-semibold">Overlay</strong>: <code>MarqueeOverlay</code>（框选矩形），slot=<code>overlay</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="变换类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">变换类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#变换类">#</a></h2>
+<h3 id="drag" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>drag</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#drag">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>drag</code><br/>
+<strong class="font-semibold">功能</strong>: 拖拽移动。支持多选整体移动、吸附（对齐线/网格/参考线/视口中心线）、Engine 模式（move 阶段直写 DOM）。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>DragPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>dragKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 drag store key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>selectOnDrag</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">拖拽未选中节点时是否先选中</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>selectionKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 selection key</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>drag:state</code><br/>
+<strong class="font-semibold">Bus Events</strong>: 触发 <code>drag:start</code> / <code>drag:move</code> / <code>drag:end</code><br/>
+<strong class="font-semibold">Gesture</strong>: drag 手势（priority=100）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="resize" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>resize</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#resize">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>resize</code><br/>
+<strong class="font-semibold">功能</strong>: 8 点缩放手柄。通过 hitTest 检测手柄命中，gesture 执行缩放。支持等比缩放（Shift）。仅单选时显示。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>ResizePluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>selectionKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 selection key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>spaceKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 space key</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>hitRadiusPx</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">手柄命中半径（px）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>minSize</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">最小宽高（世界单位）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>resize:state</code><br/>
+<strong class="font-semibold">HitTests</strong>: 8 个缩放手柄命中检测<br/>
+<strong class="font-semibold">Gesture</strong>: resize 手势（priority=100）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="rotate" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>rotate</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#rotate">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>rotate</code><br/>
+<strong class="font-semibold">功能</strong>: 2D 旋转。选中节点后显示旋转 handle，拖拽旋转。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: 无（使用 SelectionOverlay 的 handle）</p>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>rotate:state</code><br/>
+<strong class="font-semibold">HitTests</strong>: 旋转 handle 命中检测<br/>
+<strong class="font-semibold">Gesture</strong>: rotate 手势（priority=100）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="rotate3d" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>rotate3d</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#rotate3d">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>rotate3d</code><br/>
+<strong class="font-semibold">功能</strong>: 3D 旋转。<code>Alt + 拖拽</code> 修改 <code>rotationX/rotationY</code>。通过独立 handle 检测避免与 2D 旋转冲突。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>rotate3d:state</code><br/>
+<strong class="font-semibold">HitTests</strong>: 3D 旋转区域命中检测<br/>
+<strong class="font-semibold">Gesture</strong>: rotate3d 手势</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="编辑类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">编辑类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#编辑类">#</a></h2>
+<h3 id="clipboard" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>clipboard</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#clipboard">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>clipboard</code><br/>
+<strong class="font-semibold">功能</strong>: 复制/剪切/粘贴/删除/副本。支持 group 结构（复制时 remap id + 修正 parentId），连续粘贴偏移。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code>, <code>selection</code>, <code>history</code><br/>
+<strong class="font-semibold">Options</strong>: <code>ClipboardPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>offsetWorld</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">paste/duplicate 偏移量（世界单位）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.copy</code>（<code>Mod+C</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.paste</code>（<code>Mod+V</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.cut</code>（<code>Mod+X</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.duplicate</code>（<code>Mod+D</code>）</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.delete</code>（<code>Delete</code> / <code>Backspace</code>）</li>
+</ul>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Key</strong>: <code>clipboard:data</code>、<code>clipboard:pasteCount</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="group" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>group</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#group">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>group</code><br/>
+<strong class="font-semibold">Provides</strong>: <code>group</code><br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code>, <code>selection</code>, <code>document</code><br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<p class="my-4 leading-7">编组/解组插件。group 节点是一种特殊的 <code>NodeData</code>（<code>kind=&#x27;group&#x27;</code>），本身不承载业务内容，仅作为组织子节点（<code>parentId</code> 指向该 group）的容器。</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="commands" class="mt-8 leading-6 text-lg title_fb7eb">Commands<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#commands">#</a></h4>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">Command</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">快捷键</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>edit.group</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>Mod+G</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">将当前选中的节点编入新 group</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>edit.ungroup</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>Shift+Mod+G</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">将选中的 group 解组（删除 group，子节点 parentId 清空）</td>
+</tr>
+</tbody>
+</table>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="编组规则" class="mt-8 leading-6 text-lg title_fb7eb">编组规则<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#编组规则">#</a></h4>
+<p class="my-4 leading-7">执行 <code>edit.group</code> 时，插件会对选中节点做<strong class="font-semibold">自动提升</strong>，避免破坏已有的 group 层级：</p>
+<ol class="list-decimal pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">父子覆盖检查</strong>：对每个选中节点，沿 <code>parentId</code> 链向上遍历。如果某个祖先 group 已在选集中，该节点被&quot;覆盖&quot;，从选集中移除。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">最外层提升</strong>：未被覆盖的非 group 节点，沿 <code>parentId</code> 链找到最外层祖先 group。若找到，将该节点提升为该 group（group 加入选集、原节点移除）。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">group 节点同样参与提升</strong>：选中内层 group 时，若其上有外层 group，同样被提升到最外层，防止内层 group 被&quot;剥离&quot;。</li>
+</ol>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">示例：G1 → G2 → A, B。选中 A + C，编组时 A 被提升到 G1，最终 picked = [G1, C]。</p>
+</blockquote>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="解组规则" class="mt-8 leading-6 text-lg title_fb7eb">解组规则<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#解组规则">#</a></h4>
+<p class="my-4 leading-7"><code>edit.ungroup</code> 仅对 group 节点生效（需单选一个 group）。解组时：</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2">删除该 group 节点</li>
+<li class="[&amp;:not(:first-child)]:mt-2">其直接子节点（<code>parentId === groupId</code>）的 <code>parentId</code> 置为 <code>undefined</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2">子节点变为选中状态</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="选择交互" class="mt-8 leading-6 text-lg title_fb7eb">选择交互<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#选择交互">#</a></h4>
+<p class="my-4 leading-7">Group 的存在改变了点击选择的行为：</p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">操作</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">行为</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">单击 group 子节点</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自动提升到最外层祖先 group 并选中</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">单击无 group 归属的节点</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">选中节点自身</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">双击节点</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">穿透提升，直接选中该节点自身</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>Shift</code> + 单击</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">提升到最外层 group 后 toggle</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>Shift</code> + 双击</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">与普通双击相同（穿透选中该节点）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">单击 group 外框</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">选中 group</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">双击 group 外框</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">穿透选中 group 自身</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="border-l-2 border-solid border-divider pl-4 my-6 transition-colors duration-500 blockquote_f1063">
+<p class="my-4 leading-7">已选中的节点再次单击<strong class="font-semibold">不执行提升</strong>，保护双击穿透结果不被覆盖。</p>
+</blockquote>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="拖拽--变换" class="mt-8 leading-6 text-lg title_fb7eb">拖拽 / 变换<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#拖拽--变换">#</a></h4>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">拖动 group</strong>：drag 插件通过 <code>expandIds</code> 展开 group 的所有递归后代，整体移动。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">拖动子节点</strong>（双击穿透后）：仅移动该子节点，group 及其他子节点不动。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">框选</strong>：命中检测会考虑 hidden/locked 传递规则。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">复制/粘贴</strong>：clipboard 插件会正确处理 group 结构（复制时 remap id + 修正 parentId）。</li>
+<li class="[&amp;:not(:first-child)]:mt-2"><strong class="font-semibold">锁定/隐藏传递</strong>：祖先 group 的 locked/hidden 状态会传递到所有后代。</li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="service" class="mt-8 leading-6 text-lg title_fb7eb">Service<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#service">#</a></h4>
+<p class="my-4 leading-7">注册在 <code>group</code> key 下，供其他插件调用：</p>
+<div class="language-ts"><div class="rspress-code-content rspress-scrollbar"><div><pre class="code" style="background-color:inherit"><code class="language-ts" style="white-space:pre"><span style="display:block;padding:0 1.25rem"><span class="linenumber react-syntax-highlighter-line-number" style="display:inline-block;min-width:1.25em;padding-right:1em;text-align:right;user-select:none;color:var(--code-token-comment)">1</span><span class="token" style="color:var(--code-token-keyword)">const</span><span> grp </span><span class="token operator">=</span><span> ctx</span><span class="token" style="color:var(--code-token-punctuation)">.</span><span>getService</span><span class="token operator">&lt;</span><span class="token" style="color:var(--code-token-punctuation)">{</span><span>
+</span></span><span style="display:block;padding:0 1.25rem"><span class="linenumber react-syntax-highlighter-line-number" style="display:inline-block;min-width:1.25em;padding-right:1em;text-align:right;user-select:none;color:var(--code-token-comment)">2</span><span>  </span><span class="token function-variable" style="color:var(--code-token-function)">isGroupId</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-punctuation)">(</span><span>id</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-symbol)">string</span><span class="token" style="color:var(--code-token-punctuation)">)</span><span> </span><span class="token operator">=&gt;</span><span> </span><span class="token" style="color:var(--code-token-symbol)">boolean</span><span class="token" style="color:var(--code-token-punctuation)">;</span><span>
+</span></span><span style="display:block;padding:0 1.25rem"><span class="linenumber react-syntax-highlighter-line-number" style="display:inline-block;min-width:1.25em;padding-right:1em;text-align:right;user-select:none;color:var(--code-token-comment)">3</span><span>  </span><span class="token function-variable" style="color:var(--code-token-function)">getDescendantIds</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-punctuation)">(</span><span>groupId</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-symbol)">string</span><span class="token" style="color:var(--code-token-punctuation)">)</span><span> </span><span class="token operator">=&gt;</span><span> </span><span class="token" style="color:var(--code-token-symbol)">string</span><span class="token" style="color:var(--code-token-punctuation)">[</span><span class="token" style="color:var(--code-token-punctuation)">]</span><span class="token" style="color:var(--code-token-punctuation)">;</span><span>
+</span></span><span style="display:block;padding:0 1.25rem"><span class="linenumber react-syntax-highlighter-line-number" style="display:inline-block;min-width:1.25em;padding-right:1em;text-align:right;user-select:none;color:var(--code-token-comment)">4</span><span>  </span><span class="token function-variable" style="color:var(--code-token-function)">expandIds</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-punctuation)">(</span><span>ids</span><span class="token operator">:</span><span> </span><span class="token" style="color:var(--code-token-symbol)">string</span><span class="token" style="color:var(--code-token-punctuation)">[</span><span class="token" style="color:var(--code-token-punctuation)">]</span><span class="token" style="color:var(--code-token-punctuation)">)</span><span> </span><span class="token operator">=&gt;</span><span> </span><span class="token" style="color:var(--code-token-symbol)">string</span><span class="token" style="color:var(--code-token-punctuation)">[</span><span class="token" style="color:var(--code-token-punctuation)">]</span><span class="token" style="color:var(--code-token-punctuation)">;</span><span>
+</span></span><span style="display:block;padding:0 1.25rem"><span class="linenumber react-syntax-highlighter-line-number" style="display:inline-block;min-width:1.25em;padding-right:1em;text-align:right;user-select:none;color:var(--code-token-comment)">5</span><span></span><span class="token" style="color:var(--code-token-punctuation)">}</span><span class="token operator">&gt;</span><span class="token" style="color:var(--code-token-punctuation)">(</span><span class="token" style="color:var(--code-token-string)">&quot;group&quot;</span><span class="token" style="color:var(--code-token-punctuation)">)</span><span class="token" style="color:var(--code-token-punctuation)">;</span></span></code></pre></div><div class="code-button-group_fb445"><button title="Toggle code wrap"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="icon-wrapped_fb89b"><path fill="#22a041" d="M21 5H3v2h18zM3 19h7v-2H3zm0-6h15c1 0 2 .43 2 2s-1 2-2 2h-2v-2l-4 3 4 3v-2h2c2.95 0 4-1.27 4-4 0-2.72-1-4-4-4H3z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" class="icon-wrap_ccd3d"><path fill="currentColor" d="M16 7H3V5h13zM3 19h13v-2H3zm19-7-4-3v2H3v2h15v2z"></path></svg></button><button class="code-copy-button_c5089" title="Copy code"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 30 30" class="icon-copy_ef942"><path fill="currentColor" d="M28 10v18H10V10zm0-2H10a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2"></path><path fill="currentColor" d="M4 18H2V4a2 2 0 0 1 2-2h14v2H4Z"></path></svg><svg width="32" height="32" viewBox="0 0 30 30" class="icon-success_d5ec0"><path fill="#49cd37" d="m13 24-9-9 1.414-1.414L13 21.171 26.586 7.586 28 9z"></path></svg></button></div></div></div>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">方法</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>isGroupId(id)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">判断 id 是否为 group 节点</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>getDescendantIds(groupId)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">获取 group 所有递归后代 id</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>expandIds(ids)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">将 ids 中的 group 展开为其所有后代（用于 drag/resize/rotate）</td>
+</tr>
+</tbody>
+</table>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h4 id="工具函数grouputils" class="mt-8 leading-6 text-lg title_fb7eb">工具函数（<code>groupUtils</code>）<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#工具函数grouputils">#</a></h4>
+<p class="my-4 leading-7">从 <code>@qiuyulc/infinite-map-editor</code> 导出：</p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">函数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>isGroupNode(n)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">判断 <code>n.kind === &#x27;group&#x27;</code></td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>buildById(nodes)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">构建 <code>Map&lt;id, NodeData&gt;</code></td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>getChildren(nodes, groupId)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">获取直接子节点（仅一层）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>getDescendantIds(nodes, groupId)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">获取所有递归后代 id</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>getAncestorChain(byId, nodeId)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">获取某节点的祖先链</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>getOutermostGroupId(nodes, hitId)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">若命中节点是 group 或其子节点，返回最外层 group id</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>isLockedEffective(nodes, id)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">考虑锁定传递后的有效锁定状态</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>isHiddenEffective(nodes, id)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">考虑隐藏传递后的有效隐藏状态</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>computeBBox(nodes)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">计算节点集的包围盒</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>expandIdsWithGroups(nodes, ids)</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">展开 ids 中的 group 为其所有后代</td>
+</tr>
+</tbody>
+</table>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="lock-hide" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>lock-hide</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#lock-hide">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>lock-hide</code><br/>
+<strong class="font-semibold">功能</strong>: 锁定/隐藏节点。锁定传递（祖先 locked → 后代视为 locked），隐藏传递（祖先 hidden → 后代视为 hidden）。<code>showAll</code> 恢复所有隐藏节点。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code><br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.lock</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.unlock</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.hide</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.showAll</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="align-distribute" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>align-distribute</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#align-distribute">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>align-distribute</code><br/>
+<strong class="font-semibold">功能</strong>: 对齐/分布。计算选中节点集合的包围盒，按左/中/右/上/中/下对齐或水平/垂直等间距分布。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>commands</code>, <code>selection</code>, <code>document</code><br/>
+<strong class="font-semibold">Options</strong>: 无</p>
+<p class="my-4 leading-7"><strong class="font-semibold">Commands</strong>:</p>
+<ul class="list-disc pl-5 my-4 leading-7">
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.alignLeft</code> / <code>edit.alignHCenter</code> / <code>edit.alignRight</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.alignTop</code> / <code>edit.alignVCenter</code> / <code>edit.alignBottom</code></li>
+<li class="[&amp;:not(:first-child)]:mt-2"><code>edit.distributeH</code> / <code>edit.distributeV</code></li>
+</ul>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="nudge" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>nudge</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#nudge">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>nudge</code><br/>
+<strong class="font-semibold">功能</strong>: 键盘微调。<code>↑↓←→</code> 移动 1px，<code>Shift+↑↓←→</code> 移动 10px。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: <code>selection</code><br/>
+<strong class="font-semibold">Options</strong>: <code>NudgePluginOptions</code></p>
+<p class="my-4 leading-7"><strong class="font-semibold">Input</strong>: <code>onKeyDown</code>（处理方向键）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="hud-类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">HUD 类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#hud-类">#</a></h2>
+<h3 id="toolbar" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>toolbar</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#toolbar">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>toolbar</code><br/>
+<strong class="font-semibold">功能</strong>: 顶部工具栏。支持按 key 排列按钮，混合自定义项。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>ToolbarPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>false</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>items</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>(string | ToolbarItem)[]</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">内置默认项</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义按钮。字符串按 key 展开（<code>&#x27;|&#x27;</code> = 分隔线）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>position</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>&#x27;top-left&#x27; | &#x27;top-right&#x27;</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>&#x27;top-left&#x27;</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">工具栏位置</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7">内置 key：<code>history.undo</code> <code>history.redo</code> <code>view.zoomOut</code> <code>view.zoomIn</code> <code>view.resetZoom</code> <code>view.fitView</code> <code>view.centerView</code> <code>edit.delete</code></p>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: <code>ToolbarOverlay</code>, slot=<code>hud</code><br/>
+<strong class="font-semibold">Store Key</strong>: 读取 <code>toolbar:items</code>（外部贡献项）</p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="context-menu" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>context-menu</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#context-menu">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>context-menu</code><br/>
+<strong class="font-semibold">功能</strong>: 右键菜单事件处理。检测右键命中，处理&quot;命中 group 后代时选中最外层 group&quot;逻辑。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>ContextMenuPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>storeKey</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>string</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义 store key</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Input</strong>: <code>onContextMenu</code><br/>
+<strong class="font-semibold">Store Key</strong>: <code>contextmenu:state</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="default-context-menu" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>default-context-menu</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#default-context-menu">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>default-context-menu</code><br/>
+<strong class="font-semibold">功能</strong>: 默认右键菜单 UI。支持按 key 排列菜单项，混合自定义项。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>DefaultContextMenuOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>false</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>items</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>(string | ContextMenuItem)[]</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">内置默认项</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">自定义菜单项。字符串按 key 展开（<code>&#x27;|&#x27;</code> = 分隔线）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7">内置 key：<code>edit.copy</code> <code>edit.cut</code> <code>edit.paste</code> <code>edit.duplicate</code> <code>edit.delete</code> <code>z.bringToFront</code> <code>z.bringForward</code> <code>z.sendBackward</code> <code>z.sendToBack</code> <code>edit.group</code> <code>edit.ungroup</code> <code>edit.lock</code> <code>edit.unlock</code> <code>edit.hide</code> <code>edit.showAll</code> <code>view.fitView</code> <code>view.centerView</code> <code>view.fitSelection</code> <code>view.centerSelection</code></p>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: 右键菜单 UI，slot=<code>hud</code><br/>
+<strong class="font-semibold">Store Key</strong>: 读取 <code>contextmenu:state</code>、<code>contextmenu:items</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="minimap" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>minimap</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#minimap">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>minimap</code><br/>
+<strong class="font-semibold">功能</strong>: 小地图。渲染节点缩略图和视口框（Canvas 2D 绘制）。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>MinimapPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>width</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>260</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">宽度（px）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>height</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>160</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">高度（px）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>cachePadding</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>120</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">缓存区 padding</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>includeOrigin</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否强制包含原点</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>showStats</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>false</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否显示调试统计</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: <code>MinimapOverlay</code>（Canvas 绘制），slot=<code>hud</code><br/>
+<strong class="font-semibold">Store Keys</strong>: <code>minimap:config</code>、<code>minimap:inViewCount</code>、<code>minimap:needsRedraw</code>、<code>minimap:enabled</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="rulers" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>rulers</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#rulers">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>rulers</code><br/>
+<strong class="font-semibold">功能</strong>: 标尺。顶部/左侧显示世界坐标刻度，自适应 zoom。支持标尺拖拽平移和参考线拖放。使用 imperative SVG DOM 操作。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>RulersPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>thickness</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>24</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">标尺宽度/高度（px）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: <code>RulersOverlay</code>（SVG 动态绘制），slot=<code>hud</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="zoom-dock" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>zoom-dock</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#zoom-dock">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>zoom-dock</code><br/>
+<strong class="font-semibold">功能</strong>: 右下角缩放滑杆。slider + 吸附开关。通过 <code>runCommand</code> 驱动缩放。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>ZoomDockPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: <code>ZoomDockOverlay</code>，slot=<code>hud</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="视觉类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">视觉类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#视觉类">#</a></h2>
+<h3 id="hover-highlight" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>hover-highlight</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#hover-highlight">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>hover-highlight</code><br/>
+<strong class="font-semibold">功能</strong>: 鼠标周围光晕效果。通过 <code>inputHooks.onBeforeHitTest</code> 追踪鼠标位置，Canvas 渲染径向渐变 + 点阵高亮（滚轮时有脉冲动画）。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>HoverHighlightPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">InputHooks</strong>: <code>onBeforeHitTest</code><br/>
+<strong class="font-semibold">Overlay</strong>: Canvas highlight overlay，slot=<code>background</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h3 id="snap-guides" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>snap-guides</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#snap-guides">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>snap-guides</code><br/>
+<strong class="font-semibold">功能</strong>: 吸附引导线。从 <code>store.snap:guides</code> 读取吸附位置，渲染对齐线和 overlay。同时提供 <code>snap:config</code> 供 drag/resize 等插件读取。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>SnapGuidesPluginOptions</code></p>
+<table class="block border-collapse text-base my-5 overflow-x-auto leading-7 border-gray-light-3 dark:border-divider">
+<thead>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">参数</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">类型</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">默认值</th>
+<th class="border border-solid px-4 py-2 text-text-1 text-base font-semibold border-gray-light-3 dark:border-divider">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>enabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否启用</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>guidesEnabled</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>boolean</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>true</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">是否显示辅助线</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>gridSize</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number | &#x27;auto&#x27;</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>&#x27;auto&#x27;</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">网格吸附大小（世界单位）</td>
+</tr>
+<tr class="border border-solid transition-colors duration-500 even:bg-soft border-gray-light-3 dark:border-divider">
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>thresholdPx</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider"><code>number</code></td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">—</td>
+<td class="border border-solid px-4 py-2 border-gray-light-3 dark:border-divider">吸附阈值（屏幕像素）</td>
+</tr>
+</tbody>
+</table>
+<p class="my-4 leading-7"><strong class="font-semibold">Store Keys</strong>: <code>snap:config</code>（写入）、<code>snap:guides</code>（读取）<br/>
+<strong class="font-semibold">Overlay</strong>: <code>SnapGuidesOverlay</code>（对齐线渲染），slot=<code>overlay</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="扩展类" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">扩展类<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#扩展类">#</a></h2>
+<h3 id="drop-to-create" class="mt-10 mb-2 leading-7 text-xl title_fb7eb"><code>drop-to-create</code><a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#drop-to-create">#</a></h3>
+<p class="my-4 leading-7"><strong class="font-semibold">ID</strong>: <code>drop-to-create</code><br/>
+<strong class="font-semibold">功能</strong>: 拖拽创建节点。监听 <code>document</code> 的 <code>dragover</code>/<code>drop</code> 事件，通过 <code>ctx.screenToWorld</code> 计算世界坐标创建节点。包含 ghost 预览 overlay。<br/>
+<strong class="font-semibold">Provides</strong>: —<br/>
+<strong class="font-semibold">Requires</strong>: —<br/>
+<strong class="font-semibold">Options</strong>: <code>DropToCreatePluginOptions</code></p>
+<p class="my-4 leading-7"><strong class="font-semibold">Overlay</strong>: ghost 预览组件，slot=<code>overlay</code></p>
+<hr class="my-12 border-t border-solid border-divider-light"/>
+<h2 id="默认插件组装" class="mt-12 mb-6 pt-8 text-2xl tracking-tight border-t-[1px] border-divider-light title_fb7eb">默认插件组装<a class="link_a7cea header-anchor link_a9ef4 inline-link_f855c" aria-hidden="true" href="#默认插件组装">#</a></h2>
+<p class="my-4 leading-7"><code>createDefaultEditorPlugins</code>（无 UI）包含上述插件的大部分（不含 HUD 类）。<br/>
+<code>createDefaultEditorPluginsWithUI</code> 在前者基础上叠加 HUD 类插件。</p>
+<p class="my-4 leading-7">完整顺序和依赖关系见 <a href="/infinite-map/editor/overview.html" class="link_a7cea  link_a9ef4 inline-link_f855c">架构总览</a>。</p><!--/$--></div><div class="rspress-doc-footer"><footer class="mt-8"><div class="xs:flex pb-5 px-2 justify-end items-center"></div><div class="flex flex-col"><a href="https://github.com/qiuyulc/infinite-map/edit/main/site/docs/editor/plugin-reference.md" target="_blank" class="editLink_e1cfa">编辑此页</a></div><div class="flex flex-col sm:flex-row sm:justify-around gap-4 pt-6"><div class="prev_c92d1 flex flex-col"><a href="/infinite-map/editor/plugin-development.html" class="link_a7cea pager-link_e0d2d"><span class="desc_dcc01">Previous Page</span><span class="title_a3acb">插件开发</span></a></div><div class="next_c11be flex flex-col"><a href="/infinite-map/editor/customization.html" class="link_a7cea pager-link_e0d2d next_ad355"><span class="desc_dcc01">Next Page</span><span class="title_a3acb">自定义</span></a></div></div></footer></div></div><div class="aside-container_bc5fa"><div class="flex flex-col"><div id="aside-container" class="relative text-sm font-medium"><div class="leading-7 block text-sm font-semibold pl-3">ON THIS PAGE</div><nav class="mt-1"><ul class="relative"><li><a href="#目录" title="目录" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">目录</span></a></li><li><a href="#基础设施类" title="基础设施类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">基础设施类</span></a></li><li><a href="#keyboard-state" title="keyboard-state" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>keyboard-state</code></span></a></li><li><a href="#core-services" title="core-services" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>core-services</code></span></a></li><li><a href="#command-runner" title="command-runner" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>command-runner</code></span></a></li><li><a href="#shortcuts" title="shortcuts" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>shortcuts</code></span></a></li><li><a href="#history" title="history" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>history</code></span></a></li><li><a href="#view-commands" title="view-commands" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>view-commands</code></span></a></li><li><a href="#z-index" title="z-index" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>z-index</code></span></a></li><li><a href="#export-png" title="export-png" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>export-png</code></span></a></li><li><a href="#选择类" title="选择类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">选择类</span></a></li><li><a href="#selection" title="selection" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>selection</code></span></a></li><li><a href="#marquee-select" title="marquee-select" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>marquee-select</code></span></a></li><li><a href="#变换类" title="变换类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">变换类</span></a></li><li><a href="#drag" title="drag" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>drag</code></span></a></li><li><a href="#resize" title="resize" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>resize</code></span></a></li><li><a href="#rotate" title="rotate" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>rotate</code></span></a></li><li><a href="#rotate3d" title="rotate3d" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>rotate3d</code></span></a></li><li><a href="#编辑类" title="编辑类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">编辑类</span></a></li><li><a href="#clipboard" title="clipboard" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>clipboard</code></span></a></li><li><a href="#group" title="group" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>group</code></span></a></li><li><a href="#commands" title="Commands" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Commands</span></a></li><li><a href="#编组规则" title="编组规则" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">编组规则</span></a></li><li><a href="#解组规则" title="解组规则" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">解组规则</span></a></li><li><a href="#选择交互" title="选择交互" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">选择交互</span></a></li><li><a href="#拖拽--变换" title="拖拽 / 变换" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">拖拽 / 变换</span></a></li><li><a href="#service" title="Service" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">Service</span></a></li><li><a href="#工具函数grouputils" title="工具函数（groupUtils）" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:24px;font-weight:semibold"><span class="aside-link-text block">工具函数（<code>groupUtils</code>）</span></a></li><li><a href="#lock-hide" title="lock-hide" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>lock-hide</code></span></a></li><li><a href="#align-distribute" title="align-distribute" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>align-distribute</code></span></a></li><li><a href="#nudge" title="nudge" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>nudge</code></span></a></li><li><a href="#hud-类" title="HUD 类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">HUD 类</span></a></li><li><a href="#toolbar" title="toolbar" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>toolbar</code></span></a></li><li><a href="#context-menu" title="context-menu" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>context-menu</code></span></a></li><li><a href="#default-context-menu" title="default-context-menu" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>default-context-menu</code></span></a></li><li><a href="#minimap" title="minimap" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>minimap</code></span></a></li><li><a href="#rulers" title="rulers" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>rulers</code></span></a></li><li><a href="#zoom-dock" title="zoom-dock" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>zoom-dock</code></span></a></li><li><a href="#视觉类" title="视觉类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">视觉类</span></a></li><li><a href="#hover-highlight" title="hover-highlight" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>hover-highlight</code></span></a></li><li><a href="#snap-guides" title="snap-guides" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>snap-guides</code></span></a></li><li><a href="#扩展类" title="扩展类" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">扩展类</span></a></li><li><a href="#drop-to-create" title="drop-to-create" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:12px;font-weight:semibold"><span class="aside-link-text block"><code>drop-to-create</code></span></a></li><li><a href="#默认插件组装" title="默认插件组装" class="aside-link transition-all duration-300 hover:text-text-1 text-text-2 block" style="margin-left:0;font-weight:semibold"><span class="aside-link-text block">默认插件组装</span></a></li></ul></nav></div></div></div></div></div></div></section></div>
+    <div id="search-container"></div>
+  </body>
+</html>
