@@ -47,6 +47,33 @@ const unsub = apiRef.current?.subscribeCamera((cam) => {
 // 取消订阅：unsub()
 ```
 
+
+---
+
+## 坐标原点
+
+### `getContainerTopLeft()`
+
+获取容器左上角的世界坐标。适用于海报等需要知道画布边界的场景。
+
+```ts
+const topLeft = apiRef.current?.getContainerTopLeft()
+// { x: -300, y: -200 }
+```
+
+> 世界坐标 (0,0) 默认位于容器中心，`getContainerTopLeft()` 返回的是当前视口左上角对应的世界坐标。
+
+### `moveOriginToTopLeft()`
+
+移动相机，使世界原点 (0,0) 落在容器左上角。适用于海报、固定布局等场景。
+
+```ts
+apiRef.current?.moveOriginToTopLeft()
+// 调用后，世界 (0,0) 位于容器左上角，标尺 0 也在左上角
+```
+
+> 等价于 `setCamera({ x: vp.w/(2*zoom), y: vp.h/(2*zoom), zoom })`。
+
 ---
 
 ## 选择（Selection）

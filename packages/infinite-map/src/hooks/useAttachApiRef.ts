@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { Camera, NodeData, Rect } from '../core/types';
+import { cameraForTopLeftOrigin } from '../core/utils';
 import { parseDoc, serializeDoc } from '../editor/document';
 import type { ChangeMeta, Command, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import type { InfiniteMapApi } from '../components/InfiniteMap';
@@ -27,12 +28,8 @@ export function useAttachApiRef({
   applyPatches: (patches: NodePatch[], meta: ChangeMeta) => void;
 }) {
   useEffect(() => {
-    if (!apiRef) return;
-    if (!plugins || plugins.length === 0) {
-      apiRef.current = null;
-      return;
-    }
-    apiRef.current = {
+    const hasPlugins = plugins && plugins.length > 0;
+    const api: InfiniteMapApi = {
       undo: () => ctx.bus.emit('history:undo', { source: 'api' }),
       redo: () => ctx.bus.emit('history:redo', { source: 'api' }),
       canUndo: () => (ctx.store.get<unknown[]>(STORE_KEYS.historyUndoStack)?.length ?? 0) > 0,
@@ -61,23 +58,7 @@ export function useAttachApiRef({
       moveOriginToTopLeft: () => {
         const cam = ctx.getCamera();
         const vp = ctx.getViewport();
-        const z = cam.zoom || 1;
-        if (vp.w > 0 && vp.h > 0) {
-          commitCamera({ x: vp.w / (2 * z), y: vp.h / (2 * z), zoom: z }, true);
-          return;
-        }
-        // viewport 未就绪，等下一帧重试
-        const poll = () => {
-          const vp2 = ctx.getViewport();
-          if (vp2.w > 0 && vp2.h > 0) {
-            const cam2 = ctx.getCamera();
-            const z2 = cam2.zoom || 1;
-            commitCamera({ x: vp2.w / (2 * z2), y: vp2.h / (2 * z2), zoom: z2 }, true);
-          } else {
-            requestAnimationFrame(poll);
-          }
-        };
-        requestAnimationFrame(poll);
+        commitCamera(cameraForTopLeftOrigin(vp, cam.zoom), true);
       },
       subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
       getNodes: () => ctx.getNodes(),
@@ -120,8 +101,12 @@ export function useAttachApiRef({
         } as ChangeMeta);
       },
     };
+
+    // apiRef 仅在有请求时设置
+    if (apiRef) apiRef.current = hasPlugins ? api : null;
+
     return () => {
-      apiRef.current = null;
+      if (apiRef) apiRef.current = null;
     };
   }, [apiRef, ctx, plugins, commitCamera, runCommandWithHooks, getNodeRect, getSelectionRect, onNodesChange, applyPatches]);
 }

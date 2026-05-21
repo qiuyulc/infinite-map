@@ -22,7 +22,7 @@ export type { Camera, NodeData, Rect } from './core/types';
 export { rectIntersects } from './core/types';
 
 // 基础工具（editor/hud 会复用）
-export { clamp, cssVar, cssVarNum, cssVarRgb } from './core/utils';
+export { cameraForTopLeftOrigin, clamp, cssVar, cssVarNum, cssVarRgb } from './core/utils';
 export { computeAdaptiveSteps } from './core/steps';
 
 // 布局（纯计算）

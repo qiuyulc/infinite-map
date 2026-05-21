@@ -30,3 +30,12 @@ export function cssVarNum(name: string, fallback: number, el?: Element | null) {
   const n = Number.parseFloat(v);
   return Number.isFinite(n) ? n : fallback;
 }
+
+/**
+ * 计算左上角原点模式下的相机位置
+ * - 使世界原点 (0,0) 映射到容器左上角
+ */
+export function cameraForTopLeftOrigin(vp: { w: number; h: number }, zoom: number) {
+  const z = zoom || 1;
+  return { x: vp.w / (2 * z), y: vp.h / (2 * z), zoom: z };
+}

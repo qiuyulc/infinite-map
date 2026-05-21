@@ -1,7 +1,9 @@
 # Infinite Map — 功能清单与对外 API（完整版）
 
 > 统计基于当前仓库：
-> - `packages/infinite-map`（渲染层 + plugin contract）
+> - 
+-  — 获取容器左上角的世界坐标
+-  — 移动相机，使世界原点(0,0)落在容器左上角`packages/infinite-map`（渲染层 + plugin contract）
 > - `packages/infinite-map-editor`（编辑器插件集合 + HUD/UI）
 > 的对外导出与实现现状。
 
@@ -261,6 +263,8 @@
 - `getSelectionRect(): Rect | null`
 - `getCamera(): Camera`
 - `setCamera(next, opts?): void`
+- `getContainerTopLeft(): { x: number; y: number }` — 获取容器左上角的世界坐标
+- `moveOriginToTopLeft(): void` — 移动相机，使世界原点(0,0)落在容器左上角
 - `subscribeCamera(listener): () => void`
 - `getNodes(): NodeData[]`
 - `applyPatches(patches, meta?): void` — 以可追踪的方式修改节点（history 记录逆操作）
