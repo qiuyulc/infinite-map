@@ -1,5 +1,13 @@
 # infinite-map-docs
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [0bfb5ba]
+  - @qiuyulc/infinite-map@0.0.8
+  - @qiuyulc/infinite-map-editor@0.0.8
+
 ## 0.0.4
 
 ### Patch Changes
