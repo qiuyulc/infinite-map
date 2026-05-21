@@ -58,7 +58,7 @@ packages/infinite-map/src/
 │   └── useThemeVersion.ts         # 主题版本号 (强制重绘 Minimap)
 │
 ├── components/                    # === React 组件 ===
-│   ├── InfiniteMap.tsx            # 主组件：组装一切 (~800 行核心)
+│   ├── InfiniteMap.tsx            # 主组件：组装一切 (~817 行核心)
 │   ├── InfiniteMapThemeProvider.tsx # 主题提供者 (注入 CSS 变量)
 │   ├── DefaultNode.tsx            # 默认节点渲染
 │   ├── EngineBackgroundLayer.tsx  # 背景层 (点阵/网格)

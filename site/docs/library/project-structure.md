@@ -47,10 +47,17 @@ packages/infinite-map/
    │  ├─ keys.ts                   # STORE_KEYS（运行时状态 key）
    │  └─ document.ts               # doc 快照：serializeDoc/parseDoc + schemaVersion 校验
    ├─ hooks/
-   │  ├─ usePluginInputDispatch.ts # 输入管线（hitTest → pointerDownProcessors → gestures）
-   │  ├─ useRunCommandWithHooks.ts # command 运行 + hooks
-   │  ├─ useAttachApiRef.ts        # apiRef 实现（camera/commands/doc/selection 等）
-   │  └─ ...                       # camera/viewport/virtualization/wheel 等 hooks
+   │  ├─ useViewportSize.ts         # ResizeObserver → viewport
+   │  ├─ useViewportReady.ts        # onReady + origin 自动跟随
+   │  ├─ useVisibleNodes.ts         # 虚拟化：可见节点计算
+   │  ├─ useWheelControls.ts        # wheel/pinch → camera
+   │  ├─ usePanKeepAlive.ts         # pan 期间节点 keepAlive (LRU)
+   │  ├─ useSyncedRef.ts            # ref ↔ props 同步
+   │  ├─ usePluginInputDispatch.ts  # 输入管线（hitTest → gestures）
+   │  ├─ useRunCommandWithHooks.ts  # command 运行 + hooks
+   │  ├─ useAttachApiRef.ts         # apiRef 实现
+   │  ├─ useMapRuntimeEffects.ts    # wheel/highlight/minimap 运行时
+   │  └─ ...                        # patch/context/coordinate 等 hooks
    ├─ layout/
    │  └─ layoutPresets.ts          # 布局算法（纯计算）
    ├─ theme/                       # 主题相关（CSS vars / theme types）
