@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.7
+
+### Patch Changes
+
+- - 新增 `origin` prop：支持 'center'（默认）和 'top-left' 原点模式，resize 自动跟随
+  - 新增 `onReady` 生命周期钩子，viewport 就绪后触发
+  - 新增 `getContainerTopLeft()` / `moveOriginToTopLeft()` API 方法
+  - 新增 `cameraForTopLeftOrigin` 工具函数
+  - 重构：提取 `useSyncedRef`、`useViewportReady`、`usePanKeepAlive` hooks
+- Updated dependencies
+  - @qiuyulc/infinite-map@0.0.7
+
 ## 0.0.6
 
 ### Patch Changes
