@@ -259,6 +259,14 @@ export type InfiniteMapApi = {
   setCamera: (next: Camera, opts?: { immediate?: boolean }) => void;
   subscribeCamera: (listener: (camera: Camera) => void) => () => void;
   /**
+   * 获取容器左上角的世界坐标
+   */
+  getContainerTopLeft: () => { x: number; y: number };
+  /**
+   * 移动相机，使世界原点(0,0)落在容器左上角
+   */
+  moveOriginToTopLeft: () => void;
+  /**
    * 获取节点（只读快照）
    */
   getNodes: () => NodeData[];

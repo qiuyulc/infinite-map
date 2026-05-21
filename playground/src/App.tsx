@@ -428,6 +428,21 @@ export default function App() {
           </div>
 
           <div className="pg-section">
+            <div className="pg-section__title">坐标原点</div>
+            <div className="pg-hint" style={{ marginBottom: 8 }}>
+              容器左上角世界坐标: {(() => { const cam = apiRef.current?.getCamera(); const tl = apiRef.current?.getContainerTopLeft(); if (!cam || !tl) return '(-, -)'; return '(' + tl.x.toFixed(1) + ', ' + tl.y.toFixed(1) + ')'; })()}
+            </div>
+            <div className="pg-actions">
+              <button className="pg-btn" type="button" onClick={() => { const r = apiRef.current?.getContainerTopLeft(); console.log('容器左上角世界坐标:', r); }}>
+                获取容器左上角坐标
+              </button>
+              <button className="pg-btn" type="button" onClick={() => { apiRef.current?.moveOriginToTopLeft(); }}>
+                移动原点到左上角
+              </button>
+            </div>
+          </div>
+
+          <div className="pg-section">
             <div className="pg-section__title">操作</div>
             <div className="pg-actions">
               <button

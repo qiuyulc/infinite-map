@@ -20,7 +20,7 @@ export function useAttachApiRef({
   plugins?: InfiniteMapPlugin[];
   ctx: MapContext;
   commitCamera: (next: Camera, immediate: boolean) => void;
-  runCommandWithHooks: (id: string, payload?: { source: 'keyboard' | 'toolbar' | 'menu' | 'api'; [k: string]: unknown }) => boolean;
+  runCommandWithHooks: (id: string, payload?: { source: 'keyboard' | 'toolbar' | 'menu' | 'api';[k: string]: unknown }) => boolean;
   getNodeRect: (id: string) => Rect | null;
   getSelectionRect: () => Rect | null;
   onNodesChange?: (nextNodes: NodeData[], meta: ChangeMeta) => void;
@@ -57,6 +57,28 @@ export function useAttachApiRef({
       getSelectionRect,
       getCamera: () => ctx.getCamera(),
       setCamera: (next, opts) => commitCamera(next, Boolean(opts?.immediate)),
+      getContainerTopLeft: () => { const cam = ctx.getCamera(); const vp = ctx.getViewport(); const z = cam.zoom || 1; return { x: cam.x - vp.w / (2 * z), y: cam.y - vp.h / (2 * z) }; },
+      moveOriginToTopLeft: () => {
+        const cam = ctx.getCamera();
+        const vp = ctx.getViewport();
+        const z = cam.zoom || 1;
+        if (vp.w > 0 && vp.h > 0) {
+          commitCamera({ x: vp.w / (2 * z), y: vp.h / (2 * z), zoom: z }, true);
+          return;
+        }
+        // viewport 未就绪，等下一帧重试
+        const poll = () => {
+          const vp2 = ctx.getViewport();
+          if (vp2.w > 0 && vp2.h > 0) {
+            const cam2 = ctx.getCamera();
+            const z2 = cam2.zoom || 1;
+            commitCamera({ x: vp2.w / (2 * z2), y: vp2.h / (2 * z2), zoom: z2 }, true);
+          } else {
+            requestAnimationFrame(poll);
+          }
+        };
+        requestAnimationFrame(poll);
+      },
       subscribeCamera: (listener) => ctx.bus.on('camera:changed', ({ camera }) => listener(camera)),
       getNodes: () => ctx.getNodes(),
       serializeDoc: (meta) => serializeDoc({ nodes: ctx.getNodes(), camera: ctx.getCamera(), meta }),
