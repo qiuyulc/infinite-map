@@ -105,6 +105,19 @@ initialCamera?: Camera  // 默认 { x: -400, y: -250, zoom: 1 }
 
 更常见的方式是用 `apiRef.getCamera()/setCamera()` 控制。
 
+### origin
+
+```ts
+origin?: 'center' | 'top-left'  // 默认 'center'
+```
+
+- `'center'`：世界原点在容器中心（默认，适合无限画布）
+- `'top-left'`：世界原点在容器左上角（适合海报/固定布局，viewport resize 自动跟随）
+
+```tsx
+<InfiniteMap nodes={nodes} origin="top-left" panEnabled={false} />
+```
+
 ### panEnabled
 
 ```ts
@@ -112,6 +125,18 @@ panEnabled?: boolean  // 默认 true
 ```
 
 `false` 时禁止拖动平移画布（包括空白拖拽、Space 平移模式、触控板两指平移）。
+
+### onReady
+
+```ts
+onReady?: (api: { getCamera, setCamera, moveOriginToTopLeft, getContainerTopLeft }) => void
+```
+
+地图首次就绪回调，viewport 取得有效尺寸后触发（仅一次）。不依赖 `plugins`，无插件时也可用。
+
+```tsx
+<InfiniteMap nodes={nodes} onReady={(api) => api.moveOriginToTopLeft()} />
+```
 
 ### 缩放控制
 

@@ -215,9 +215,11 @@
 - `onEditorError?: (err, info) => void`
   - 用于收集 hooks/command 执行异常（默认不会 throw 中断编辑器）
 - `apiRef?: MutableRefObject<InfiniteMapApi | null>`（对外暴露 API）
+- `onReady?: (api) => void`（地图首次就绪回调，viewport 有效后触发一次）
 
 #### 相机与交互
 - `initialCamera?: Camera`
+- `origin?: 'center' | 'top-left'`（默认 `'center'`；`'top-left'` 时将原点固定在容器左上角，resize 自动跟随）
 - `panEnabled?: boolean`（默认 `true`；false 则禁用平移，包括 Space 模式与触控板平移）
 - `onNodeDrag?: (id, pos, phase) => void`（节点拖动回调）
 
