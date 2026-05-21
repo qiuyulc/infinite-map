@@ -10,7 +10,6 @@ import {
   type MutableRefObject,
 } from 'react';
 import { rectIntersects, type Camera, type NodeData, type Rect } from '../core/types';
-import { cameraForTopLeftOrigin } from '../core/utils';
 import { buildSpatialIndex } from '../core/spatialIndex';
 import { EngineBackgroundLayer } from './EngineBackgroundLayer';
 import { RenderPluginOverlays } from './RenderPluginOverlays';
@@ -33,6 +32,7 @@ import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
 import { useSyncedRef } from '../hooks/useSyncedRef';
+import { useViewportReady } from '../hooks/useViewportReady';
 import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
 import type { ChangeMeta, Command, EditorErrorInfo, HitTestTarget, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import { createEventBus, createStore } from '../editor/runtime';
@@ -104,9 +104,14 @@ export type InfiniteMapProps = {
   /**
    * 地图首次就绪回调
    * - viewport 取得有效尺寸后触发（仅一次）
-   * - 参数为 InfiniteMapApi 实例，可调用 moveOriginToTopLeft() 等方法
+   * - 参数提供相机相关方法，不依赖插件
    */
-  onReady?: (api: InfiniteMapApi) => void;
+  onReady?: (api: {
+    getCamera: () => Camera;
+    setCamera: (next: Camera) => void;
+    moveOriginToTopLeft: () => void;
+    getContainerTopLeft: () => { x: number; y: number };
+  }) => void;
 
   // 说明：InfiniteMap 已切换为 engine-only 实现（不再提供旧的 React 相机驱动渲染路径）。
 
@@ -363,26 +368,15 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
   // 真相源：cameraRef（高频）
   const cameraRef = useRef<Camera>(initialCamera);
 
-  const onReadyFiredRef = useRef(false);
   const { viewport, viewportRef } = useViewportSize(containerRef);
-  useEffect(() => {
-    engineStore.getState().setViewport(viewport);
-    if (!onReadyFiredRef.current && onReady && viewport.w > 0 && viewport.h > 0) {
-      onReadyFiredRef.current = true;
-      onReady({
-        getCamera: () => cameraRef.current,
-        setCamera: (next: Camera, opts?: { immediate?: boolean }) => commitCamera(next, opts?.immediate ?? false),
-        moveOriginToTopLeft: () => commitCamera(cameraForTopLeftOrigin(viewportRef.current, cameraRef.current.zoom), true),
-        getContainerTopLeft: () => { const cam = cameraRef.current; const vp = viewportRef.current; const z = cam.zoom || 1; return { x: cam.x - vp.w / (2 * z), y: cam.y - vp.h / (2 * z) }; },
-      } as any);
-    }
-  }, [engineStore, viewport, onReady]);
-  useEffect(() => {
-    if (origin === 'top-left' && viewport.w > 0 && viewport.h > 0) {
-      const cam = engineStore.getState().view;
-      engineStore.getState().setView(cameraForTopLeftOrigin(viewport, cam.zoom));
-    }
-  }, [engineStore, viewport, origin]);
+  useViewportReady({
+    onReady,
+    origin,
+    engineStore,
+    viewport,
+    viewportRef,
+    cameraRef,
+  });
 
   // nodes refs：给插件 ctx 读取，在 render 阶段同步确保 overlay/hud 读到最新值
   const nodesRef = useRef(nodes);
