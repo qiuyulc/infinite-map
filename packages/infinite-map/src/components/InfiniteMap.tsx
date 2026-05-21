@@ -32,6 +32,7 @@ import { useMapRuntimeEffects } from '../hooks/useMapRuntimeEffects';
 import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
+import { useSyncedRef } from '../hooks/useSyncedRef';
 import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
 import type { ChangeMeta, Command, EditorErrorInfo, HitTestTarget, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
 import { createEventBus, createStore } from '../editor/runtime';
@@ -404,31 +405,12 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
   const bus = useMemo(() => createEventBus(), []);
   const store = useMemo(() => createStore(), []);
 
-  const hooksRef = useRef(editorHooks);
-  useEffect(() => {
-    hooksRef.current = editorHooks;
-  }, [editorHooks]);
-  const hookModeRef = useRef(hookMode);
-  useEffect(() => {
-    hookModeRef.current = hookMode;
-  }, [hookMode]);
-  const onEditorErrorRef = useRef(onEditorError);
-  useEffect(() => {
-    onEditorErrorRef.current = onEditorError;
-  }, [onEditorError]);
-  const debugRef = useRef(debug);
-  useEffect(() => {
-    debugRef.current = debug;
-  }, [debug]);
-
-  const onNodesChangeRef = useRef(onNodesChange);
-  useEffect(() => {
-    onNodesChangeRef.current = onNodesChange;
-  }, [onNodesChange]);
-  const onPatchesRef = useRef(onPatches);
-  useEffect(() => {
-    onPatchesRef.current = onPatches;
-  }, [onPatches]);
+  const hooksRef = useSyncedRef(editorHooks);
+  const hookModeRef = useSyncedRef(hookMode);
+  const onEditorErrorRef = useSyncedRef(onEditorError);
+  const debugRef = useSyncedRef(debug);
+  const onNodesChangeRef = useSyncedRef(onNodesChange);
+  const onPatchesRef = useSyncedRef(onPatches);
 
   const hasChangeSink = Boolean(onNodesChange) || Boolean(onPatches);
   const resolvedEditMode = useMemo<'auto' | 'readonly' | 'controlled'>(() => {
