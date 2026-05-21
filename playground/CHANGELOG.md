@@ -1,5 +1,13 @@
 # playground
 
+## 0.0.7
+
+### Patch Changes
+
+- Updated dependencies [0bfb5ba]
+  - @qiuyulc/infinite-map@0.0.8
+  - @qiuyulc/infinite-map-editor@0.0.8
+
 ## 0.0.6
 
 ### Patch Changes
