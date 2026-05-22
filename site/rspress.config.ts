@@ -9,6 +9,7 @@ export default defineConfig({
     light: '/img/logo.png',
     dark: '/img/logo.png',
   },
+  logoText: "Infinite Map",
   base: '/infinite-map/',
   lang: 'zh-CN',
   locales: [],
