@@ -1,6 +1,6 @@
 {
   "name": "@qiuyulc/infinite-map-editor",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Editor plugins & UI kit for @qiuyulc/infinite-map",
   "license": "MIT",
   "keywords": [
@@ -59,7 +59,7 @@
     "zustand": "^5.0.12"
   },
   "peerDependencies": {
-    "@qiuyulc/infinite-map": ">=0.0.8",
+    "@qiuyulc/infinite-map": ">=0.0.9",
     "react": ">=18",
     "react-dom": ">=18"
   },
