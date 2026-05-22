@@ -48,7 +48,8 @@ packages/infinite-map/
    │  └─ document.ts               # doc 快照：serializeDoc/parseDoc + schemaVersion 校验
    ├─ hooks/
    │  ├─ useViewportSize.ts         # ResizeObserver → viewport
-   │  ├─ useViewportReady.ts        # onReady + origin 自动跟随
+   │  ├─ useOriginSync.ts           # origin='top-left' 自动跟随
+   │  ├─ useLifecycleCallbacks.ts   # onReady/onCameraChange/onViewportResize/onDestroy
    │  ├─ useVisibleNodes.ts         # 虚拟化：可见节点计算
    │  ├─ useWheelControls.ts        # wheel/pinch → camera
    │  ├─ usePanKeepAlive.ts         # pan 期间节点 keepAlive (LRU)

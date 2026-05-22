@@ -32,7 +32,8 @@ import { usePluginLifecycle } from '../hooks/usePluginLifecycle';
 import { useMapContext } from '../hooks/useMapContext';
 import { useCoordinateTransforms } from '../hooks/useCoordinateTransforms';
 import { useSyncedRef } from '../hooks/useSyncedRef';
-import { useViewportReady } from '../hooks/useViewportReady';
+import { useOriginSync } from '../hooks/useOriginSync';
+import { useLifecycleCallbacks } from '../hooks/useLifecycleCallbacks';
 import { usePanKeepAlive } from '../hooks/usePanKeepAlive';
 import { useInjectedThemeVars } from '../hooks/useInjectedThemeVars';
 import type { ChangeMeta, Command, EditorErrorInfo, HitTestTarget, InfiniteMapPlugin, MapContext, NodePatch } from '../editor/types';
@@ -113,6 +114,13 @@ export type InfiniteMapProps = {
     moveOriginToTopLeft: () => void;
     getContainerTopLeft: () => { x: number; y: number };
   }) => void;
+
+  /** 相机变化回调（x/y/zoom 变化时触发） */
+  onCameraChange?: (camera: Camera) => void;
+  /** 视口尺寸变化回调 */
+  onViewportResize?: (viewport: { w: number; h: number }) => void;
+  /** 组件销毁回调 */
+  onDestroy?: () => void;
 
   // 说明：InfiniteMap 已切换为 engine-only 实现（不再提供旧的 React 相机驱动渲染路径）。
 
@@ -355,6 +363,9 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
     panEnabled = true,
     apiRef,
     onReady,
+    onCameraChange,
+    onViewportResize,
+    onDestroy,
     debug = false,
   } = props;
 
@@ -370,9 +381,12 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
   const cameraRef = useRef<Camera>(initialCamera);
 
   const { viewport, viewportRef } = useViewportSize(containerRef);
-  useViewportReady({
+  useOriginSync({ origin, engineStore, viewport, cameraRef });
+  useLifecycleCallbacks({
     onReady,
-    origin,
+    onCameraChange,
+    onViewportResize,
+    onDestroy,
     engineStore,
     viewport,
     viewportRef,

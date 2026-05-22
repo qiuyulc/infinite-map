@@ -28,7 +28,7 @@ export function useAttachApiRef({
   applyPatches: (patches: NodePatch[], meta: ChangeMeta) => void;
 }) {
   useEffect(() => {
-    const hasPlugins = plugins && plugins.length > 0;
+    // const hasPlugins = plugins && plugins.length > 0;
     const api: InfiniteMapApi = {
       undo: () => ctx.bus.emit('history:undo', { source: 'api' }),
       redo: () => ctx.bus.emit('history:redo', { source: 'api' }),
@@ -103,7 +103,7 @@ export function useAttachApiRef({
     };
 
     // apiRef 仅在有请求时设置
-    if (apiRef) apiRef.current = hasPlugins ? api : null;
+    if (apiRef) apiRef.current = api;
 
     return () => {
       if (apiRef) apiRef.current = null;

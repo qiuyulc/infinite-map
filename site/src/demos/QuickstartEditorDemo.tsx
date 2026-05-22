@@ -16,7 +16,7 @@ export function QuickstartEditorDemo() {
         plugins={plugins}
         onNodesChange={setNodes}
         backgroundMode="dots"
-        initialCamera={{ x: -280, y: -180, zoom: 0.8 }}
+        initialCamera={{ x: 0, y: 0, zoom: 0.8 }}
       />
     </div>
   );

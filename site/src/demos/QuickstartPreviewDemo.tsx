@@ -10,7 +10,7 @@ export function QuickstartPreviewDemo() {
       <InfiniteMap
         nodes={nodes}
         backgroundMode="dots"
-        initialCamera={{ x: -280, y: -180, zoom: 0.85 }}
+        initialCamera={{ x: 0, y: 0, zoom: 0.85 }}
       />
     </div>
   );

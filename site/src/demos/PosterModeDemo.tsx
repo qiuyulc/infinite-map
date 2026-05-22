@@ -19,6 +19,10 @@ export function PosterModeDemo() {
                 panEnabled={false}
                 zoomSpeed={0}
                 backgroundMode="dots"
+                onReady={(api) => {
+                    console.log('camera:', api.getCamera());
+                    console.log('topLeft:', api.getContainerTopLeft());
+                }}
             />
         </div>
     );

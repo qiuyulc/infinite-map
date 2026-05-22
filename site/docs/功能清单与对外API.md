@@ -215,7 +215,10 @@
 - `onEditorError?: (err, info) => void`
   - 用于收集 hooks/command 执行异常（默认不会 throw 中断编辑器）
 - `apiRef?: MutableRefObject<InfiniteMapApi | null>`（对外暴露 API）
-- `onReady?: (api) => void`（地图首次就绪回调，viewport 有效后触发一次）
+- `onReady?: (api) => void`（地图首次就绪回调）
+- `onCameraChange?: (camera) => void`（相机 x/y/zoom 变化）
+- `onViewportResize?: (viewport) => void`（容器尺寸变化）
+- `onDestroy?: () => void`（组件销毁回调）
 
 #### 相机与交互
 - `initialCamera?: Camera`
@@ -247,32 +250,43 @@
 ---
 
 ### 2.3 `InfiniteMapApi`（通过 `apiRef` 暴露的方法，完整版）
-> 仅当 `plugins` 存在且相关能力被加载时有效（例如 history/selection/commands/camera 等）。
+
+**不依赖插件，始终可用：**
+
+- `getCamera(): Camera`
+- `setCamera(next, opts?): void`
+- `subscribeCamera(listener): () => void`
+- `getContainerTopLeft(): { x: number; y: number }` — 获取容器左上角的世界坐标
+- `moveOriginToTopLeft(): void` — 移动相机，使世界原点(0,0)落在容器左上角
+- `getNodes(): NodeData[]`
+- `subscribe(type, handler)`：订阅事件总线（`'camera:changed'`、`'selection:change'`、`'drag:start/move/end'`、`'patches:applied'` 等）
+- `serializeDoc(meta?): InfiniteMapDoc`
+- `parseDoc(doc, opts?): void`
+- `applyPatches(patches, meta?): void`
+- `updateNodeData(idOrData, data?): void`
+
+**依赖 history 插件：**
 
 - `undo(): void`
 - `redo(): void`
 - `canUndo(): boolean`
 - `canRedo(): boolean`
 - `subscribeHistory(listener): () => void`
-- `runCommand(id, payload?): boolean`
-- `getCommands(): Command[]`
-- `getCommand(id): Command | undefined`
-- `subscribe(type, handler)`：订阅事件总线（`'camera:changed'`、`'selection:change'`、`'drag:start/move/end'`、`'patches:applied'` 等）
+
+**依赖 selection 插件：**
+
 - `getSelectionIds(): string[]`
 - `setSelectionIds(ids: string[]): void`
 - `subscribeSelection(listener): () => void`
 - `getNodeRect(id): Rect | null`（世界坐标包围盒）
 - `getSelectionRect(): Rect | null`
-- `getCamera(): Camera`
-- `setCamera(next, opts?): void`
-- `getContainerTopLeft(): { x: number; y: number }` — 获取容器左上角的世界坐标
-- `moveOriginToTopLeft(): void` — 移动相机，使世界原点(0,0)落在容器左上角
-- `subscribeCamera(listener): () => void`
-- `getNodes(): NodeData[]`
-- `applyPatches(patches, meta?): void` — 以可追踪的方式修改节点（history 记录逆操作）
-- `updateNodeData(idOrData, data?): void` — 修改 data 字段的便利糖
-- `serializeDoc(meta?): InfiniteMapDoc`
-- `parseDoc(doc, opts?): void`
+
+**依赖 command 注册：**
+
+- `runCommand(id, payload?): boolean`
+- `getCommands(): Command[]`
+- `getCommand(id): Command | undefined`
+
 
 ---
 

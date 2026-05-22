@@ -5,12 +5,12 @@
 ## 获取引用
 
 ```tsx
-import { useRef } from 'react'
-import { InfiniteMap, type InfiniteMapApi } from '@qiuyulc/infinite-map'
+import { useRef } from "react";
+import { InfiniteMap, type InfiniteMapApi } from "@qiuyulc/infinite-map";
 
 function App() {
-  const apiRef = useRef<InfiniteMapApi | null>(null)
-  return <InfiniteMap nodes={nodes} apiRef={apiRef} />
+  const apiRef = useRef<InfiniteMapApi | null>(null);
+  return <InfiniteMap nodes={nodes} apiRef={apiRef} />;
 }
 ```
 
@@ -21,7 +21,7 @@ function App() {
 获取当前相机状态。
 
 ```ts
-const cam = apiRef.current?.getCamera()
+const cam = apiRef.current?.getCamera();
 // { x: 100, y: 200, zoom: 1.5 }
 ```
 
@@ -30,7 +30,7 @@ const cam = apiRef.current?.getCamera()
 设置相机。
 
 ```ts
-apiRef.current?.setCamera({ x: 0, y: 0, zoom: 1 }, { immediate: true })
+apiRef.current?.setCamera({ x: 0, y: 0, zoom: 1 }, { immediate: true });
 ```
 
 - `immediate: true`：立即生效（不使用 rAF 合并）
@@ -42,11 +42,10 @@ apiRef.current?.setCamera({ x: 0, y: 0, zoom: 1 }, { immediate: true })
 
 ```ts
 const unsub = apiRef.current?.subscribeCamera((cam) => {
-  console.log('camera changed:', cam)
-})
+  console.log("camera changed:", cam);
+});
 // 取消订阅：unsub()
 ```
-
 
 ---
 
@@ -57,7 +56,7 @@ const unsub = apiRef.current?.subscribeCamera((cam) => {
 获取容器左上角的世界坐标。适用于海报等需要知道画布边界的场景。
 
 ```ts
-const topLeft = apiRef.current?.getContainerTopLeft()
+const topLeft = apiRef.current?.getContainerTopLeft();
 // { x: -300, y: -200 }
 ```
 
@@ -68,7 +67,7 @@ const topLeft = apiRef.current?.getContainerTopLeft()
 移动相机，使世界原点 (0,0) 落在容器左上角。适用于海报、固定布局等场景。
 
 ```ts
-apiRef.current?.moveOriginToTopLeft()
+apiRef.current?.moveOriginToTopLeft();
 // 调用后，世界 (0,0) 位于容器左上角，标尺 0 也在左上角
 ```
 
@@ -78,12 +77,14 @@ apiRef.current?.moveOriginToTopLeft()
 
 ## 选择（Selection）
 
+> 需要 selection 插件。
+
 ### `getSelectionIds()`
 
 获取当前选中的节点 id 列表。
 
 ```ts
-const ids = apiRef.current?.getSelectionIds()
+const ids = apiRef.current?.getSelectionIds();
 // ['node-1', 'node-3']
 ```
 
@@ -92,7 +93,7 @@ const ids = apiRef.current?.getSelectionIds()
 设置选中的节点 id 列表。
 
 ```ts
-apiRef.current?.setSelectionIds(['node-1', 'node-2'])
+apiRef.current?.setSelectionIds(["node-1", "node-2"]);
 ```
 
 > 需要启用 selection 插件。
@@ -103,9 +104,9 @@ apiRef.current?.setSelectionIds(['node-1', 'node-2'])
 
 ```ts
 const unsub = apiRef.current?.subscribeSelection(() => {
-  const ids = apiRef.current?.getSelectionIds()
-  setDeleteEnabled((ids?.length ?? 0) > 0)
-})
+  const ids = apiRef.current?.getSelectionIds();
+  setDeleteEnabled((ids?.length ?? 0) > 0);
+});
 ```
 
 ---
@@ -116,35 +117,37 @@ const unsub = apiRef.current?.subscribeSelection(() => {
 
 订阅事件。支持的事件类型：
 
-| 事件 | payload |
-|---|---|
-| `'camera:changed'` | `{ camera: Camera }` |
-| `'selection:change'` | `{ ids: string[] }` |
-| `'history:undo'` | `{ source: 'keyboard' \| 'toolbar' \| 'menu' \| 'api' }` |
-| `'history:redo'` | `{ source }` |
-| `'drag:start'` | `{ id, startWorld }` |
-| `'drag:move'` | `{ id, rawWorld }` |
-| `'drag:end'` | `{ id, endWorld }` |
-| `'patches:applied'` | `{ patches, meta, beforeById }` |
+| 事件                 | payload                                                  |
+| -------------------- | -------------------------------------------------------- |
+| `'camera:changed'`   | `{ camera: Camera }`                                     |
+| `'selection:change'` | `{ ids: string[] }`                                      |
+| `'history:undo'`     | `{ source: 'keyboard' \| 'toolbar' \| 'menu' \| 'api' }` |
+| `'history:redo'`     | `{ source }`                                             |
+| `'drag:start'`       | `{ id, startWorld }`                                     |
+| `'drag:move'`        | `{ id, rawWorld }`                                       |
+| `'drag:end'`         | `{ id, endWorld }`                                       |
+| `'patches:applied'`  | `{ patches, meta, beforeById }`                          |
 
 ```ts
-const unsub = apiRef.current?.subscribe('selection:change', ({ ids }) => {
-  console.log('selection changed:', ids)
-})
+const unsub = apiRef.current?.subscribe("selection:change", ({ ids }) => {
+  console.log("selection changed:", ids);
+});
 ```
 
 ---
 
 ## 命令（Commands）
 
+> 需要 command 注册（默认编辑器已包含）。
+
 ### `runCommand(id, payload?)`
 
 执行一个命令。
 
 ```ts
-apiRef.current?.runCommand('history.undo', { source: 'api' })
-apiRef.current?.runCommand('view.zoomIn', { source: 'api' })
-apiRef.current?.runCommand('edit.delete', { source: 'api' })
+apiRef.current?.runCommand("history.undo", { source: "api" });
+apiRef.current?.runCommand("view.zoomIn", { source: "api" });
+apiRef.current?.runCommand("edit.delete", { source: "api" });
 ```
 
 ### `getCommands()`
@@ -152,7 +155,7 @@ apiRef.current?.runCommand('edit.delete', { source: 'api' })
 获取所有已注册的命令列表。
 
 ```ts
-const commands = apiRef.current?.getCommands()
+const commands = apiRef.current?.getCommands();
 // [{ id: 'history.undo', title: '撤销', shortcut: 'Mod+Z' }, ...]
 ```
 
@@ -161,23 +164,25 @@ const commands = apiRef.current?.getCommands()
 获取单个命令详情。
 
 ```ts
-const cmd = apiRef.current?.getCommand('history.undo')
+const cmd = apiRef.current?.getCommand("history.undo");
 // { id: 'history.undo', title: '撤销', shortcut: 'Mod+Z', run: [Function] }
 ```
 
-> 完整命令列表见：[命令速查表](/infinite-map/library/commands)
+<!-- > 完整命令列表见：[命令速查表](/infinite-map/library/commands) -->
 
 ---
 
 ## 历史（History）
+
+> 需要 history 插件。
 
 ### `undo()` / `redo()`
 
 撤销/重做。
 
 ```ts
-apiRef.current?.undo()
-apiRef.current?.redo()
+apiRef.current?.undo();
+apiRef.current?.redo();
 ```
 
 ### `canUndo()` / `canRedo()`
@@ -185,8 +190,8 @@ apiRef.current?.redo()
 检查是否可以撤销/重做（用于控制 UI 按钮状态）。
 
 ```ts
-const canUndo = apiRef.current?.canUndo() ?? false
-const canRedo = apiRef.current?.canRedo() ?? false
+const canUndo = apiRef.current?.canUndo() ?? false;
+const canRedo = apiRef.current?.canRedo() ?? false;
 ```
 
 ### `subscribeHistory(listener)`
@@ -196,7 +201,7 @@ const canRedo = apiRef.current?.canRedo() ?? false
 ```ts
 const unsub = apiRef.current?.subscribeHistory(() => {
   // 更新工具栏按钮状态
-})
+});
 ```
 
 ---
@@ -208,7 +213,7 @@ const unsub = apiRef.current?.subscribeHistory(() => {
 获取当前节点列表（只读快照）。
 
 ```ts
-const nodes = apiRef.current?.getNodes()
+const nodes = apiRef.current?.getNodes();
 ```
 
 ### `getNodeRect(id)`
@@ -216,7 +221,7 @@ const nodes = apiRef.current?.getNodes()
 获取某个节点的包围盒（世界坐标）。
 
 ```ts
-const rect = apiRef.current?.getNodeRect('node-1')
+const rect = apiRef.current?.getNodeRect("node-1");
 // { x: 100, y: 200, w: 150, h: 80 } | null
 ```
 
@@ -225,7 +230,7 @@ const rect = apiRef.current?.getNodeRect('node-1')
 获取当前选中的节点集合的包围盒。
 
 ```ts
-const rect = apiRef.current?.getSelectionRect()
+const rect = apiRef.current?.getSelectionRect();
 // null if no selection
 ```
 
@@ -238,8 +243,10 @@ const rect = apiRef.current?.getSelectionRect()
 以可追踪的方式修改节点——history 自动记录逆操作，undo 能还原。
 
 ```ts
-apiRef.current?.applyPatches([{ type: 'move', id: 'node-1', x: 200, y: 150 }])
-apiRef.current?.applyPatches([{ type: 'set', id: 'node-1', data: { data: { desc: 'hello' } } }])
+apiRef.current?.applyPatches([{ type: "move", id: "node-1", x: 200, y: 150 }]);
+apiRef.current?.applyPatches([
+  { type: "set", id: "node-1", data: { data: { desc: "hello" } } },
+]);
 ```
 
 **patch 类型**：`move` / `set` / `add` / `remove`
@@ -251,9 +258,9 @@ apiRef.current?.applyPatches([{ type: 'set', id: 'node-1', data: { data: { desc:
 修改节点的 `data` 字段（`applyPatches` 的便利糖）。
 
 ```ts
-apiRef.current?.updateNodeData('node-1', { description: 'hello' })
-apiRef.current?.updateNodeData('node-1', undefined)  // 清除
-apiRef.current?.updateNodeData({ description: 'hello' })  // 自动选中模式
+apiRef.current?.updateNodeData("node-1", { description: "hello" });
+apiRef.current?.updateNodeData("node-1", undefined); // 清除
+apiRef.current?.updateNodeData({ description: "hello" }); // 自动选中模式
 ```
 
 > **与 `setNodes` 的区别**：直接 `setNodes()` 不产生 history，undo 无法还原。
@@ -268,7 +275,7 @@ apiRef.current?.updateNodeData({ description: 'hello' })  // 自动选中模式
 把当前画布序列化为 doc 对象。
 
 ```ts
-const doc = apiRef.current?.serializeDoc({ name: 'my-file' })
+const doc = apiRef.current?.serializeDoc({ name: "my-file" });
 // { schemaVersion: 1, nodes: [...], camera: {...}, resources: {}, meta: { name: 'my-file' } }
 ```
 
@@ -279,9 +286,9 @@ const doc = apiRef.current?.serializeDoc({ name: 'my-file' })
 解析 doc 并应用到画布。
 
 ```ts
-const raw = localStorage.getItem('my-doc')
+const raw = localStorage.getItem("my-doc");
 if (raw) {
-  apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
+  apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true });
 }
 ```
 
@@ -294,11 +301,15 @@ if (raw) {
 ### 工具栏按钮
 
 ```tsx
-function UndoButton({ apiRef }: { apiRef: React.RefObject<InfiniteMapApi | null> }) {
-  const [, bump] = useState(0)
+function UndoButton({
+  apiRef,
+}: {
+  apiRef: React.RefObject<InfiniteMapApi | null>;
+}) {
+  const [, bump] = useState(0);
   useEffect(() => {
-    return apiRef.current?.subscribeHistory(() => bump((x) => x + 1))
-  }, [apiRef])
+    return apiRef.current?.subscribeHistory(() => bump((x) => x + 1));
+  }, [apiRef]);
 
   return (
     <button
@@ -307,43 +318,69 @@ function UndoButton({ apiRef }: { apiRef: React.RefObject<InfiniteMapApi | null>
     >
       撤销
     </button>
-  )
+  );
 }
 ```
 
 ### 外部缩放控制
 
 ```tsx
-function ZoomControls({ apiRef }: { apiRef: React.RefObject<InfiniteMapApi | null> }) {
+function ZoomControls({
+  apiRef,
+}: {
+  apiRef: React.RefObject<InfiniteMapApi | null>;
+}) {
   return (
     <div>
-      <button onClick={() => apiRef.current?.runCommand('view.zoomIn', { source: 'api' })}>+</button>
-      <button onClick={() => apiRef.current?.runCommand('view.zoomOut', { source: 'api' })}>-</button>
-      <button onClick={() => apiRef.current?.runCommand('view.fitView', { source: 'api' })}>Fit</button>
+      <button
+        onClick={() =>
+          apiRef.current?.runCommand("view.zoomIn", { source: "api" })
+        }
+      >
+        +
+      </button>
+      <button
+        onClick={() =>
+          apiRef.current?.runCommand("view.zoomOut", { source: "api" })
+        }
+      >
+        -
+      </button>
+      <button
+        onClick={() =>
+          apiRef.current?.runCommand("view.fitView", { source: "api" })
+        }
+      >
+        Fit
+      </button>
     </div>
-  )
+  );
 }
 ```
 
 ### 保存/加载
 
 ```tsx
-function SaveLoadButtons({ apiRef }: { apiRef: React.RefObject<InfiniteMapApi | null> }) {
+function SaveLoadButtons({
+  apiRef,
+}: {
+  apiRef: React.RefObject<InfiniteMapApi | null>;
+}) {
   const handleSave = () => {
-    const doc = apiRef.current?.serializeDoc()
-    if (doc) localStorage.setItem('my-doc', JSON.stringify(doc))
-  }
+    const doc = apiRef.current?.serializeDoc();
+    if (doc) localStorage.setItem("my-doc", JSON.stringify(doc));
+  };
 
   const handleLoad = () => {
-    const raw = localStorage.getItem('my-doc')
-    if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true })
-  }
+    const raw = localStorage.getItem("my-doc");
+    if (raw) apiRef.current?.parseDoc(JSON.parse(raw), { immediate: true });
+  };
 
   return (
     <div>
       <button onClick={handleSave}>保存</button>
       <button onClick={handleLoad}>加载</button>
     </div>
-  )
+  );
 }
 ```

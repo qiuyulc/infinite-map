@@ -3,8 +3,8 @@
 本页列出 `<InfiniteMap>` 所有 props 及其默认值和用法。
 
 > 补充阅读：
+>
 > - [NodeData 字段参考](/infinite-map/library/node-data)
-> - [插件配置](/infinite-map/library/plugin-config)
 > - [InfiniteMapApi 参考](/infinite-map/library/api-ref)
 
 ## 核心 Props
@@ -65,13 +65,13 @@ apiRef?: React.MutableRefObject<InfiniteMapApi | null>
 
 ### 节点自定义
 
-| Prop | 类型 | 说明 |
-|---|---|---|
-| `renderNode(node)` | `(node: NodeData) => ReactNode` | 完全自定义节点渲染 |
-| `renderNodeContent(node)` | `(node: NodeData) => ReactNode` | 推荐：只自定义内容区，外壳沿用 DefaultNode |
-| `getDefaultNodeProps(node)` | `(node: NodeData) => { className?, style? }` | 自定义节点容器的 className/style |
-| `defaultNodeShowMeta` | `boolean`（默认 `false`） | 是否显示内置坐标信息（调试用） |
-| `onNodeDrag` | `(id, pos, phase) => void` | 节点拖动回调（phase: `'move'` / `'end'`） |
+| Prop                        | 类型                                         | 说明                                       |
+| --------------------------- | -------------------------------------------- | ------------------------------------------ |
+| `renderNode(node)`          | `(node: NodeData) => ReactNode`              | 完全自定义节点渲染                         |
+| `renderNodeContent(node)`   | `(node: NodeData) => ReactNode`              | 推荐：只自定义内容区，外壳沿用 DefaultNode |
+| `getDefaultNodeProps(node)` | `(node: NodeData) => { className?, style? }` | 自定义节点容器的 className/style           |
+| `defaultNodeShowMeta`       | `boolean`（默认 `false`）                    | 是否显示内置坐标信息（调试用）             |
+| `onNodeDrag`                | `(id, pos, phase) => void`                   | 节点拖动回调（phase: `'move'` / `'end'`）  |
 
 ### 虚拟化
 
@@ -88,10 +88,10 @@ virtualization?: {
 
 ### 兼容旧字段
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `overscanPx` | `number` | `900` | 节点虚拟化 overscan（兼容旧字段，建议用 `virtualization.overscanPx`） |
-| `cellSize` | `number` | `900` | 空间索引网格大小（世界单位） |
+| Prop         | 类型     | 默认值 | 说明                                                                  |
+| ------------ | -------- | ------ | --------------------------------------------------------------------- |
+| `overscanPx` | `number` | `900`  | 节点虚拟化 overscan（兼容旧字段，建议用 `virtualization.overscanPx`） |
+| `cellSize`   | `number` | `900`  | 空间索引网格大小（世界单位）                                          |
 
 ---
 
@@ -138,14 +138,42 @@ onReady?: (api: { getCamera, setCamera, moveOriginToTopLeft, getContainerTopLeft
 <InfiniteMap nodes={nodes} onReady={(api) => api.moveOriginToTopLeft()} />
 ```
 
+### onCameraChange
+
+```ts
+onCameraChange?: (camera: Camera) => void
+```
+
+相机 x/y/zoom 变化时触发，可用于外部状态栏显示当前坐标。
+
+```tsx
+<InfiniteMap nodes={nodes} onCameraChange={(cam) => console.log(cam)} />
+```
+
+### onViewportResize
+
+```ts
+onViewportResize?: (viewport: { w: number; h: number }) => void
+```
+
+容器尺寸变化时触发。
+
+### onDestroy
+
+```ts
+onDestroy?: () => void
+```
+
+组件卸载时触发，用于清理外部资源。
+
 ### 缩放控制
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `minZoom` | `number` | `0.25` | 最小缩放倍率 |
-| `maxZoom` | `number` | `2.5` | 最大缩放倍率 |
-| `zoomSpeed` | `number` | `0.0012` | 滚轮缩放灵敏度（建议 0.001~0.002） |
-| `pinchZoomFactor` | `number` | `0.6` | 触控板捏合缩放强度（>1 更敏感） |
+| Prop              | 类型     | 默认值   | 说明                               |
+| ----------------- | -------- | -------- | ---------------------------------- |
+| `minZoom`         | `number` | `0.25`   | 最小缩放倍率                       |
+| `maxZoom`         | `number` | `2.5`    | 最大缩放倍率                       |
+| `zoomSpeed`       | `number` | `0.0012` | 滚轮缩放灵敏度（建议 0.001~0.002） |
+| `pinchZoomFactor` | `number` | `0.6`    | 触控板捏合缩放强度（>1 更敏感）    |
 
 ---
 
@@ -159,25 +187,25 @@ backgroundMode?: 'dots' | 'grid' | 'none'  // 默认 'dots'
 
 ### 点阵背景
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `dotSpacing` | `number \| 'auto'` | `48` | 点阵间距（世界单位），`'auto'` 自适应 |
-| `dotRadiusPx` | `number` | `1.35` | 点半径（屏幕像素） |
-| `dotAlpha` | `number` | `0.18` | 点基础透明度 |
+| Prop          | 类型               | 默认值 | 说明                                  |
+| ------------- | ------------------ | ------ | ------------------------------------- |
+| `dotSpacing`  | `number \| 'auto'` | `48`   | 点阵间距（世界单位），`'auto'` 自适应 |
+| `dotRadiusPx` | `number`           | `1.35` | 点半径（屏幕像素）                    |
+| `dotAlpha`    | `number`           | `0.18` | 点基础透明度                          |
 
 ### 网格背景
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
+| Prop          | 类型               | 默认值   | 说明                 |
+| ------------- | ------------------ | -------- | -------------------- |
 | `gridSpacing` | `number \| 'auto'` | `'auto'` | 网格间距（世界单位） |
-| `gridAlpha` | `number` | `0.14` | 网格线透明度 |
+| `gridAlpha`   | `number`           | `0.14`   | 网格线透明度         |
 
 ### 鼠标光晕
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `highlightRadiusPx` | `number` | `140` | 鼠标周围光晕半径（屏幕像素），设为 `0` 关闭 |
-| `wheelPulseStrength` | `number` | `0.55` | 滚轮缩放时光晕脉冲强度 |
+| Prop                 | 类型     | 默认值 | 说明                                        |
+| -------------------- | -------- | ------ | ------------------------------------------- |
+| `highlightRadiusPx`  | `number` | `140`  | 鼠标周围光晕半径（屏幕像素），设为 `0` 关闭 |
+| `wheelPulseStrength` | `number` | `0.55` | 滚轮缩放时光晕脉冲强度                      |
 
 ---
 
@@ -192,29 +220,29 @@ editorHooks?: {
 }
 ```
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `hookMode` | `'observe' \| 'intercept'` | `'observe'` | `observe`：只观察；`intercept`：可阻止/覆盖 |
-| `onEditorError` | `(err, info) => void` | — | 全局错误收集（避免单插件崩溃导致整树卸载） |
+| Prop            | 类型                       | 默认值      | 说明                                        |
+| --------------- | -------------------------- | ----------- | ------------------------------------------- |
+| `hookMode`      | `'observe' \| 'intercept'` | `'observe'` | `observe`：只观察；`intercept`：可阻止/覆盖 |
+| `onEditorError` | `(err, info) => void`      | —           | 全局错误收集（避免单插件崩溃导致整树卸载）  |
 
 ---
 
 ## 高级配置
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `commandConflictPolicy` | `'keep-first' \| 'override' \| 'error'` | `'keep-first'` | 多插件注册同名命令时的处理策略 |
-| `warnOnCommandConflict` | `boolean` | `true` | 命令冲突时是否在 DEV 下打印警告 |
-| `debug` | `boolean` | `false` | 调试模式（写入 debug:* store 键） |
+| Prop                    | 类型                                    | 默认值         | 说明                               |
+| ----------------------- | --------------------------------------- | -------------- | ---------------------------------- |
+| `commandConflictPolicy` | `'keep-first' \| 'override' \| 'error'` | `'keep-first'` | 多插件注册同名命令时的处理策略     |
+| `warnOnCommandConflict` | `boolean`                               | `true`         | 命令冲突时是否在 DEV 下打印警告    |
+| `debug`                 | `boolean`                               | `false`        | 调试模式（写入 debug:\* store 键） |
 
 ---
 
 ## 主题
 
-| Prop | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `themeBase` | `'light' \| 'dark'` | `'light'` | 基础主题 |
-| `theme` | `Partial<InfiniteMapTheme>` | — | 覆盖部分颜色 token |
+| Prop        | 类型                        | 默认值    | 说明               |
+| ----------- | --------------------------- | --------- | ------------------ |
+| `themeBase` | `'light' \| 'dark'`         | `'light'` | 基础主题           |
+| `theme`     | `Partial<InfiniteMapTheme>` | —         | 覆盖部分颜色 token |
 
 > 完整主题定制见：[主题定制](/infinite-map/library/theming)。
 
