@@ -674,7 +674,7 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
   });
 
   // input dispatch（内置 pan gesture 会调用 commitCamera）
-  const { dispatchPointer, dispatchContextMenu } = usePluginInputDispatch({
+  const { dispatchPointer, dispatchContextMenu, gestureStateRef } = usePluginInputDispatch({
     plugins,
     ctx,
     containerRef,
@@ -777,6 +777,10 @@ function InfiniteMapEngine(props: InfiniteMapProps) {
         hoverRef.current = { kind: 'blank' };
         store.set(STORE_KEYS.hoverHit, { kind: 'blank' });
         if (containerRef.current) containerRef.current.style.cursor = 'default';
+        const active = gestureStateRef.current?.active;
+        if (active?.pointerId === e.pointerId) {
+          return;
+        }
         dispatchPointer('cancel', e);
       }}
     >

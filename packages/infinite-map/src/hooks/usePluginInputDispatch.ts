@@ -151,13 +151,13 @@ export function usePluginInputDispatch({
             startScreen: { ...e0.screen },
             startCam: { x: ctx0.getCamera().x, y: ctx0.getCamera().y },
           };
-          if (!pan.panActive && pan.panKeepAliveEnabled) {
+          if (pan.panKeepAliveEnabled) {
             // seed：把手势开始时可见的节点加入 keepAlive
             pan.panKeepAliveIdSetRef.current.clear();
             pan.panKeepAliveLRURef.current.clear();
             pan.panKeepAliveAdd(pan.visibleNodesRef.current.map((n) => n.id));
           }
-          if (!pan.panActive) pan.setPanActive(true);
+          pan.setPanActive(true);
         },
         onMove: (e0: MapPointerEvent, ctx0: MapContext) => {
           const st0 = panRef.current;
@@ -170,20 +170,16 @@ export function usePluginInputDispatch({
         onEnd: (e0: MapPointerEvent) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
-          if (pan.panActive) {
-            pan.setPanActive(false);
-            pan.panKeepAliveIdSetRef.current.clear();
-            pan.panKeepAliveLRURef.current.clear();
-          }
+          pan.setPanActive(false);
+          pan.panKeepAliveIdSetRef.current.clear();
+          pan.panKeepAliveLRURef.current.clear();
         },
         onCancel: (e0: MapPointerEvent) => {
           const st0 = panRef.current;
           if (st0?.pointerId === e0.pointerId) panRef.current = null;
-          if (pan.panActive) {
-            pan.setPanActive(false);
-            pan.panKeepAliveIdSetRef.current.clear();
-            pan.panKeepAliveLRURef.current.clear();
-          }
+          pan.setPanActive(false);
+          pan.panKeepAliveIdSetRef.current.clear();
+          pan.panKeepAliveLRURef.current.clear();
         },
       } satisfies Gesture);
 

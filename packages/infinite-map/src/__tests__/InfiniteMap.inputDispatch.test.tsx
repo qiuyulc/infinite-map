@@ -138,6 +138,32 @@ describe('InfiniteMap input dispatch (core)', () => {
     });
   });
 
+  it('continues pan when dragging from below a node into the node area and clears pan state', async () => {
+    const apiRef = { current: null as InfiniteMapApi | null };
+    let ctxRef: MapContext | null = null;
+    const nodeGestureCalls = { start: 0, move: 0, end: 0 };
+    const nodes: NodeData[] = [{ id: 'a', x: 0, y: 0, width: 80, height: 40, label: 'A' }];
+    const plugins = [createHitTestPlugin(), createGesturePlugin(nodeGestureCalls), createCapturePlugin((c) => (ctxRef = c))];
+    const { container } = render(<InfiniteMap nodes={nodes} plugins={plugins} apiRef={apiRef as any} onNodesChange={() => void 0} />);
+    const root = container.firstElementChild as HTMLElement;
+    setRect(root, { width: 800, height: 600, left: 0, top: 0 });
+    await new Promise((r) => setTimeout(r, 20));
+
+    const before = apiRef.current!.getCamera();
+    // Node is screen(400,300)-(480,340). Start just below it, then move left/up into the node.
+    fireEvent.pointerDown(root, { pointerId: 1, button: 0, buttons: 1, clientX: 460, clientY: 360 });
+    fireEvent.pointerMove(root, { pointerId: 1, buttons: 1, clientX: 430, clientY: 320 });
+    fireEvent.pointerUp(root, { pointerId: 1, button: 0, buttons: 0, clientX: 430, clientY: 320 });
+
+    await waitFor(() => {
+      const after = apiRef.current!.getCamera();
+      expect(after.x).not.toBe(before.x);
+      expect(after.y).not.toBe(before.y);
+      expect(ctxRef!.store.get(STORE_KEYS.viewPanActive)).toBe(false);
+    });
+    expect(nodeGestureCalls.start).toBe(0);
+  });
+
   it('dispatches keydown only when canvas is focused', async () => {
     const onKeyDown = vi.fn(() => ({ handled: true } as const));
     const plugin: InfiniteMapPlugin = { id: 'test.key', input: { onKeyDown } };
