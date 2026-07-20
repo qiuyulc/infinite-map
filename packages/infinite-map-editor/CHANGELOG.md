@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.10
+
+### Patch Changes
+
+- 95e6b22: chore: internal improvements
+- Updated dependencies [95e6b22]
+  - @qiuyulc/infinite-map@0.0.10
+
 ## 0.0.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.10
+
+### Patch Changes
+
+- 95e6b22: chore: internal improvements
+
 ## 0.0.9
 
 ### Patch Changes

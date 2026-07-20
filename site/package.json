@@ -1,6 +1,6 @@
 {
   "name": "infinite-map-docs",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "scripts": {
     "dev": "rspress dev --port 5175",
