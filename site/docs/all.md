@@ -1,0 +1,319 @@
+# Infinite Map 功能全景 — 71 项功能索引
+
+> 项目：infinite-map-monorepo
+
+> 包：@qiuyulc/infinite-map（核心渲染引擎）+ @qiuyulc/infinite-map-editor（编辑器插件）
+
+---
+
+## 一、基础数据层
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 1 | 核心类型 | Camera（视口）、NodeData（节点）、Rect（矩形）、rectIntersects（AABB碰撞检测） | packages/infinite-map/src/core/types.ts |
+
+| 2 | 工具函数 | clamp、cssVar/cssVarRgb/cssVarNum（读取CSS变量） | packages/infinite-map/src/core/utils.ts |
+
+| 3 | 自适应步长 | 根据zoom计算舒服的网格间距（1,2,5,10,20,50…的10的幂次变体） | packages/infinite-map/src/core/steps.ts |
+
+---
+
+## 二、空间索引 & 虚拟化
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 4 | 空间索引 | 画布划分成均匀网格，每个格子存节点id列表；构建O(n)，查询O(格子数) | packages/infinite-map/src/core/spatialIndex.ts |
+
+| 5 | 虚拟化 | 根据camera反算视口矩形→从空间索引查候选id→精确过滤，只渲染可见节点；支持overscan和keepAlive | packages/infinite-map/src/hooks/useVisibleNodes.ts |
+
+---
+
+## 三、Engine 状态层
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 6 | Engine Store | Zustand vanilla store：view（相机+CSS transform字符串）、viewport、visibleNodeIds。高频交互直接改DOM，不触发React重渲染 | packages/infinite-map/src/engine/engineStore.ts |
+
+| 7 | React订阅hook | useEngineSelector：React只订阅visibleNodeIds数组（浅比较），camera变化不触发Fiber遍历 | packages/infinite-map/src/engine/useEngineSelector.tsx |
+
+---
+
+## 四、渲染层
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 8 | InfiniteMap主组件 | 编排所有hooks、组装背景+节点+overlay三层、处理editMode推断、apiRef暴露（~800行） | packages/infinite-map/src/components/InfiniteMap.tsx |
+
+| 9 | 背景层 | Canvas绘制点阵/网格，rAF原生绘制，跟随camera无限平铺 | packages/infinite-map/src/components/EngineBackgroundLayer.tsx |
+
+| 10 | 节点DOM层 | 遍历visibleNodeIds，为每个节点渲染绝对定位+CSS transform的DOM wrapper；支持virtualization keepAlive | packages/infinite-map/src/components/EngineDomNodesLayer.tsx |
+
+| 11 | 默认节点皮肤 | DefaultNode：圆角卡片+阴影+旋转+3D透视（rotateX/Y）；支持renderNodeContent插槽 | packages/infinite-map/src/components/DefaultNode.tsx |
+
+| 12 | 插件Overlay渲染 | 收集所有插件overlay，按slot（background/overlay/hud）分层渲染；带ErrorBoundary隔离 | packages/infinite-map/src/components/RenderPluginOverlays.tsx |
+
+---
+
+## 五、坐标变换
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 13 | 坐标变换 | 屏幕↔世界互转：world=screen/zoom+camera，screen=(world-camera)\*zoom；同时支持Rect变换 | packages/infinite-map/src/hooks/useCoordinateTransforms.ts |
+
+---
+
+## 六、输入管线—Scheme C
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 14 | 插件输入分发总调度 | 指针事件三阶段：hitTest→pointerDownProcessors→gesture启动。同时处理wheel/key/contextmenu分发 | packages/infinite-map/src/hooks/usePluginInputDispatch.ts |
+
+| 15 | hitTest协议 | HitTestContributor接口；HitTestTarget三种：blank/node/handle；按priority竞争 | packages/infinite-map/src/editor/types.ts |
+
+| 16 | Gesture协议 | canStart→onStart→onMove→onEnd→onCancel；全局互斥，同一时间只有一个gesture活跃 | packages/infinite-map/src/editor/types.ts |
+
+| 17 | 内置Pan Gesture | 空白拖动平移画布；最低优先级；canStart=左键+(Space按下或命中空白) | packages/infinite-map/src/hooks/usePluginInputDispatch.ts |
+
+| 18 | PointerDownProcessor协议 | 在hitTest之后、gesture之前执行；可修改有效命中或阻断后续gesture | packages/infinite-map/src/editor/types.ts |
+
+| 19 | 滚轮/捏合缩放 | wheel→以鼠标位置为中心缩放；支持pinch；限制minZoom/maxZoom | packages/infinite-map/src/hooks/useWheelControls.ts |
+
+| 20 | 键盘事件分发 | window keydown/keyup→分发给插件input.onKeyDown/onKeyUp | packages/infinite-map/src/hooks/usePluginInputDispatch.ts |
+
+| 21 | 右键菜单分发 | contextmenu→hitTest→分发给插件input.onContextMenu | packages/infinite-map/src/hooks/usePluginInputDispatch.ts |
+
+| 22 | hover变化追踪 | pointermove时做hitTest，相比上次变化时调inputHooks.onHoverChange+emit hover:change | packages/infinite-map/src/hooks/usePluginInputDispatch.ts |
+
+---
+
+## 七、插件基础设施
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 23 | EventBus | 发布订阅：bus.on/emit；Map<事件名,Set<handler>>；emit时拷贝遍历防handler内部取消订阅 | packages/infinite-map/src/editor/runtime.ts |
+
+| 24 | Store | 键值存储：store.get/set/subscribe；插件间共享状态，不经过React | packages/infinite-map/src/editor/runtime.ts |
+
+| 25 | EventMap事件表 | 12种事件类型签名：drag:start/move/end、selection:change、hover:change、history:undo/redo、command:run、camera:set/changed、patches:applied、export:png | packages/infinite-map/src/editor/types.ts |
+
+| 26 | Store Keys常量 | 共享状态key常量：selection:ids、drag:state、keyboard:space、snap:config/guides、history:stack等 | packages/infinite-map/src/editor/keys.ts |
+
+| 27 | 插件生命周期 | usePluginLifecycle：遍历plugins[]调setup(ctx)/teardown()；带错误边界 | packages/infinite-map/src/hooks/usePluginLifecycle.ts |
+
+| 28 | MapContext构建 | 把camera/getNodes/坐标变换/queryNodes/applyPatches/bus/store/services等组装成MapContext | packages/infinite-map/src/hooks/useMapContext.ts |
+
+---
+
+## 八、数据变更
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 29 | Patch应用 | applyPatchesToNodes：move/set/add/remove四种操作，不可变返回新数组 | packages/infinite-map/src/editor/runtime.ts |
+
+| 30 | 批量提交引擎 | move-phase的patches合并到rAF批量处理；end-phase立即flush；支持hooks拦截 | packages/infinite-map/src/hooks/usePatchEngine.ts |
+
+| 31 | Doc序列化 | serializeDoc→JSON；parseDoc→校验schemaVersion+字段类型→返回InfiniteMapDoc | packages/infinite-map/src/editor/document.ts |
+
+---
+
+## 九、命令系统
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 32 | 命令注册 | 收集所有插件的commands，按冲突策略处理同名；返回getCommand(id)查找函数 | packages/infinite-map/src/hooks/useCommandRegistry.ts |
+
+| 33 | 命令执行 | runCommand(id)→查注册表→调command.run(ctx)；支持onBeforeCommand/onAfterCommand hooks | packages/infinite-map/src/hooks/useRunCommandWithHooks.ts |
+
+| 34 | 运行时副作用 | 监听camera:set事件同步到React state；监听wheel缩放；处理bus到state的桥接 | packages/infinite-map/src/hooks/useMapRuntimeEffects.ts |
+
+---
+
+## 十、核心交互插件
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 35 | 选择 | 点击选中/Shift切换/多选；空白清空；锁定节点可选中但阻断手势；注册selection service | packages/infinite-map-editor/src/plugins/createSelectionPlugin.tsx |
+
+| 36 | 拖拽移动 | 按住节点拖动；选中集合内整体拖；拖拽中直接改DOM不经过React；支持吸附和group展开 | packages/infinite-map-editor/src/plugins/createDragPlugin.ts |
+
+| 37 | 8点缩放 | 选中节点四角+四边handle；拖拽缩放，对角/对边保持不动；支持吸附 | packages/infinite-map-editor/src/plugins/createResizePlugin.ts |
+
+| 38 | 2D旋转 | 选中节点顶部旋转handle；拖拽计算角度；Shift按15°步进 | packages/infinite-map-editor/src/plugins/createRotatePlugin.ts |
+
+| 39 | 3D旋转 | Alt+拖拽节点内部→改rotationX/Y；拖拽方向决定旋转轴 | packages/infinite-map-editor/src/plugins/createRotate3DPlugin.ts |
+
+| 40 | 框选 | 拖空白区域画虚线矩形；抬起后框中的节点全选；最低交互优先级 | packages/infinite-map-editor/src/plugins/createMarqueeSelectPlugin.tsx |
+
+---
+
+## 十一、吸附 & 对齐
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 41 | 吸附工具函数 | snapToGrid、bboxOf（多节点包围盒）、getViewportCenterWorld | packages/infinite-map-editor/src/editor/snapUtils.ts |
+
+| 42 | 吸附 & 辅助线插件 | store存snap:config和snap:guides；drag/resize的onMove读取并计算吸附；Overlay渲染对齐线 | packages/infinite-map-editor/src/plugins/createSnapGuidesPlugin.ts |
+
+| 43 | 对齐 & 分布 | 命令：左对齐/居中/右对齐/顶对齐/底对齐/水平等距/垂直等距 | packages/infinite-map-editor/src/plugins/createAlignDistributePlugin.ts |
+
+---
+
+## 十二、状态管理插件
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 44 | 撤销/重做 | 监听patches:applied→把beforeById压栈；undo发逆patches；redo重放；支持maxStack | packages/infinite-map-editor/src/plugins/createHistoryPlugin.ts |
+
+| 45 | 剪贴板 | copy/cut/paste/duplicate/delete：写读内部store；paste时offset偏移 | packages/infinite-map-editor/src/plugins/createClipboardPlugin.ts |
+
+| 46 | 键盘状态 | 追踪Space是否按下（平移模式）；写keyboard:space到store | packages/infinite-map-editor/src/plugins/createKeyboardStatePlugin.ts |
+
+| 47 | 快捷键 | input.onKeyDown映射key组合到command：Cmd+Z=undo、Cmd+C=copy、Delete=delete等 | packages/infinite-map-editor/src/plugins/createShortcutsPlugin.ts |
+
+---
+
+## 十三、结构操作
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 48 | 编组工具函数 | isLockedEffective/isHiddenEffective（锁定/隐藏传递）、getOutermostGroupId、expandIds | packages/infinite-map-editor/src/editor/groupUtils.ts |
+
+| 49 | 编组/解组 | Cmd+G编组（创建group+设parentId）；Cmd+Shift+G解组；注册group service | packages/infinite-map-editor/src/plugins/createGroupPlugin.ts |
+
+| 50 | 锁定/隐藏 | lock/unlock/hide/show命令；锁定传递：lock group→后代不可编辑但可选中 | packages/infinite-map-editor/src/plugins/createLockHidePlugin.ts |
+
+| 51 | 命中归一化 | normalizeHitIdForSelectedGroups：点击已选中group的子节点→命中提升为group | packages/infinite-map-editor/src/editor/hitNormalize.ts |
+
+---
+
+## 十四、其他功能插件
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 52 | 层级管理 | bringToFront/sendToBack/bringForward/sendBackward命令；通过z字段控制渲染顺序 | packages/infinite-map-editor/src/plugins/createZIndexPlugin.ts |
+
+| 53 | 方向键微移 | 箭头键移动选中节点（1px，Shift=10px），emit patches | packages/infinite-map-editor/src/plugins/createNudgePlugin.ts |
+
+| 54 | 导出PNG | emit export:png事件，宿主自行实现（html-to-image/canvas） | packages/infinite-map-editor/src/plugins/createExportPngPlugin.ts |
+
+| 55 | 视图命令 | zoomIn/Out、zoomToFit、zoomToSelection、centerOn；emit camera:set | packages/infinite-map-editor/src/plugins/createViewCommandsPlugin.ts |
+
+| 56 | CommandRunner | 注册command-runner服务，实现ctx.runCommand(id)→查命令→执行 | packages/infinite-map-editor/src/plugins/createCommandRunnerPlugin.ts |
+
+| 57 | CoreServices | 注册engine service和dom-nodes service（getEl查DOM），供drag等使用 | packages/infinite-map-editor/src/plugins/createCoreServicesPlugin.ts |
+
+---
+
+## 十五、HUD / UI 插件
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 58 | 工具栏 | Overlay渲染可配置按钮列表；绑定command id；支持分隔线、图标 | packages/infinite-map-editor/src/plugins/createToolbarPlugin.tsx |
+
+| 59 | 缩略图Minimap | 右下角Canvas小地图；显示全部节点缩略+当前视口矩形框；可点击快速定位 | packages/infinite-map-editor/src/plugins/createMinimapPlugin.ts |
+
+| 60 | 标尺Rulers | 顶部+左侧Canvas标尺；刻度跟随camera滚动和缩放 | packages/infinite-map-editor/src/plugins/createRulersPlugin.tsx |
+
+| 61 | 缩放控件 | 左下角zoom+/-按钮+百分比显示；调viewCommands | packages/infinite-map-editor/src/plugins/createZoomDockPlugin.tsx |
+
+| 62 | 右键菜单 | 框架（记录位置/hit）+默认菜单项（undo/redo/cut/copy/paste/delete/层级/锁定） | createContextMenuPlugin.ts + createDefaultContextMenuPlugin.tsx |
+
+| 63 | 悬停高亮 | 监听hover:change→渲染半透明高亮边框；放最前面（视觉在节点之下） | packages/infinite-map-editor/src/plugins/createHoverHighlightPlugin.tsx |
+
+| 64 | 拖放创建 | 监听dragover/drop→在鼠标位置创建新节点 | packages/infinite-map-editor/src/plugins/createDropToCreatePlugin.tsx |
+
+---
+
+## 十六、插件组装
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 65 | composePlugins | 过滤disabled→校验id/requires/provides→构建依赖图→拓扑排序→返回排序后数组 | packages/infinite-map-editor/src/editor/composePlugins.ts |
+
+| 66 | 默认核心插件 | 按顺序组装~20个插件（无UI）：keyboardState→selection→drag→resize→marquee等 | packages/infinite-map-editor/src/editor/createDefaultEditorPlugins.ts |
+
+| 67 | 默认完整插件 | 核心插件+hoverHighlight+toolbar+zoomDock+contextMenu+rulers+minimap→composePlugins | packages/infinite-map-editor/src/createDefaultEditorPluginsWithUI.ts |
+
+---
+
+## 十七、主题 & 对外 API
+
+| # | 功能 | 干什么 | 文件 |
+
+|---|------|--------|------|
+
+| 68 | 主题系统 | InfiniteMapTheme类型；lightTheme/darkTheme预设；mergeTheme；themeToCSSVars | packages/infinite-map/src/theme.ts |
+
+| 69 | ThemeProvider | React Context注入CSS变量到容器DOM | packages/infinite-map/src/components/InfiniteMapThemeProvider.tsx |
+
+| 70 | Viewport尺寸 | useViewportSize：ResizeObserver监听容器尺寸 | packages/infinite-map/src/hooks/useViewportSize.ts |
+
+| 71 | 对外API | apiRef：undo/redo/getSelection/serializeDoc/parseDoc/applyPatches… | packages/infinite-map/src/hooks/useAttachApiRef.ts |
+
+---
+
+## 建议阅读顺序
+
+按功能依赖关系，推荐从下到上、从基础到组装：
+
+```
+
+阶段 A（理解数据）: 1 → 4 → 13
+
+阶段 B（理解渲染）: 6 → 7 → 8 → 9 → 10 → 12
+
+阶段 C（插件基础设施）: 23 → 24 → 25 → 26 → 28 → 27
+
+阶段 D（输入管线核心）: 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
+
+阶段 E（数据变更）: 29 → 30 → 31
+
+阶段 F（命令系统）: 32 → 33 → 34
+
+阶段 G（核心交互插件）: 35 → 36 → 37 → 38 → 39 → 40
+
+阶段 H（吸附）: 41 → 42 → 43
+
+阶段 I（状态管理）: 44 → 45 → 46 → 47
+
+阶段 J（结构操作）: 48 → 49 → 50 → 51
+
+阶段 K（组装）: 65 → 66 → 67
+
+```
+
+---
+
+> 共 71 项功能，覆盖 @qiuyulc/infinite-map（#1-#34, #68-#71）和 @qiuyulc/infinite-map-editor（#35-#67）。

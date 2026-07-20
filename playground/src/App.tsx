@@ -67,24 +67,28 @@ function ChartLikeNode({ store, nodeId }: { store: ResourceStore<number>; nodeId
 }
 
 export default function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !window.matchMedia('(max-width: 960px)').matches;
+  });
   const [themeBase, setThemeBase] = useState<'light' | 'dark'>('light');
   const [backgroundMode, setBackgroundMode] = useState<'none' | 'dots' | 'grid'>('grid');
   const [panEnabled, setPanEnabled] = useState(true);
-  const [rulersEnabled, setRulersEnabled] = useState(true);
-  const [minimapEnabled, setMinimapEnabled] = useState(true);
-  const [zoomDockEnabled, setZoomDockEnabled] = useState(true);
-  const [toolbarEnabled, setToolbarEnabled] = useState(true);
-  const [contextMenuEnabled, setContextMenuEnabled] = useState(true);
+  const [rulersEnabled, setRulersEnabled] = useState(false);
+  const [minimapEnabled, setMinimapEnabled] = useState(false);
+  const [zoomDockEnabled, setZoomDockEnabled] = useState(false);
+  const [toolbarEnabled, setToolbarEnabled] = useState(false);
+  const [contextMenuEnabled, setContextMenuEnabled] = useState(false);
   const [virtualizationEnabled, setVirtualizationEnabled] = useState(false);
-  const [keepAliveEnabled, setKeepAliveEnabled] = useState(true);
-  const [snapEnabled, setSnapEnabled] = useState(true);
-  const [guidesEnabled, setGuidesEnabled] = useState(true);
-  const [dropToCreateEnabled, setDropToCreateEnabled] = useState(true);
+  const [keepAliveEnabled, setKeepAliveEnabled] = useState(false);
+  const [snapEnabled, setSnapEnabled] = useState(false);
+  const [guidesEnabled, setGuidesEnabled] = useState(false);
+  const [dropToCreateEnabled, setDropToCreateEnabled] = useState(false);
 
   // 编辑模式（用于验证 editable/editMode 与变更出口）
-  const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('auto');
+  const [editMode, setEditMode] = useState<'unset' | 'auto' | 'readonly' | 'controlled'>('unset');
   const [editable, setEditable] = useState<'unset' | 'true' | 'false'>('unset');
-  const [changeOutput, setChangeOutput] = useState<'nodes' | 'patches' | 'both' | 'none'>('nodes');
+  const [changeOutput, setChangeOutput] = useState<'nodes' | 'patches' | 'both' | 'none'>('none');
 
   const [docText, setDocText] = useState<string>('');
   const [lastPatchesInfo, setLastPatchesInfo] = useState<{ count: number; meta: ChangeMeta } | null>(null);
@@ -120,6 +124,7 @@ export default function App() {
         contextMenu: { enabled: contextMenuEnabled },
         marquee: { enabled: true, requireShift: false },
         snap: { enabled: snapEnabled, guidesEnabled },
+        hoverHighlight: { enabled: false }
       }),
       // 演示：插件如何通过 registry 给 toolbar / 右键菜单贡献 item
       createHudContributionExamplePlugin(),
@@ -193,10 +198,21 @@ export default function App() {
   return (
     <InfiniteMapThemeProvider base={themeBase}>
       <div className="pg-shell" data-theme={themeBase}>
-        <aside className="pg-sidebar">
+        {!sidebarOpen && (
+          <button className="pg-sidebar-toggle pg-sidebar-toggle--floating" type="button" onClick={() => setSidebarOpen(true)}>
+            面板
+          </button>
+        )}
+
+        <aside className="pg-sidebar" data-open={sidebarOpen}>
           <div className="pg-title">
-            <div className="pg-title__main">本地测试面板</div>
-            <div className="pg-title__sub">Playground controls</div>
+            <div className="pg-title__text">
+              <div className="pg-title__main">本地测试面板</div>
+              <div className="pg-title__sub">Playground controls</div>
+            </div>
+            <button className="pg-sidebar-toggle" type="button" onClick={() => setSidebarOpen(false)}>
+              收起
+            </button>
           </div>
 
           <div className="pg-section">
