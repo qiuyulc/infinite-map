@@ -1,5 +1,5 @@
 
-import { EngineBackgroundLayer } from '../EngineBackgroundLayer'
+// import { EngineBackgroundLayer } from '../EngineBackgroundLayer'
 
 interface Camera {
     x: number;
@@ -33,7 +33,7 @@ export const MapCom = (props: MapProps) => {
 
     return <div className="map">
 
-        <EngineBackgroundLayer />
+        {/* <EngineBackgroundLayer /> */}
 
         {
             nodes.map((node) => {

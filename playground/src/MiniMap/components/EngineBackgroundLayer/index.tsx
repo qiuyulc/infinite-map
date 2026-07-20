@@ -9,8 +9,8 @@ export const EngineBackgroundLayer = (props: {
     gridAlpha: number;
     zIndex?: number;
 }) => {
-
-    const { dotSpacing, dotRadiusPx, dotAlpha, gridSpacing, gridAlpha, zIndex } = props;
+    console.log(props)
+    // const { dotSpacing, dotRadiusPx, dotAlpha, gridSpacing, gridAlpha, zIndex } = props;
 
 
 
